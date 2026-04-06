@@ -191,6 +191,71 @@ def _task_goal_mentions_object(task_obs: str, obj_name: str) -> bool:
     return obj_type in task_obs.lower()
 
 
+def _extract_task_line(task_obs: str) -> str:
+    match = re.search(r"Your task is to:\s*(.+)", task_obs, flags=re.I)
+    return match.group(1).strip() if match else task_obs.strip()
+
+
+def _parse_task_context(task_obs: str) -> Dict[str, Optional[str]]:
+    task_line = _extract_task_line(task_obs).lower()
+    context = {
+        "task_kind": None,
+        "target_object_type": None,
+        "target_destination_type": None,
+        "modifier": None,
+    }
+    match = re.search(r"look at (?:some |a )?([a-z]+) under (?:the )?([a-z]+)", task_line)
+    if match:
+        context["task_kind"] = "look_under_light"
+        context["target_object_type"] = match.group(1)
+        context["target_destination_type"] = match.group(2)
+        return context
+    match = re.search(r"put (?:some |a )?(?:(hot|cool|clean) )?([a-z]+) (?:in/on|on) (?:the )?([a-z]+)", task_line)
+    if match:
+        context["task_kind"] = "put"
+        context["modifier"] = match.group(1)
+        context["target_object_type"] = match.group(2)
+        context["target_destination_type"] = match.group(3)
+    return context
+
+
+def _extract_visible_entities(obs: str) -> List[str]:
+    entities: List[str] = []
+    for match in re.finditer(r"you see (.+?)(?:\.|$)", obs, flags=re.I):
+        chunk = match.group(1).strip()
+        if "nothing" in chunk.lower():
+            continue
+        chunk = re.sub(r"\band\b", ",", chunk, flags=re.I)
+        for part in chunk.split(","):
+            part = re.sub(r"^(a|an)\s+", "", part.strip(), flags=re.I)
+            if part:
+                entities.append(part)
+    return entities
+
+
+def _extract_location(obs: str) -> Optional[str]:
+    for pattern in [
+        r"You arrive at ([^.]+)\.",
+        r"You are facing (?:the )?([^.]+)\.",
+    ]:
+        match = re.search(pattern, obs)
+        if match:
+            raw = match.group(1).strip()
+            if "," in raw or " and " in raw:
+                return None
+            return raw
+    return None
+
+
+def _find_entity_by_type(entities: List[str], entity_type: Optional[str]) -> Optional[str]:
+    if entity_type is None:
+        return None
+    for entity in entities:
+        if _extract_object_type(entity).lower() == entity_type.lower():
+            return entity
+    return None
+
+
 # ---------------------------------------------------------------------------
 # Rule evaluation
 # ---------------------------------------------------------------------------
@@ -343,8 +408,6 @@ NOTHING_HAPPENS_RULES = [
 ]
 
 SUCCESS_OBS_RULES = [
-    _check_rule_R10_progress_hint,
-    _check_rule_R11_exploration_nothing,
 ]
 
 
@@ -375,9 +438,15 @@ class AugmentedAlfWorldEnv:
 
         # Episode-level state
         self._task_description: str = ""
+        self._task_context: Dict[str, Optional[str]] = {}
         self._current_state: Optional[InternalState] = None
         self._last_command: str = ""
         self._step_count: int = 0
+        self._current_location: Optional[str] = None
+        self._location_entities: Dict[str, List[str]] = {}
+        self._location_visit_counts: Dict[str, int] = {}
+        self._progress_milestones: set = set()
+        self._progress_score: float = 0.0
 
         # Augmentation log
         self.augmentation_log: List[Dict[str, Any]] = []
@@ -436,13 +505,22 @@ class AugmentedAlfWorldEnv:
         self._step_count = 0
         self._last_command = ""
         self._task_description = obs  # initial obs contains task description
+        self._task_context = _parse_task_context(obs)
         self.augmentation_log = []
+        self._current_location = _extract_location(obs)
+        self._location_entities = {}
+        self._location_visit_counts = {}
+        self._progress_milestones = set()
+        self._progress_score = 0.0
+        self._record_observation_context(obs)
 
         # Build internal state from facts
         facts = infos.get("facts", []) or []
         admissible = infos.get("admissible_commands", []) or []
         self._current_state = InternalState(facts, admissible)
 
+        progress_events, progress_reward = self._compute_progress_events(obs, self._current_state, won=False)
+        infos = self._attach_progress_info(infos, progress_events, progress_reward)
         return obs, infos
 
     def step(self, command: str) -> Tuple[str, float, bool, Dict[str, Any]]:
@@ -475,12 +553,26 @@ class AugmentedAlfWorldEnv:
         facts = infos.get("facts", []) or []
         admissible = infos.get("admissible_commands", []) or []
         self._current_state = InternalState(facts, admissible)
+        self._record_observation_context(obs)
+        progress_events, progress_reward = self._compute_progress_events(
+            obs, self._current_state, won=bool(infos.get("won", False))
+        )
+        infos = self._attach_progress_info(infos, progress_events, progress_reward)
 
         # Augment observation using pre-step state (more accurate for error detection)
         state_for_rules = pre_step_state if pre_step_state is not None else self._current_state
         augmented_obs = self._augment(obs, command, state_for_rules)
 
         return augmented_obs, score, done, infos
+
+    def _record_observation_context(self, obs: str) -> None:
+        location = _extract_location(obs)
+        if location is not None:
+            self._current_location = location
+            self._location_visit_counts[location] = self._location_visit_counts.get(location, 0) + 1
+            entities = _extract_visible_entities(obs)
+            if entities:
+                self._location_entities[location] = entities
 
     # ------------------------------------------------------------------
     # Augmentation logic
@@ -537,6 +629,110 @@ class AugmentedAlfWorldEnv:
 
         # No augmentation needed
         return obs
+
+    def _target_object_instance(self, state: InternalState) -> Optional[str]:
+        target_type = self._task_context.get("target_object_type")
+        if not target_type:
+            return None
+        if state.held_object and _extract_object_type(state.held_object).lower() == target_type:
+            return state.held_object
+        for obj in state.object_in_receptacle:
+            if _extract_object_type(obj).lower() == target_type:
+                return obj
+        for entities in self._location_entities.values():
+            entity = _find_entity_by_type(entities, target_type)
+            if entity:
+                return entity
+        return None
+
+    def _remembered_destination_instance(self) -> Optional[str]:
+        target_type = self._task_context.get("target_destination_type")
+        if not target_type:
+            return None
+        for location, entities in self._location_entities.items():
+            entity = _find_entity_by_type(entities, target_type)
+            if entity:
+                return entity
+            if _extract_object_type(location).lower() == target_type:
+                return location
+        return None
+
+    def _compute_progress_events(
+        self,
+        obs: str,
+        state: Optional[InternalState],
+        won: bool,
+    ) -> Tuple[List[str], float]:
+        events: List[str] = []
+        reward = 0.0
+
+        if state is None:
+            return events, reward
+
+        target_obj = self._target_object_instance(state)
+        target_dest = self._remembered_destination_instance()
+        target_obj_type = self._task_context.get("target_object_type")
+        target_held = (
+            target_obj_type is not None
+            and state.held_object is not None
+            and _extract_object_type(state.held_object).lower() == target_obj_type
+        )
+
+        visible_entities = self._location_entities.get(self._current_location or "", [])
+        visible_target_obj = _find_entity_by_type(visible_entities, target_obj_type)
+        visible_target_dest = _find_entity_by_type(
+            visible_entities, self._task_context.get("target_destination_type")
+        )
+
+        def add_event(event: str, delta: float) -> None:
+            nonlocal reward
+            if event in self._progress_milestones:
+                return
+            self._progress_milestones.add(event)
+            events.append(event)
+            reward += delta
+
+        if visible_target_obj:
+            add_event("found_target_object", 0.5)
+        if visible_target_dest:
+            add_event("found_target_destination", 0.5)
+        if target_held:
+            add_event("holding_target_object", 1.0)
+
+        task_kind = self._task_context.get("task_kind")
+        if task_kind == "look_under_light" and won:
+            add_event("completed_light_inspection", 2.0)
+        if task_kind == "put" and target_dest and target_obj:
+            if state.object_location(target_obj) == target_dest and not target_held:
+                add_event("placed_target_object", 2.0)
+        if won:
+            add_event("task_completed", 3.0)
+
+        if (
+            self._current_location
+            and self._location_visit_counts.get(self._current_location, 0) >= 2
+            and not visible_target_obj
+            and not visible_target_dest
+            and not target_held
+        ):
+            events.append("revisited_empty_location")
+            reward -= 0.05
+
+        self._progress_score += reward
+        return events, reward
+
+    def _attach_progress_info(
+        self,
+        infos: Dict[str, Any],
+        progress_events: List[str],
+        progress_reward: float,
+    ) -> Dict[str, Any]:
+        progress_info = dict(infos)
+        progress_info["progress_events"] = progress_events
+        progress_info["progress_reward"] = progress_reward
+        progress_info["progress_score"] = self._progress_score
+        progress_info["progress_milestones"] = sorted(self._progress_milestones)
+        return progress_info
 
     def _log_augmentation(self, step: int, command: str,
                            original_obs: str, augmented_obs: str, rule: str) -> None:

@@ -1,0 +1,8 @@
+interaction:
+  - class_name: "env_tuning.interaction.alfworld_interaction.AlfWorldInteraction"
+    config:
+      name: "alfworld_augmented_env"
+      max_episode_steps: 50
+      use_augmented_env: true
+      verbose: false
+      # Per-sample game paths and overrides are expected in dataset interaction_kwargs.

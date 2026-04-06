@@ -105,6 +105,26 @@ ALFWorld 原始环境中，大量失败动作都会统一返回 `Nothing happens
 
 这样环境不再只返回统一报错，而是返回带原因的反馈文本。
 
+简化示例如下：
+
+- 原始反馈：
+  - `move plate 1 to shelf 1`
+  - `Nothing happens.`
+- 增强反馈：
+  - `You are not holding anything. You need to pick up an object before you can place it somewhere.`
+
+- 原始反馈：
+  - `take apple 1 from fridge 1`
+  - `Nothing happens.`
+- 增强反馈：
+  - `The fridge 1 is closed. You need to open it first before you can take anything from it.`
+
+- 原始反馈：
+  - `take book 1 from bed 1`（手里已经拿着别的物品）
+  - `Nothing happens.`
+- 增强反馈：
+  - `You are already holding vase 1. You can only carry one object at a time. Put it down first.`
+
 ### 4.2 Progress Reward 的构造方式
 
 当前 progress reward 也是在 `analysis/augmented_env.py` 中构造，并只通过 `infos` 返回给训练框架。
@@ -139,6 +159,24 @@ ALFWorld 原始环境中，大量失败动作都会统一返回 `Nothing happens
 - `progress_milestones`
 
 这些字段不会暴露给模型，只供 trainer 和 evaluator 使用。
+
+简化示例如下：
+
+- 当 agent 首次走到目标物附近并看到目标物时：
+  - `progress_events = ["found_target_object"]`
+  - `progress_reward = +0.5`
+
+- 当 agent 成功拿起目标物时：
+  - `progress_events = ["holding_target_object"]`
+  - `progress_reward = +1.0`
+
+- 当 agent 把目标物成功放到目标位置时：
+  - `progress_events = ["placed_target_object"]`
+  - `progress_reward = +2.0`
+
+- 当 agent 反复回到没有任务相关物体的空位置时：
+  - `progress_events = ["revisited_empty_location"]`
+  - `progress_reward = -0.05`
 
 ## 5. 目前状态
 

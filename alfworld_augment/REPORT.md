@@ -224,3 +224,49 @@ alfworld_augment/
     ├── verify_results.json                  # 验证数据
     └── verify_report.md                     # 验证报告
 ```
+
+## 8. 目前进展
+
+在完成 ALFWorld 环境反馈增强 MVP 后，当前代码已经进一步接入训练框架，整体进展如下：
+
+- 已完成环境增强 Wrapper，运行时文件为 `analysis/augmented_env.py`
+- 已补充内部 progress 信号，包括：
+  - `progress_events`
+  - `progress_reward`
+  - `progress_score`
+  - `progress_milestones`
+- 已完成 clean 行为验证，确认 progress 信号保留在 `infos` 中，不暴露给模型 observation
+- 已在 `AWorld-RL/EnvTuning` 中新增 ALFWorld 训练接入，包括：
+  - `env_tuning/interaction/alfworld_interaction.py`
+  - `env_tuning/alfworld_reward.py`
+  - `env_tuning/config/alfworld_grpo_stage1.yaml`
+  - `scripts/prepare_alfworld_dataset.py`
+  - `scripts/run_alfworld_grpo_stage1.sh`
+- 已完成新计算节点部署文档：
+  - `docs/alfworld_new_node_checklist.md`
+  - `docs/alfworld_environment_requirements.md`
+- 已清理旧的 Git 子模块标记，当前仓库为统一 monorepo 结构
+
+目前代码侧已经具备：
+
+- ALFWorld 环境增强
+- 细粒度 progress reward
+- EnvTuning 训练接入
+- 数据准备脚本
+- 训练配置和启动脚本
+
+## 9. 下一步
+
+下一步工作是进入训练阶段，在 GPU 节点上完成 ALFWorld GRPO pilot。
+
+计划顺序如下：
+
+1. 按 `docs/alfworld_new_node_checklist.md` 部署新计算节点环境
+2. 运行 `python scripts/prepare_alfworld_dataset.py` 生成 parquet 数据
+3. 使用 `bash scripts/run_alfworld_grpo_stage1.sh` 启动小规模训练
+4. 对比 baseline 环境和增强环境的训练表现
+5. 观察 success rate、progress return、invalid action 和训练曲线
+
+当前汇报可以概括为：
+
+> ALFWorld 环境增强与 progress reward 的工程接入已经完成，训练准备工作已基本就绪，下一步是在 GPU 节点上开展 GRPO 训练验证。

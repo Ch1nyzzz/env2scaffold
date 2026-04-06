@@ -1,0 +1,227 @@
+{
+  "run_at": "2026-04-05T03:24:42.273841Z",
+  "total": 14,
+  "passed": 14,
+  "failed": 0,
+  "pass_rate": "100.0%",
+  "test_results": [
+    {
+      "test_name": "R01_put_while_hands_empty",
+      "game_file": "trial_T20190908_050633_745514",
+      "setup_commands": [],
+      "test_command": "move book 1 to sidetable 1",
+      "expected_rule": "R01",
+      "expected_obs_contains": "not holding",
+      "passed": true,
+      "actual_obs": "You are not holding anything. You need to pick up an object before you can place it somewhere.",
+      "rule_applied": "R01_put_while_empty",
+      "error": null,
+      "score": 0,
+      "done": false
+    },
+    {
+      "test_name": "R02_take_from_closed_container",
+      "game_file": "trial_T20190908_050633_745514",
+      "setup_commands": [
+        "go to drawer 1"
+      ],
+      "test_command": "take cellphone 1 from drawer 1",
+      "expected_rule": "R02",
+      "expected_obs_contains": "closed",
+      "passed": true,
+      "actual_obs": "The drawer 1 is closed. You need to open it first before you can take anything from it.",
+      "rule_applied": "R02_take_from_closed",
+      "error": null,
+      "score": 0,
+      "done": false
+    },
+    {
+      "test_name": "R03_take_object_not_at_location",
+      "game_file": "trial_T20190908_050633_745514",
+      "setup_commands": [
+        "go to sidetable 1"
+      ],
+      "test_command": "take pillow 1 from sidetable 1",
+      "expected_rule": "R03",
+      "expected_obs_contains": "not there",
+      "passed": true,
+      "actual_obs": "You cannot find pillow 1 in the sidetable 1. That object is not there. Try looking around other locations.",
+      "rule_applied": "R03_take_wrong_location",
+      "error": null,
+      "score": 0,
+      "done": false
+    },
+    {
+      "test_name": "R04_open_already_open",
+      "game_file": "trial_T20190908_050633_745514",
+      "setup_commands": [
+        "go to drawer 1",
+        "open drawer 1"
+      ],
+      "test_command": "open drawer 1",
+      "expected_rule": "R04",
+      "expected_obs_contains": "already open",
+      "passed": true,
+      "actual_obs": "The drawer 1 is already open.",
+      "rule_applied": "R04_open_already_open",
+      "error": null,
+      "score": 0,
+      "done": false
+    },
+    {
+      "test_name": "R05_close_already_closed",
+      "game_file": "trial_T20190908_050633_745514",
+      "setup_commands": [
+        "go to drawer 1"
+      ],
+      "test_command": "close drawer 1",
+      "expected_rule": "R05",
+      "expected_obs_contains": "already closed",
+      "passed": true,
+      "actual_obs": "The drawer 1 is already closed.",
+      "rule_applied": "R05_close_already_closed",
+      "error": null,
+      "score": 0,
+      "done": false
+    },
+    {
+      "test_name": "R06_heat_without_holding",
+      "game_file": "trial_T20190907_060234_011675",
+      "setup_commands": [
+        "go to microwave 1"
+      ],
+      "test_command": "heat apple 1 with microwave 1",
+      "expected_rule": "R06",
+      "expected_obs_contains": "not holding",
+      "passed": true,
+      "actual_obs": "You are not holding anything. You need to pick up apple 1 before you can heat it.",
+      "rule_applied": "R06_heat_cool_clean_without_holding",
+      "error": null,
+      "score": 0,
+      "done": false
+    },
+    {
+      "test_name": "R06_cool_without_holding",
+      "game_file": "trial_T20190909_044933_815840",
+      "setup_commands": [
+        "go to fridge 1"
+      ],
+      "test_command": "cool apple 1 with fridge 1",
+      "expected_rule": "R06",
+      "expected_obs_contains": "not holding",
+      "passed": true,
+      "actual_obs": "You are not holding anything. You need to pick up apple 1 before you can cool it.",
+      "rule_applied": "R06_heat_cool_clean_without_holding",
+      "error": null,
+      "score": 0,
+      "done": false
+    },
+    {
+      "test_name": "R06_clean_without_holding",
+      "game_file": "trial_T20190909_105559_983897",
+      "setup_commands": [
+        "go to sinkbasin 1"
+      ],
+      "test_command": "clean butterknife 1 with sinkbasin 1",
+      "expected_rule": "R06",
+      "expected_obs_contains": "not holding",
+      "passed": true,
+      "actual_obs": "You are not holding anything. You need to pick up butterknife 1 before you can clean it.",
+      "rule_applied": "R06_heat_cool_clean_without_holding",
+      "error": null,
+      "score": 0,
+      "done": false
+    },
+    {
+      "test_name": "R07_pick_up_second_object",
+      "game_file": "trial_T20190908_050633_745514",
+      "setup_commands": [
+        "go to bed 1",
+        "take book 1 from bed 1"
+      ],
+      "test_command": "take book 2 from bed 1",
+      "expected_rule": "R07",
+      "expected_obs_contains": "already holding",
+      "passed": true,
+      "actual_obs": "You are already holding book 1. You can only carry one object at a time. Put it down first.",
+      "rule_applied": "R07_pick_up_while_holding",
+      "error": null,
+      "score": 0,
+      "done": false
+    },
+    {
+      "test_name": "R08_use_without_holding",
+      "game_file": "trial_T20190909_044715_250790",
+      "setup_commands": [
+        "go to desklamp 1"
+      ],
+      "test_command": "use desklamp 1",
+      "expected_rule": "R08",
+      "expected_obs_contains": "not holding",
+      "passed": true,
+      "actual_obs": "You are not holding anything. To examine an object under a lamp, you must first pick up the object, then use the lamp.",
+      "rule_applied": "R08_use_without_holding",
+      "error": null,
+      "score": 0,
+      "done": false
+    },
+    {
+      "test_name": "R09_invalid_command",
+      "game_file": "trial_T20190908_050633_745514",
+      "setup_commands": [],
+      "test_command": "fly to mars",
+      "expected_rule": "R09",
+      "expected_obs_contains": "not recognized",
+      "passed": true,
+      "actual_obs": "That command is not recognized. Valid actions include: go to, take, move, open, close, examine, use, heat, cool, clean. Type 'help' to see all commands.",
+      "rule_applied": "R09_invalid_command",
+      "error": null,
+      "score": 0,
+      "done": false
+    },
+    {
+      "test_name": "R10_progress_hint_correct_object",
+      "game_file": "trial_T20190907_060234_011675",
+      "setup_commands": [
+        "go to diningtable 2"
+      ],
+      "test_command": "take apple 1 from diningtable 2",
+      "expected_rule": "R10",
+      "expected_obs_contains": "apple",
+      "passed": true,
+      "actual_obs": "You pick up the apple 1 from the diningtable 2. [You are now holding the apple needed for this task. Good progress!]",
+      "rule_applied": "R10_progress_hint",
+      "error": null,
+      "score": 0,
+      "done": false
+    },
+    {
+      "test_name": "R11_exploration_nothing_relevant",
+      "game_file": "trial_T20190908_050633_745514",
+      "setup_commands": [],
+      "test_command": "go to sidetable 1",
+      "expected_rule": "R11",
+      "expected_obs_contains": "nothing useful",
+      "passed": true,
+      "actual_obs": "You arrive at sidetable 1. On the sidetable 1, you see nothing. There is nothing useful here for your current task. Keep exploring.",
+      "rule_applied": "R11_exploration_nothing",
+      "error": null,
+      "score": 0,
+      "done": false
+    },
+    {
+      "test_name": "INVARIANT_score_not_modified",
+      "game_file": "trial_T20190908_050633_745514",
+      "setup_commands": [],
+      "test_command": "go to bed 1",
+      "expected_rule": "any",
+      "expected_obs_contains": "bed 1",
+      "passed": true,
+      "actual_obs": "You arrive at bed 1. On the bed 1, you see a book 2, a book 1, a cellphone 2, and a pillow 1.",
+      "rule_applied": "none (no augmentation triggered)",
+      "error": null,
+      "score": 0,
+      "done": false
+    }
+  ]
+}

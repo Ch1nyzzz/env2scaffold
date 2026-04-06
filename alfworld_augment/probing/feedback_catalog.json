@@ -1,0 +1,5088 @@
+{
+  "meta": {
+    "total_games_probed": 12,
+    "total_steps": 540,
+    "total_error_probes": 7957,
+    "task_types_covered": [
+      "pick_and_place_simple",
+      "look_at_obj_in_light",
+      "pick_clean_then_place_in_recep",
+      "pick_heat_then_place_in_recep",
+      "pick_cool_then_place_in_recep",
+      "pick_two_obj_and_place"
+    ]
+  },
+  "feedback_patterns": [
+    {
+      "feedback_text": "Nothing happens.",
+      "feedback_template": "Nothing happens.",
+      "total_occurrences": 7957,
+      "distinct_causes": 15,
+      "causes": [
+        {
+          "cause": "completely_invalid_command",
+          "count": 2160,
+          "example_action": "fly to mars",
+          "example_context": "nonsensical action"
+        },
+        {
+          "cause": "put_while_empty_hands",
+          "count": 540,
+          "example_action": "put bed 1 in/on bed 1",
+          "example_context": "tried to put 'bed 1' while holding nothing"
+        },
+        {
+          "cause": "put_nonexistent_object",
+          "count": 540,
+          "example_action": "put knife 99 in/on bed 1",
+          "example_context": "tried to put a nonexistent object"
+        },
+        {
+          "cause": "open_nonexistent_container",
+          "count": 540,
+          "example_action": "open nonexistent 99",
+          "example_context": "tried to open a container that doesn't exist"
+        },
+        {
+          "cause": "take_nonexistent_object",
+          "count": 540,
+          "example_action": "take watermelon 1 from floor",
+          "example_context": "tried to take a completely nonexistent object"
+        },
+        {
+          "cause": "go_to_nonexistent_location",
+          "count": 540,
+          "example_action": "go to nonexistent 99",
+          "example_context": "tried to navigate to a location that doesn't exist"
+        },
+        {
+          "cause": "take_from_wrong_location",
+          "count": 540,
+          "example_action": "take bed 1 from sidetable 2",
+          "example_context": "tried to take 'bed 1' from 'sidetable 2' which probably doesn't have it"
+        },
+        {
+          "cause": "clean_without_holding",
+          "count": 540,
+          "example_action": "clean bed 1 with sinkbasin 1",
+          "example_context": "tried to clean an object without holding it"
+        },
+        {
+          "cause": "heat_without_holding",
+          "count": 540,
+          "example_action": "heat bed 1 with microwave 1",
+          "example_context": "tried to heat an object without holding it"
+        },
+        {
+          "cause": "use_nonexistent_lamp",
+          "count": 540,
+          "example_action": "use desklamp 99",
+          "example_context": "tried to use a desklamp that doesn't exist"
+        },
+        {
+          "cause": "cool_without_holding",
+          "count": 539,
+          "example_action": "cool bed 1 with fridge 1",
+          "example_context": "tried to cool an object without holding it"
+        },
+        {
+          "cause": "open_already_open",
+          "count": 129,
+          "example_action": "open drawer 1",
+          "example_context": "tried to open 'drawer 1' which is already open"
+        },
+        {
+          "cause": "take_from_closed_container",
+          "count": 116,
+          "example_action": "take drawer 1 from drawer 1",
+          "example_context": "tried to take from 'drawer 1' which is currently closed"
+        },
+        {
+          "cause": "close_already_closed",
+          "count": 116,
+          "example_action": "close drawer 1",
+          "example_context": "tried to close 'drawer 1' which is already closed"
+        },
+        {
+          "cause": "examine_without_lamp_on",
+          "count": 37,
+          "example_action": "examine dresser 1",
+          "example_context": "tried to examine object for look_at task without lamp turned on"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at sidetable 1. On the sidetable 1, you see nothing.",
+      "feedback_template": "You arrive at {sidetable} 1. On the {sidetable} 1, you see nothing.",
+      "total_occurrences": 11,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 11,
+          "example_action": "go to sidetable 1",
+          "example_context": "pick_and_place_simple"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at sidetable 2. On the sidetable 2, you see nothing.",
+      "feedback_template": "You arrive at {sidetable} 2. On the {sidetable} 2, you see nothing.",
+      "total_occurrences": 11,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 11,
+          "example_action": "go to sidetable 2",
+          "example_context": "pick_and_place_simple"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at drawer 1. The drawer 1 is closed.",
+      "feedback_template": "You arrive at {drawer} 1. The {drawer} 1 is closed.",
+      "total_occurrences": 8,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 8,
+          "example_action": "go to drawer 1",
+          "example_context": "pick_and_place_simple"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at drawer 2. The drawer 2 is closed.",
+      "feedback_template": "You arrive at {drawer} 2. The {drawer} 2 is closed.",
+      "total_occurrences": 8,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 8,
+          "example_action": "go to drawer 2",
+          "example_context": "pick_and_place_simple"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at bed 1. On the bed 1, you see a laptop 3, a laptop 2, a laptop 1, and a pillow 1.",
+      "feedback_template": "You arrive at {bed} 1. On the {bed} 1, you see a {laptop} 3, a {laptop} 2, a {laptop} 1, and a {pillow} 1.",
+      "total_occurrences": 8,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 8,
+          "example_action": "go to bed 1",
+          "example_context": "pick_two_obj_and_place"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at dresser 1. On the dresser 1, you see a cellphone 1, and a desklamp 1.",
+      "feedback_template": "You arrive at dresser 1. On the dresser 1, you see a {cellphone} 1, and a {desklamp} 1.",
+      "total_occurrences": 8,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 8,
+          "example_action": "go to dresser 1",
+          "example_context": "pick_two_obj_and_place"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at dresser 1. On the dresser 1, you see a television 1.",
+      "feedback_template": "You arrive at dresser 1. On the dresser 1, you see a television 1.",
+      "total_occurrences": 8,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 8,
+          "example_action": "go to dresser 1",
+          "example_context": "pick_two_obj_and_place"
+        }
+      ]
+    },
+    {
+      "feedback_text": "Available commands:\n  look:                             look around your current location\n  inventory:                        check your current inventory\n  go to (receptacle):               move to a receptacle\n  open (receptacle):                open a receptacle\n  close (receptacle):               close a receptacle\n  take (object) from (receptacle):  take an object from a receptacle\n  move (object) to (receptacle):  place an object in or on a receptacle\n  examine (something):              examine a receptacle or an object\n  use (object):                     use an object\n  heat (object) with (receptacle):  heat an object using a receptacle\n  clean (object) with (receptacle): clean an object using a receptacle\n  cool (object) with (receptacle):  cool an object using a receptacle\n  slice (object) with (object):     slice an object using a sharp object\n",
+      "feedback_template": "Available commands:\n  look:                             look around your current location\n  inventory:                        check your current inventory\n  go to (receptacle):               move to a receptacle\n  open (receptacle):                open a receptacle\n  close (receptacle):               close a receptacle\n  take (object) from (receptacle):  take an object from a receptacle\n  move (object) to (receptacle):  place an object in or on a receptacle\n  examine (something):              examine a receptacle or an object\n  use (object):                     use an object\n  heat (object) with (receptacle):  heat an object using a receptacle\n  clean (object) with (receptacle): clean an object using a receptacle\n  cool (object) with (receptacle):  cool an object using a receptacle\n  slice (object) with (object):     slice an object using a sharp object\n",
+      "total_occurrences": 7,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 7,
+          "example_action": "help",
+          "example_context": "pick_and_place_simple"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at drawer 3. The drawer 3 is closed.",
+      "feedback_template": "You arrive at {drawer} 3. The {drawer} 3 is closed.",
+      "total_occurrences": 7,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 7,
+          "example_action": "go to drawer 3",
+          "example_context": "pick_and_place_simple"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at armchair 1. On the armchair 1, you see a creditcard 1.",
+      "feedback_template": "You arrive at {armchair} 1. On the {armchair} 1, you see a {creditcard} 1.",
+      "total_occurrences": 7,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 7,
+          "example_action": "go to armchair 1",
+          "example_context": "pick_two_obj_and_place"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at cabinet 6. The cabinet 6 is closed.",
+      "feedback_template": "You arrive at {cabinet} 6. The {cabinet} 6 is closed.",
+      "total_occurrences": 6,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 6,
+          "example_action": "go to cabinet 6",
+          "example_context": "pick_and_place_simple"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at cabinet 8. The cabinet 8 is closed.",
+      "feedback_template": "You arrive at {cabinet} 8. The {cabinet} 8 is closed.",
+      "total_occurrences": 6,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 6,
+          "example_action": "go to cabinet 8",
+          "example_context": "pick_and_place_simple"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at fridge 1. The fridge 1 is closed.",
+      "feedback_template": "You arrive at {fridge} 1. The {fridge} 1 is closed.",
+      "total_occurrences": 6,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 6,
+          "example_action": "go to fridge 1",
+          "example_context": "pick_and_place_simple"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at garbagecan 1. On the garbagecan 1, you see nothing.",
+      "feedback_template": "You arrive at {garbagecan} 1. On the {garbagecan} 1, you see nothing.",
+      "total_occurrences": 5,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 5,
+          "example_action": "go to garbagecan 1",
+          "example_context": "pick_and_place_simple"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at cabinet 10. The cabinet 10 is closed.",
+      "feedback_template": "You arrive at {cabinet} 10. The {cabinet} 10 is closed.",
+      "total_occurrences": 5,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 5,
+          "example_action": "go to cabinet 10",
+          "example_context": "pick_and_place_simple"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the cabinet 10. The cabinet 10 is open. In it, you see nothing.",
+      "feedback_template": "You open the {cabinet} 10. The {cabinet} 10 is open. In it, you see nothing.",
+      "total_occurrences": 5,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 5,
+          "example_action": "open cabinet 10",
+          "example_context": "pick_and_place_simple"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at cabinet 2. The cabinet 2 is closed.",
+      "feedback_template": "You arrive at {cabinet} 2. The {cabinet} 2 is closed.",
+      "total_occurrences": 5,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 5,
+          "example_action": "go to cabinet 2",
+          "example_context": "pick_and_place_simple"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at cabinet 5. The cabinet 5 is closed.",
+      "feedback_template": "You arrive at {cabinet} 5. The {cabinet} 5 is closed.",
+      "total_occurrences": 5,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 5,
+          "example_action": "go to cabinet 5",
+          "example_context": "pick_and_place_simple"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at coffeemachine 1. On the coffeemachine 1, you see nothing.",
+      "feedback_template": "You arrive at {coffeemachine} 1. On the {coffeemachine} 1, you see nothing.",
+      "total_occurrences": 5,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 5,
+          "example_action": "go to coffeemachine 1",
+          "example_context": "pick_and_place_simple"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at drawer 4. The drawer 4 is closed.",
+      "feedback_template": "You arrive at {drawer} 4. The {drawer} 4 is closed.",
+      "total_occurrences": 5,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 5,
+          "example_action": "go to drawer 4",
+          "example_context": "pick_and_place_simple"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the drawer 1. The drawer 1 is open. In it, you see nothing.",
+      "feedback_template": "You open the {drawer} 1. The {drawer} 1 is open. In it, you see nothing.",
+      "total_occurrences": 5,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 5,
+          "example_action": "open drawer 1",
+          "example_context": "pick_clean_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at cabinet 1. The cabinet 1 is closed.",
+      "feedback_template": "You arrive at {cabinet} 1. The {cabinet} 1 is closed.",
+      "total_occurrences": 4,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 4,
+          "example_action": "go to cabinet 1",
+          "example_context": "pick_and_place_simple"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at cabinet 13. The cabinet 13 is closed.",
+      "feedback_template": "You arrive at {cabinet} 13. The {cabinet} 13 is closed.",
+      "total_occurrences": 4,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 4,
+          "example_action": "go to cabinet 13",
+          "example_context": "pick_and_place_simple"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the cabinet 2. The cabinet 2 is open. In it, you see nothing.",
+      "feedback_template": "You open the {cabinet} 2. The {cabinet} 2 is open. In it, you see nothing.",
+      "total_occurrences": 4,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 4,
+          "example_action": "open cabinet 2",
+          "example_context": "pick_and_place_simple"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at cabinet 3. The cabinet 3 is closed.",
+      "feedback_template": "You arrive at {cabinet} 3. The {cabinet} 3 is closed.",
+      "total_occurrences": 4,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 4,
+          "example_action": "go to cabinet 3",
+          "example_context": "pick_and_place_simple"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at cabinet 4. The cabinet 4 is closed.",
+      "feedback_template": "You arrive at {cabinet} 4. The {cabinet} 4 is closed.",
+      "total_occurrences": 4,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 4,
+          "example_action": "go to cabinet 4",
+          "example_context": "pick_and_place_simple"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the cabinet 5. The cabinet 5 is open. In it, you see nothing.",
+      "feedback_template": "You open the {cabinet} 5. The {cabinet} 5 is open. In it, you see nothing.",
+      "total_occurrences": 4,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 4,
+          "example_action": "open cabinet 5",
+          "example_context": "pick_and_place_simple"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at cabinet 7. The cabinet 7 is closed.",
+      "feedback_template": "You arrive at {cabinet} 7. The {cabinet} 7 is closed.",
+      "total_occurrences": 4,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 4,
+          "example_action": "go to cabinet 7",
+          "example_context": "pick_and_place_simple"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at cabinet 9. The cabinet 9 is closed.",
+      "feedback_template": "You arrive at {cabinet} 9. The {cabinet} 9 is closed.",
+      "total_occurrences": 4,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 4,
+          "example_action": "go to cabinet 9",
+          "example_context": "pick_and_place_simple"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at microwave 1. The microwave 1 is closed.",
+      "feedback_template": "You arrive at {microwave} 1. The {microwave} 1 is closed.",
+      "total_occurrences": 4,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 4,
+          "example_action": "go to microwave 1",
+          "example_context": "pick_clean_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the cabinet 12. The cabinet 12 is open. In it, you see nothing.",
+      "feedback_template": "You open the {cabinet} 12. The {cabinet} 12 is open. In it, you see nothing.",
+      "total_occurrences": 3,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 3,
+          "example_action": "open cabinet 12",
+          "example_context": "pick_and_place_simple"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at cabinet 11. The cabinet 11 is closed.",
+      "feedback_template": "You arrive at {cabinet} 11. The {cabinet} 11 is closed.",
+      "total_occurrences": 3,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 3,
+          "example_action": "go to cabinet 11",
+          "example_context": "pick_and_place_simple"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the cabinet 11. The cabinet 11 is open. In it, you see nothing.",
+      "feedback_template": "You open the {cabinet} 11. The {cabinet} 11 is open. In it, you see nothing.",
+      "total_occurrences": 3,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 3,
+          "example_action": "open cabinet 11",
+          "example_context": "pick_and_place_simple"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the cabinet 13. The cabinet 13 is open. In it, you see nothing.",
+      "feedback_template": "You open the {cabinet} 13. The {cabinet} 13 is open. In it, you see nothing.",
+      "total_occurrences": 3,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 3,
+          "example_action": "open cabinet 13",
+          "example_context": "pick_and_place_simple"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the cabinet 6. The cabinet 6 is open. In it, you see nothing.",
+      "feedback_template": "You open the {cabinet} 6. The {cabinet} 6 is open. In it, you see nothing.",
+      "total_occurrences": 3,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 3,
+          "example_action": "open cabinet 6",
+          "example_context": "pick_and_place_simple"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at drawer 5. The drawer 5 is closed.",
+      "feedback_template": "You arrive at {drawer} 5. The {drawer} 5 is closed.",
+      "total_occurrences": 3,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 3,
+          "example_action": "go to drawer 5",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at cabinet 15. The cabinet 15 is closed.",
+      "feedback_template": "You arrive at {cabinet} 15. The {cabinet} 15 is closed.",
+      "total_occurrences": 3,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 3,
+          "example_action": "go to cabinet 15",
+          "example_context": "pick_clean_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at cabinet 17. The cabinet 17 is closed.",
+      "feedback_template": "You arrive at {cabinet} 17. The {cabinet} 17 is closed.",
+      "total_occurrences": 3,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 3,
+          "example_action": "go to cabinet 17",
+          "example_context": "pick_clean_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at cabinet 4. On the cabinet 4, you see nothing.",
+      "feedback_template": "You arrive at {cabinet} 4. On the {cabinet} 4, you see nothing.",
+      "total_occurrences": 3,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 3,
+          "example_action": "go to cabinet 4",
+          "example_context": "pick_clean_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at toaster 1. On the toaster 1, you see nothing.",
+      "feedback_template": "You arrive at toaster 1. On the toaster 1, you see nothing.",
+      "total_occurrences": 3,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 3,
+          "example_action": "go to toaster 1",
+          "example_context": "pick_clean_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at cabinet 12. The cabinet 12 is open. In it, you see nothing.",
+      "feedback_template": "You arrive at {cabinet} 12. The {cabinet} 12 is open. In it, you see nothing.",
+      "total_occurrences": 2,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 2,
+          "example_action": "go to cabinet 12",
+          "example_context": "pick_and_place_simple"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the cabinet 3. The cabinet 3 is open. In it, you see nothing.",
+      "feedback_template": "You open the {cabinet} 3. The {cabinet} 3 is open. In it, you see nothing.",
+      "total_occurrences": 2,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 2,
+          "example_action": "open cabinet 3",
+          "example_context": "pick_and_place_simple"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the cabinet 7. The cabinet 7 is open. In it, you see nothing.",
+      "feedback_template": "You open the {cabinet} 7. The {cabinet} 7 is open. In it, you see nothing.",
+      "total_occurrences": 2,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 2,
+          "example_action": "open cabinet 7",
+          "example_context": "pick_and_place_simple"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at bed 1. On the bed 1, you see nothing.",
+      "feedback_template": "You arrive at {bed} 1. On the {bed} 1, you see nothing.",
+      "total_occurrences": 2,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 2,
+          "example_action": "go to bed 1",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the drawer 2. The drawer 2 is open. In it, you see nothing.",
+      "feedback_template": "You open the {drawer} 2. The {drawer} 2 is open. In it, you see nothing.",
+      "total_occurrences": 2,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 2,
+          "example_action": "open drawer 2",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the drawer 4. The drawer 4 is open. In it, you see nothing.",
+      "feedback_template": "You open the {drawer} 4. The {drawer} 4 is open. In it, you see nothing.",
+      "total_occurrences": 2,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 2,
+          "example_action": "open drawer 4",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at drawer 1. On the drawer 1, you see nothing.",
+      "feedback_template": "You arrive at {drawer} 1. On the {drawer} 1, you see nothing.",
+      "total_occurrences": 2,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 2,
+          "example_action": "go to drawer 1",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the drawer 3. The drawer 3 is open. In it, you see nothing.",
+      "feedback_template": "You open the {drawer} 3. The {drawer} 3 is open. In it, you see nothing.",
+      "total_occurrences": 2,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 2,
+          "example_action": "open drawer 3",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "There's nothing special about cellphone 1.",
+      "feedback_template": "There's nothing special about {cellphone} 1.",
+      "total_occurrences": 2,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 2,
+          "example_action": "examine cellphone 1",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at cabinet 14. The cabinet 14 is closed.",
+      "feedback_template": "You arrive at {cabinet} 14. The {cabinet} 14 is closed.",
+      "total_occurrences": 2,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 2,
+          "example_action": "go to cabinet 14",
+          "example_context": "pick_clean_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the cabinet 15. The cabinet 15 is open. In it, you see nothing.",
+      "feedback_template": "You open the {cabinet} 15. The {cabinet} 15 is open. In it, you see nothing.",
+      "total_occurrences": 2,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 2,
+          "example_action": "open cabinet 15",
+          "example_context": "pick_clean_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at cabinet 18. The cabinet 18 is closed.",
+      "feedback_template": "You arrive at {cabinet} 18. The {cabinet} 18 is closed.",
+      "total_occurrences": 2,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 2,
+          "example_action": "go to cabinet 18",
+          "example_context": "pick_clean_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the cabinet 18. The cabinet 18 is open. In it, you see nothing.",
+      "feedback_template": "You open the {cabinet} 18. The {cabinet} 18 is open. In it, you see nothing.",
+      "total_occurrences": 2,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 2,
+          "example_action": "open cabinet 18",
+          "example_context": "pick_clean_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the cabinet 9. The cabinet 9 is open. In it, you see nothing.",
+      "feedback_template": "You open the {cabinet} 9. The {cabinet} 9 is open. In it, you see nothing.",
+      "total_occurrences": 2,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 2,
+          "example_action": "open cabinet 9",
+          "example_context": "pick_clean_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You pick up the bread 1 from the countertop 1.",
+      "feedback_template": "You pick up the {bread} 1 from the {countertop} 1.",
+      "total_occurrences": 2,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 2,
+          "example_action": "take bread 1 from countertop 1",
+          "example_context": "pick_clean_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at cabinet 11. On the cabinet 11, you see nothing.",
+      "feedback_template": "You arrive at {cabinet} 11. On the {cabinet} 11, you see nothing.",
+      "total_occurrences": 2,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 2,
+          "example_action": "go to cabinet 11",
+          "example_context": "pick_clean_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the microwave 1. The microwave 1 is open. In it, you see a apple 1.",
+      "feedback_template": "You open the {microwave} 1. The {microwave} 1 is open. In it, you see a {apple} 1.",
+      "total_occurrences": 2,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 2,
+          "example_action": "open microwave 1",
+          "example_context": "pick_clean_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at stoveburner 4. On the stoveburner 4, you see a pan 1.",
+      "feedback_template": "You arrive at {stoveburner} 4. On the {stoveburner} 4, you see a {pan} 1.",
+      "total_occurrences": 2,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 2,
+          "example_action": "go to stoveburner 4",
+          "example_context": "pick_clean_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at diningtable 1. On the diningtable 1, you see a bread 2, a bread 1, a butterknife 2, a dishsponge 1, a fork 1, a potato 1, and a spatula 1.",
+      "feedback_template": "You arrive at {diningtable} 1. On the {diningtable} 1, you see a {bread} 2, a {bread} 1, a {butterknife} 2, a {dishsponge} 1, a {fork} 1, a {potato} 1, and a {spatula} 1.",
+      "total_occurrences": 2,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 2,
+          "example_action": "go to diningtable 1",
+          "example_context": "pick_heat_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at cabinet 1. On the cabinet 1, you see nothing.",
+      "feedback_template": "You arrive at {cabinet} 1. On the {cabinet} 1, you see nothing.",
+      "total_occurrences": 2,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 2,
+          "example_action": "go to cabinet 1",
+          "example_context": "pick_heat_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at cabinet 3. On the cabinet 3, you see nothing.",
+      "feedback_template": "You arrive at {cabinet} 3. On the {cabinet} 3, you see nothing.",
+      "total_occurrences": 2,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 2,
+          "example_action": "go to cabinet 3",
+          "example_context": "pick_heat_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at cabinet 7. On the cabinet 7, you see nothing.",
+      "feedback_template": "You arrive at {cabinet} 7. On the {cabinet} 7, you see nothing.",
+      "total_occurrences": 2,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 2,
+          "example_action": "go to cabinet 7",
+          "example_context": "pick_heat_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at stoveburner 1. On the stoveburner 1, you see nothing.",
+      "feedback_template": "You arrive at {stoveburner} 1. On the {stoveburner} 1, you see nothing.",
+      "total_occurrences": 2,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 2,
+          "example_action": "go to stoveburner 1",
+          "example_context": "pick_heat_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "On the toaster 1, you see nothing.",
+      "feedback_template": "On the toaster 1, you see nothing.",
+      "total_occurrences": 2,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 2,
+          "example_action": "examine toaster 1",
+          "example_context": "pick_heat_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You are facing the toaster 1. Next to it, you see nothing.",
+      "feedback_template": "You are facing the toaster 1. Next to it, you see nothing.",
+      "total_occurrences": 2,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 2,
+          "example_action": "look",
+          "example_context": "pick_heat_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at cabinet 20. The cabinet 20 is closed.",
+      "feedback_template": "You arrive at {cabinet} 20. The {cabinet} 20 is closed.",
+      "total_occurrences": 2,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 2,
+          "example_action": "go to cabinet 20",
+          "example_context": "pick_heat_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the cabinet 20. The cabinet 20 is open. In it, you see nothing.",
+      "feedback_template": "You open the {cabinet} 20. The {cabinet} 20 is open. In it, you see nothing.",
+      "total_occurrences": 2,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 2,
+          "example_action": "open cabinet 20",
+          "example_context": "pick_heat_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the cabinet 4. The cabinet 4 is open. In it, you see nothing.",
+      "feedback_template": "You open the {cabinet} 4. The {cabinet} 4 is open. In it, you see nothing.",
+      "total_occurrences": 2,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 2,
+          "example_action": "open cabinet 4",
+          "example_context": "pick_heat_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at countertop 1. On the countertop 1, you see a bread 2, a butterknife 2, a fork 2, a fork 1, a knife 3, a knife 1, a lettuce 2, a potato 1, a saltshaker 3, a soapbottle 3, a tomato 3, a tomato 2, and a tomato 1.",
+      "feedback_template": "You arrive at {countertop} 1. On the {countertop} 1, you see a {bread} 2, a {butterknife} 2, a {fork} 2, a {fork} 1, a {knife} 3, a {knife} 1, a {lettuce} 2, a {potato} 1, a saltshaker 3, a {soapbottle} 3, a {tomato} 3, a {tomato} 2, and a {tomato} 1.",
+      "total_occurrences": 2,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 2,
+          "example_action": "go to countertop 1",
+          "example_context": "pick_cool_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You pick up the cd 3 from the dresser 1.",
+      "feedback_template": "You pick up the {cd} 3 from the dresser 1.",
+      "total_occurrences": 2,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 2,
+          "example_action": "take cd 3 from dresser 1",
+          "example_context": "pick_two_obj_and_place"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You pick up the cd 2 from the drawer 4.",
+      "feedback_template": "You pick up the {cd} 2 from the {drawer} 4.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "take cd 2 from drawer 4",
+          "example_context": "pick_and_place_simple"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at bed 1. On the bed 1, you see a book 2, a book 1, a cellphone 2, and a pillow 1.",
+      "feedback_template": "You arrive at {bed} 1. On the {bed} 1, you see a {book} 2, a {book} 1, a {cellphone} 2, and a {pillow} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to bed 1",
+          "example_context": "pick_and_place_simple"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at diningtable 1. On the diningtable 1, you see a alarmclock 1, a book 3, a cd 3, a cd 1, a creditcard 2, a keychain 3, a keychain 1, a laptop 1, a mug 3, a mug 2, a mug 1, a pen 1, and a pencil 1.",
+      "feedback_template": "You arrive at {diningtable} 1. On the {diningtable} 1, you see a {alarmclock} 1, a {book} 3, a {cd} 3, a {cd} 1, a {creditcard} 2, a {keychain} 3, a {keychain} 1, a {laptop} 1, a {mug} 3, a {mug} 2, a {mug} 1, a {pen} 1, and a {pencil} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to diningtable 1",
+          "example_context": "pick_and_place_simple"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the drawer 1. The drawer 1 is open. In it, you see a cellphone 1.",
+      "feedback_template": "You open the {drawer} 1. The {drawer} 1 is open. In it, you see a {cellphone} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "open drawer 1",
+          "example_context": "pick_and_place_simple"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the drawer 2. The drawer 2 is open. In it, you see a creditcard 1.",
+      "feedback_template": "You open the {drawer} 2. The {drawer} 2 is open. In it, you see a {creditcard} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "open drawer 2",
+          "example_context": "pick_and_place_simple"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at drawer 3. On the drawer 3, you see a keychain 2.",
+      "feedback_template": "You arrive at {drawer} 3. On the {drawer} 3, you see a {keychain} 2.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to drawer 3",
+          "example_context": "pick_and_place_simple"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at drawer 4. On the drawer 4, you see nothing.",
+      "feedback_template": "You arrive at {drawer} 4. On the {drawer} 4, you see nothing.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to drawer 4",
+          "example_context": "pick_and_place_simple"
+        }
+      ]
+    },
+    {
+      "feedback_text": "There's nothing special about cd 2.",
+      "feedback_template": "There's nothing special about {cd} 2.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "examine cd 2",
+          "example_context": "pick_and_place_simple"
+        }
+      ]
+    },
+    {
+      "feedback_text": "On the garbagecan 1, you see nothing.",
+      "feedback_template": "On the {garbagecan} 1, you see nothing.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "examine garbagecan 1",
+          "example_context": "pick_and_place_simple"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You are carrying: a cd 2.",
+      "feedback_template": "You are carrying: a {cd} 2.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "inventory",
+          "example_context": "pick_and_place_simple"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You are facing the garbagecan 1. Next to it, you see nothing.",
+      "feedback_template": "You are facing the {garbagecan} 1. Next to it, you see nothing.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "look",
+          "example_context": "pick_and_place_simple"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You move the cd 2 to the garbagecan 1.",
+      "feedback_template": "You move the {cd} 2 to the {garbagecan} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "move cd 2 to garbagecan 1",
+          "example_context": "pick_and_place_simple"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You pick up the cd 2 from the garbagecan 1.",
+      "feedback_template": "You pick up the {cd} 2 from the {garbagecan} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "take cd 2 from garbagecan 1",
+          "example_context": "pick_and_place_simple"
+        }
+      ]
+    },
+    {
+      "feedback_text": "On the sidetable 1, you see nothing.",
+      "feedback_template": "On the {sidetable} 1, you see nothing.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "examine sidetable 1",
+          "example_context": "pick_and_place_simple"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You move the cd 2 to the sidetable 1.",
+      "feedback_template": "You move the {cd} 2 to the {sidetable} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "move cd 2 to sidetable 1",
+          "example_context": "pick_and_place_simple"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You pick up the cd 2 from the sidetable 1.",
+      "feedback_template": "You pick up the {cd} 2 from the {sidetable} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "take cd 2 from sidetable 1",
+          "example_context": "pick_and_place_simple"
+        }
+      ]
+    },
+    {
+      "feedback_text": "On the drawer 4, you see nothing.",
+      "feedback_template": "On the {drawer} 4, you see nothing.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "examine drawer 4",
+          "example_context": "pick_and_place_simple"
+        }
+      ]
+    },
+    {
+      "feedback_text": "On the sidetable 2, you see nothing.",
+      "feedback_template": "On the {sidetable} 2, you see nothing.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "examine sidetable 2",
+          "example_context": "pick_and_place_simple"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You move the cd 2 to the drawer 4.",
+      "feedback_template": "You move the {cd} 2 to the {drawer} 4.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "move cd 2 to drawer 4",
+          "example_context": "pick_and_place_simple"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at shelf 1. On the shelf 1, you see a soapbottle 1, and a vase 1.",
+      "feedback_template": "You arrive at {shelf} 1. On the {shelf} 1, you see a {soapbottle} 1, and a {vase} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to shelf 1",
+          "example_context": "pick_and_place_simple"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at shelf 2. On the shelf 2, you see a statue 2, and a statue 1.",
+      "feedback_template": "You arrive at {shelf} 2. On the {shelf} 2, you see a {statue} 2, and a {statue} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to shelf 2",
+          "example_context": "pick_and_place_simple"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at shelf 3. On the shelf 3, you see nothing.",
+      "feedback_template": "You arrive at {shelf} 3. On the {shelf} 3, you see nothing.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to shelf 3",
+          "example_context": "pick_and_place_simple"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the cabinet 1. The cabinet 1 is open. In it, you see a vase 2.",
+      "feedback_template": "You open the {cabinet} 1. The {cabinet} 1 is open. In it, you see a {vase} 2.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "open cabinet 1",
+          "example_context": "pick_and_place_simple"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You pick up the vase 2 from the cabinet 1.",
+      "feedback_template": "You pick up the {vase} 2 from the {cabinet} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "take vase 2 from cabinet 1",
+          "example_context": "pick_and_place_simple"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the cabinet 4. The cabinet 4 is open. In it, you see a mug 2.",
+      "feedback_template": "You open the {cabinet} 4. The {cabinet} 4 is open. In it, you see a {mug} 2.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "open cabinet 4",
+          "example_context": "pick_and_place_simple"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the cabinet 8. The cabinet 8 is open. In it, you see nothing.",
+      "feedback_template": "You open the {cabinet} 8. The {cabinet} 8 is open. In it, you see nothing.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "open cabinet 8",
+          "example_context": "pick_and_place_simple"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the cabinet 9. The cabinet 9 is open. In it, you see a saltshaker 3.",
+      "feedback_template": "You open the {cabinet} 9. The {cabinet} 9 is open. In it, you see a saltshaker 3.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "open cabinet 9",
+          "example_context": "pick_and_place_simple"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at countertop 1. On the countertop 1, you see a tomato 1.",
+      "feedback_template": "You arrive at {countertop} 1. On the {countertop} 1, you see a {tomato} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to countertop 1",
+          "example_context": "pick_and_place_simple"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at countertop 2. On the countertop 2, you see a apple 2, a bowl 1, a knife 2, a plate 1, a pot 3, a sink 1, a spatula 3, and a vase 3.",
+      "feedback_template": "You arrive at {countertop} 2. On the {countertop} 2, you see a {apple} 2, a {bowl} 1, a {knife} 2, a {plate} 1, a pot 3, a sink 1, a {spatula} 3, and a {vase} 3.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to countertop 2",
+          "example_context": "pick_and_place_simple"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at diningtable 1. On the diningtable 1, you see a apple 1, a book 1, a bread 2, a bread 1, a butterknife 1, a dishsponge 3, a dishsponge 2, a fork 2, a houseplant 1, a kettle 1, a knife 1, a saltshaker 2, a spatula 1, a tomato 2, and a winebottle 1.",
+      "feedback_template": "You arrive at {diningtable} 1. On the {diningtable} 1, you see a {apple} 1, a {book} 1, a {bread} 2, a {bread} 1, a {butterknife} 1, a {dishsponge} 3, a {dishsponge} 2, a {fork} 2, a houseplant 1, a {kettle} 1, a {knife} 1, a saltshaker 2, a {spatula} 1, a {tomato} 2, and a {winebottle} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to diningtable 1",
+          "example_context": "pick_and_place_simple"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the drawer 1. The drawer 1 is open. In it, you see a peppershaker 1, and a spoon 1.",
+      "feedback_template": "You open the {drawer} 1. The {drawer} 1 is open. In it, you see a peppershaker 1, and a {spoon} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "open drawer 1",
+          "example_context": "pick_and_place_simple"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the drawer 2. The drawer 2 is open. In it, you see a saltshaker 1.",
+      "feedback_template": "You open the {drawer} 2. The {drawer} 2 is open. In it, you see a saltshaker 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "open drawer 2",
+          "example_context": "pick_and_place_simple"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the drawer 3. The drawer 3 is open. In it, you see a fork 3, and a spatula 2.",
+      "feedback_template": "You open the {drawer} 3. The {drawer} 3 is open. In it, you see a {fork} 3, and a {spatula} 2.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "open drawer 3",
+          "example_context": "pick_and_place_simple"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the drawer 4. The drawer 4 is open. In it, you see a book 2.",
+      "feedback_template": "You open the {drawer} 4. The {drawer} 4 is open. In it, you see a {book} 2.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "open drawer 4",
+          "example_context": "pick_and_place_simple"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the fridge 1. The fridge 1 is open. In it, you see a cup 1, a egg 2, a egg 1, a lettuce 1, a plate 3, a potato 1, and a tomato 3.",
+      "feedback_template": "You open the {fridge} 1. The {fridge} 1 is open. In it, you see a {cup} 1, a {egg} 2, a {egg} 1, a {lettuce} 1, a {plate} 3, a {potato} 1, and a {tomato} 3.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "open fridge 1",
+          "example_context": "pick_and_place_simple"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at garbagecan 1. On the garbagecan 1, you see a potato 3.",
+      "feedback_template": "You arrive at {garbagecan} 1. On the {garbagecan} 1, you see a {potato} 3.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to garbagecan 1",
+          "example_context": "pick_and_place_simple"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at bed 2. On the bed 2, you see a laptop 2, a laptop 1, a pillow 2, a pillow 1, and a teddybear 1.",
+      "feedback_template": "You arrive at {bed} 2. On the {bed} 2, you see a {laptop} 2, a {laptop} 1, a {pillow} 2, a {pillow} 1, and a teddybear 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to bed 2",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You pick up the laptop 1 from the bed 2.",
+      "feedback_template": "You pick up the {laptop} 1 from the {bed} 2.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "take laptop 1 from bed 2",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at desk 1. On the desk 1, you see a alarmclock 2, a book 1, a bowl 1, a cd 2, a desklamp 1, a mug 2, a mug 1, a pen 2, and a pen 1.",
+      "feedback_template": "You arrive at {desk} 1. On the {desk} 1, you see a {alarmclock} 2, a {book} 1, a {bowl} 1, a {cd} 2, a {desklamp} 1, a {mug} 2, a {mug} 1, a {pen} 2, and a {pen} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to desk 1",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the drawer 1. The drawer 1 is open. In it, you see a creditcard 1.",
+      "feedback_template": "You open the {drawer} 1. The {drawer} 1 is open. In it, you see a {creditcard} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "open drawer 1",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at drawer 10. The drawer 10 is closed.",
+      "feedback_template": "You arrive at {drawer} 10. The {drawer} 10 is closed.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to drawer 10",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the drawer 10. The drawer 10 is open. In it, you see a keychain 2.",
+      "feedback_template": "You open the {drawer} 10. The {drawer} 10 is open. In it, you see a {keychain} 2.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "open drawer 10",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at drawer 11. The drawer 11 is closed.",
+      "feedback_template": "You arrive at {drawer} 11. The {drawer} 11 is closed.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to drawer 11",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the drawer 11. The drawer 11 is open. In it, you see nothing.",
+      "feedback_template": "You open the {drawer} 11. The {drawer} 11 is open. In it, you see nothing.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "open drawer 11",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the drawer 3. The drawer 3 is open. In it, you see a cd 1, and a creditcard 2.",
+      "feedback_template": "You open the {drawer} 3. The {drawer} 3 is open. In it, you see a {cd} 1, and a {creditcard} 2.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "open drawer 3",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the drawer 5. The drawer 5 is open. In it, you see nothing.",
+      "feedback_template": "You open the {drawer} 5. The {drawer} 5 is open. In it, you see nothing.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "open drawer 5",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at drawer 6. The drawer 6 is closed.",
+      "feedback_template": "You arrive at {drawer} 6. The {drawer} 6 is closed.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to drawer 6",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the drawer 6. The drawer 6 is open. In it, you see a cellphone 1.",
+      "feedback_template": "You open the {drawer} 6. The {drawer} 6 is open. In it, you see a {cellphone} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "open drawer 6",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the drawer 7. The drawer 7 is open. In it, you see a creditcard 3.",
+      "feedback_template": "You open the {drawer} 7. The {drawer} 7 is open. In it, you see a {creditcard} 3.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "open drawer 7",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at drawer 8. The drawer 8 is closed.",
+      "feedback_template": "You arrive at {drawer} 8. The {drawer} 8 is closed.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to drawer 8",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the drawer 8. The drawer 8 is open. In it, you see nothing.",
+      "feedback_template": "You open the {drawer} 8. The {drawer} 8 is open. In it, you see nothing.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "open drawer 8",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at drawer 7. The drawer 7 is open. In it, you see a creditcard 3.",
+      "feedback_template": "You arrive at {drawer} 7. The {drawer} 7 is open. In it, you see a {creditcard} 3.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to drawer 7",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at drawer 9. The drawer 9 is closed.",
+      "feedback_template": "You arrive at {drawer} 9. The {drawer} 9 is closed.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to drawer 9",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the drawer 9. The drawer 9 is open. In it, you see nothing.",
+      "feedback_template": "You open the {drawer} 9. The {drawer} 9 is open. In it, you see nothing.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "open drawer 9",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at dresser 1. On the dresser 1, you see a alarmclock 1, a keychain 1, and a pencil 1.",
+      "feedback_template": "You arrive at dresser 1. On the dresser 1, you see a {alarmclock} 1, a {keychain} 1, and a {pencil} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to dresser 1",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at garbagecan 1. On the garbagecan 1, you see a pencil 2.",
+      "feedback_template": "You arrive at {garbagecan} 1. On the {garbagecan} 1, you see a {pencil} 2.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to garbagecan 1",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at safe 1. The safe 1 is closed.",
+      "feedback_template": "You arrive at {safe} 1. The {safe} 1 is closed.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to safe 1",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the safe 1. The safe 1 is open. In it, you see a keychain 1.",
+      "feedback_template": "You open the {safe} 1. The {safe} 1 is open. In it, you see a {keychain} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "open safe 1",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at sidetable 1. On the sidetable 1, you see a alarmclock 3, a cd 3, a cellphone 2, and a pen 3.",
+      "feedback_template": "You arrive at {sidetable} 1. On the {sidetable} 1, you see a {alarmclock} 3, a {cd} 3, a {cellphone} 2, and a {pen} 3.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to sidetable 1",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at sidetable 2. On the sidetable 2, you see a desklamp 2, and a mug 3.",
+      "feedback_template": "You arrive at {sidetable} 2. On the {sidetable} 2, you see a {desklamp} 2, and a {mug} 3.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to sidetable 2",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "There's nothing special about laptop 1.",
+      "feedback_template": "There's nothing special about {laptop} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "examine laptop 1",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "On the sidetable 2, you see a desklamp 2, and a mug 3.",
+      "feedback_template": "On the {sidetable} 2, you see a {desklamp} 2, and a {mug} 3.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "examine sidetable 2",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You are carrying: a laptop 1.",
+      "feedback_template": "You are carrying: a {laptop} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "inventory",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You are facing the sidetable 2. Next to it, you see nothing.",
+      "feedback_template": "You are facing the {sidetable} 2. Next to it, you see nothing.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "look",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You move the laptop 1 to the sidetable 2.",
+      "feedback_template": "You move the {laptop} 1 to the {sidetable} 2.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "move laptop 1 to sidetable 2",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You pick up the laptop 1 from the sidetable 2.",
+      "feedback_template": "You pick up the {laptop} 1 from the {sidetable} 2.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "take laptop 1 from sidetable 2",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You turn on the desklamp 2.",
+      "feedback_template": "You turn on the {desklamp} 2.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "use desklamp 2",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "On the bed 1, you see nothing.",
+      "feedback_template": "On the {bed} 1, you see nothing.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "examine bed 1",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You move the laptop 1 to the bed 1.",
+      "feedback_template": "You move the {laptop} 1 to the {bed} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "move laptop 1 to bed 1",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You pick up the laptop 1 from the bed 1.",
+      "feedback_template": "You pick up the {laptop} 1 from the {bed} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "take laptop 1 from bed 1",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at bed 2. On the bed 2, you see a laptop 2, a pillow 2, a pillow 1, and a teddybear 1.",
+      "feedback_template": "You arrive at {bed} 2. On the {bed} 2, you see a {laptop} 2, a {pillow} 2, a {pillow} 1, and a teddybear 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to bed 2",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at bed 1. On the bed 1, you see a cellphone 3, a cellphone 2, a cellphone 1, a pillow 2, and a pillow 1.",
+      "feedback_template": "You arrive at {bed} 1. On the {bed} 1, you see a {cellphone} 3, a {cellphone} 2, a {cellphone} 1, a {pillow} 2, and a {pillow} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to bed 1",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You pick up the cellphone 1 from the bed 1.",
+      "feedback_template": "You pick up the {cellphone} 1 from the {bed} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "take cellphone 1 from bed 1",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at desk 1. On the desk 1, you see a desklamp 1, a laptop 1, a mug 3, a pencil 2, and a vase 4.",
+      "feedback_template": "You arrive at {desk} 1. On the {desk} 1, you see a {desklamp} 1, a {laptop} 1, a {mug} 3, a {pencil} 2, and a {vase} 4.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to desk 1",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at drawer 2. On the drawer 2, you see a creditcard 1.",
+      "feedback_template": "You arrive at {drawer} 2. On the {drawer} 2, you see a {creditcard} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to drawer 2",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the drawer 5. The drawer 5 is open. In it, you see a creditcard 3.",
+      "feedback_template": "You open the {drawer} 5. The {drawer} 5 is open. In it, you see a {creditcard} 3.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "open drawer 5",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at dresser 1. On the dresser 1, you see a book 1, a cd 2, a cd 1, a creditcard 2, a keychain 1, a pen 3, a pencil 1, a vase 3, and a window 1.",
+      "feedback_template": "You arrive at dresser 1. On the dresser 1, you see a {book} 1, a {cd} 2, a {cd} 1, a {creditcard} 2, a {keychain} 1, a {pen} 3, a {pencil} 1, a {vase} 3, and a window 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to dresser 1",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at shelf 1. On the shelf 1, you see nothing.",
+      "feedback_template": "You arrive at {shelf} 1. On the {shelf} 1, you see nothing.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to shelf 1",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at shelf 10. On the shelf 10, you see nothing.",
+      "feedback_template": "You arrive at {shelf} 10. On the {shelf} 10, you see nothing.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to shelf 10",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at shelf 11. On the shelf 11, you see nothing.",
+      "feedback_template": "You arrive at {shelf} 11. On the {shelf} 11, you see nothing.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to shelf 11",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at shelf 12. On the shelf 12, you see nothing.",
+      "feedback_template": "You arrive at {shelf} 12. On the {shelf} 12, you see nothing.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to shelf 12",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at shelf 2. On the shelf 2, you see a pen 2.",
+      "feedback_template": "You arrive at {shelf} 2. On the {shelf} 2, you see a {pen} 2.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to shelf 2",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at shelf 3. On the shelf 3, you see a vase 1.",
+      "feedback_template": "You arrive at {shelf} 3. On the {shelf} 3, you see a {vase} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to shelf 3",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at shelf 5. On the shelf 5, you see a mug 1.",
+      "feedback_template": "You arrive at {shelf} 5. On the {shelf} 5, you see a {mug} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to shelf 5",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at shelf 4. On the shelf 4, you see nothing.",
+      "feedback_template": "You arrive at {shelf} 4. On the {shelf} 4, you see nothing.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to shelf 4",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at shelf 6. On the shelf 6, you see a pen 1.",
+      "feedback_template": "You arrive at {shelf} 6. On the {shelf} 6, you see a {pen} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to shelf 6",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at shelf 7. On the shelf 7, you see nothing.",
+      "feedback_template": "You arrive at {shelf} 7. On the {shelf} 7, you see nothing.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to shelf 7",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at shelf 8. On the shelf 8, you see nothing.",
+      "feedback_template": "You arrive at {shelf} 8. On the {shelf} 8, you see nothing.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to shelf 8",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at shelf 9. On the shelf 9, you see a mug 2, and a vase 2.",
+      "feedback_template": "You arrive at {shelf} 9. On the {shelf} 9, you see a {mug} 2, and a {vase} 2.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to shelf 9",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at sidetable 1. On the sidetable 1, you see a alarmclock 1.",
+      "feedback_template": "You arrive at {sidetable} 1. On the {sidetable} 1, you see a {alarmclock} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to sidetable 1",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "On the sidetable 1, you see a alarmclock 1.",
+      "feedback_template": "On the {sidetable} 1, you see a {alarmclock} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "examine sidetable 1",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You are carrying: a cellphone 1.",
+      "feedback_template": "You are carrying: a {cellphone} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "inventory",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You are facing the sidetable 1. Next to it, you see nothing.",
+      "feedback_template": "You are facing the {sidetable} 1. Next to it, you see nothing.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "look",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You move the cellphone 1 to the sidetable 1.",
+      "feedback_template": "You move the {cellphone} 1 to the {sidetable} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "move cellphone 1 to sidetable 1",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You pick up the alarmclock 1 from the sidetable 1.",
+      "feedback_template": "You pick up the {alarmclock} 1 from the {sidetable} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "take alarmclock 1 from sidetable 1",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "There's nothing special about alarmclock 1.",
+      "feedback_template": "There's nothing special about {alarmclock} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "examine alarmclock 1",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You move the alarmclock 1 to the sidetable 1.",
+      "feedback_template": "You move the {alarmclock} 1 to the {sidetable} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "move alarmclock 1 to sidetable 1",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You pick up the cellphone 1 from the sidetable 1.",
+      "feedback_template": "You pick up the {cellphone} 1 from the {sidetable} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "take cellphone 1 from sidetable 1",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at bed 1. On the bed 1, you see a cellphone 3, a cellphone 2, a pillow 2, and a pillow 1.",
+      "feedback_template": "You arrive at {bed} 1. On the {bed} 1, you see a {cellphone} 3, a {cellphone} 2, a {pillow} 2, and a {pillow} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to bed 1",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "On the bed 1, you see a cellphone 3, a cellphone 2, a pillow 2, and a pillow 1.",
+      "feedback_template": "On the {bed} 1, you see a {cellphone} 3, a {cellphone} 2, a {pillow} 2, and a {pillow} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "examine bed 1",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You move the cellphone 1 to the bed 1.",
+      "feedback_template": "You move the {cellphone} 1 to the {bed} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "move cellphone 1 to bed 1",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You pick up the cellphone 2 from the bed 1.",
+      "feedback_template": "You pick up the {cellphone} 2 from the {bed} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "take cellphone 2 from bed 1",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "There's nothing special about cellphone 2.",
+      "feedback_template": "There's nothing special about {cellphone} 2.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "examine cellphone 2",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You move the cellphone 2 to the bed 1.",
+      "feedback_template": "You move the {cellphone} 2 to the {bed} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "move cellphone 2 to bed 1",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You pick up the cellphone 3 from the bed 1.",
+      "feedback_template": "You pick up the {cellphone} 3 from the {bed} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "take cellphone 3 from bed 1",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "There's nothing special about cellphone 3.",
+      "feedback_template": "There's nothing special about {cellphone} 3.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "examine cellphone 3",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You move the cellphone 3 to the bed 1.",
+      "feedback_template": "You move the {cellphone} 3 to the {bed} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "move cellphone 3 to bed 1",
+          "example_context": "look_at_obj_in_light"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at countertop 1. On the countertop 1, you see a cup 1, a houseplant 1, a lettuce 1, a soapbottle 1, a spatula 1, and a spoon 1.",
+      "feedback_template": "You arrive at {countertop} 1. On the {countertop} 1, you see a {cup} 1, a houseplant 1, a {lettuce} 1, a {soapbottle} 1, a {spatula} 1, and a {spoon} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to countertop 1",
+          "example_context": "pick_clean_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at countertop 2. On the countertop 2, you see a bread 1, a butterknife 1, a egg 1, a knife 2, a knife 1, a mug 3, a pen 1, a sink 1, a spatula 3, a spatula 2, and a spraybottle 2.",
+      "feedback_template": "You arrive at {countertop} 2. On the {countertop} 2, you see a {bread} 1, a {butterknife} 1, a {egg} 1, a {knife} 2, a {knife} 1, a {mug} 3, a {pen} 1, a sink 1, a {spatula} 3, a {spatula} 2, and a {spraybottle} 2.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to countertop 2",
+          "example_context": "pick_clean_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You pick up the butterknife 1 from the countertop 2.",
+      "feedback_template": "You pick up the {butterknife} 1 from the {countertop} 2.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "take butterknife 1 from countertop 2",
+          "example_context": "pick_clean_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at countertop 3. On the countertop 3, you see a apple 1, a bread 2, a butterknife 2, a fork 1, a glassbottle 1, a mug 2, a saltshaker 3, and a saltshaker 2.",
+      "feedback_template": "You arrive at {countertop} 3. On the {countertop} 3, you see a {apple} 1, a {bread} 2, a {butterknife} 2, a {fork} 1, a {glassbottle} 1, a {mug} 2, a saltshaker 3, and a saltshaker 2.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to countertop 3",
+          "example_context": "pick_clean_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at countertop 4. On the countertop 4, you see a butterknife 3, a dishsponge 2, and a peppershaker 1.",
+      "feedback_template": "You arrive at {countertop} 4. On the {countertop} 4, you see a {butterknife} 3, a {dishsponge} 2, and a peppershaker 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to countertop 4",
+          "example_context": "pick_clean_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the cabinet 1. The cabinet 1 is open. In it, you see a bowl 1.",
+      "feedback_template": "You open the {cabinet} 1. The {cabinet} 1 is open. In it, you see a {bowl} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "open cabinet 1",
+          "example_context": "pick_clean_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at cabinet 12. The cabinet 12 is closed.",
+      "feedback_template": "You arrive at {cabinet} 12. The {cabinet} 12 is closed.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to cabinet 12",
+          "example_context": "pick_clean_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the cabinet 14. The cabinet 14 is open. In it, you see nothing.",
+      "feedback_template": "You open the {cabinet} 14. The {cabinet} 14 is open. In it, you see nothing.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "open cabinet 14",
+          "example_context": "pick_clean_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at cabinet 16. The cabinet 16 is closed.",
+      "feedback_template": "You arrive at {cabinet} 16. The {cabinet} 16 is closed.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to cabinet 16",
+          "example_context": "pick_clean_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the cabinet 16. The cabinet 16 is open. In it, you see nothing.",
+      "feedback_template": "You open the {cabinet} 16. The {cabinet} 16 is open. In it, you see nothing.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "open cabinet 16",
+          "example_context": "pick_clean_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the cabinet 17. The cabinet 17 is open. In it, you see a ladle 1.",
+      "feedback_template": "You open the {cabinet} 17. The {cabinet} 17 is open. In it, you see a {ladle} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "open cabinet 17",
+          "example_context": "pick_clean_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the cabinet 3. The cabinet 3 is open. In it, you see a bowl 3.",
+      "feedback_template": "You open the {cabinet} 3. The {cabinet} 3 is open. In it, you see a {bowl} 3.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "open cabinet 3",
+          "example_context": "pick_clean_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the cabinet 4. The cabinet 4 is open. In it, you see a plate 1.",
+      "feedback_template": "You open the {cabinet} 4. The {cabinet} 4 is open. In it, you see a {plate} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "open cabinet 4",
+          "example_context": "pick_clean_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the cabinet 5. The cabinet 5 is open. In it, you see a cup 3.",
+      "feedback_template": "You open the {cabinet} 5. The {cabinet} 5 is open. In it, you see a {cup} 3.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "open cabinet 5",
+          "example_context": "pick_clean_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the cabinet 6. The cabinet 6 is open. In it, you see a spraybottle 1.",
+      "feedback_template": "You open the {cabinet} 6. The {cabinet} 6 is open. In it, you see a {spraybottle} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "open cabinet 6",
+          "example_context": "pick_clean_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the cabinet 7. The cabinet 7 is open. In it, you see a saltshaker 1.",
+      "feedback_template": "You open the {cabinet} 7. The {cabinet} 7 is open. In it, you see a saltshaker 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "open cabinet 7",
+          "example_context": "pick_clean_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the cabinet 8. The cabinet 8 is open. In it, you see a spraybottle 3.",
+      "feedback_template": "You open the {cabinet} 8. The {cabinet} 8 is open. In it, you see a {spraybottle} 3.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "open cabinet 8",
+          "example_context": "pick_clean_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at cabinet 9. The cabinet 9 is open. In it, you see nothing.",
+      "feedback_template": "You arrive at {cabinet} 9. The {cabinet} 9 is open. In it, you see nothing.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to cabinet 9",
+          "example_context": "pick_clean_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at countertop 1. On the countertop 1, you see a bread 1, a butterknife 1, a dishsponge 1, a fork 1, a knife 1, a mug 3, a pan 1, a peppershaker 2, a saltshaker 2, a saltshaker 1, a soapbottle 1, and a spoon 2.",
+      "feedback_template": "You arrive at {countertop} 1. On the {countertop} 1, you see a {bread} 1, a {butterknife} 1, a {dishsponge} 1, a {fork} 1, a {knife} 1, a {mug} 3, a {pan} 1, a peppershaker 2, a saltshaker 2, a saltshaker 1, a {soapbottle} 1, and a {spoon} 2.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to countertop 1",
+          "example_context": "pick_clean_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the cabinet 1. The cabinet 1 is open. In it, you see nothing.",
+      "feedback_template": "You open the {cabinet} 1. The {cabinet} 1 is open. In it, you see nothing.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "open cabinet 1",
+          "example_context": "pick_clean_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at cabinet 10. On the cabinet 10, you see nothing.",
+      "feedback_template": "You arrive at {cabinet} 10. On the {cabinet} 10, you see nothing.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to cabinet 10",
+          "example_context": "pick_clean_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at cabinet 12. On the cabinet 12, you see nothing.",
+      "feedback_template": "You arrive at {cabinet} 12. On the {cabinet} 12, you see nothing.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to cabinet 12",
+          "example_context": "pick_clean_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at cabinet 13. On the cabinet 13, you see nothing.",
+      "feedback_template": "You arrive at {cabinet} 13. On the {cabinet} 13, you see nothing.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to cabinet 13",
+          "example_context": "pick_clean_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the cabinet 2. The cabinet 2 is open. In it, you see a peppershaker 1.",
+      "feedback_template": "You open the {cabinet} 2. The {cabinet} 2 is open. In it, you see a peppershaker 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "open cabinet 2",
+          "example_context": "pick_clean_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the cabinet 3. The cabinet 3 is open. In it, you see a plate 1.",
+      "feedback_template": "You open the {cabinet} 3. The {cabinet} 3 is open. In it, you see a {plate} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "open cabinet 3",
+          "example_context": "pick_clean_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the cabinet 6. The cabinet 6 is open. In it, you see a cup 2, and a cup 1.",
+      "feedback_template": "You open the {cabinet} 6. The {cabinet} 6 is open. In it, you see a {cup} 2, and a {cup} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "open cabinet 6",
+          "example_context": "pick_clean_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the cabinet 7. The cabinet 7 is open. In it, you see a bowl 2.",
+      "feedback_template": "You open the {cabinet} 7. The {cabinet} 7 is open. In it, you see a {bowl} 2.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "open cabinet 7",
+          "example_context": "pick_clean_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the cabinet 8. The cabinet 8 is open. In it, you see a plate 3.",
+      "feedback_template": "You open the {cabinet} 8. The {cabinet} 8 is open. In it, you see a {plate} 3.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "open cabinet 8",
+          "example_context": "pick_clean_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the cabinet 9. The cabinet 9 is open. In it, you see a cup 3, and a soapbottle 2.",
+      "feedback_template": "You open the {cabinet} 9. The {cabinet} 9 is open. In it, you see a {cup} 3, and a {soapbottle} 2.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "open cabinet 9",
+          "example_context": "pick_clean_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at coffeemachine 1. On the coffeemachine 1, you see a mug 3.",
+      "feedback_template": "You arrive at {coffeemachine} 1. On the {coffeemachine} 1, you see a {mug} 3.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to coffeemachine 1",
+          "example_context": "pick_clean_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the drawer 2. The drawer 2 is open. In it, you see a spoon 1.",
+      "feedback_template": "You open the {drawer} 2. The {drawer} 2 is open. In it, you see a {spoon} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "open drawer 2",
+          "example_context": "pick_clean_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the drawer 4. The drawer 4 is open. In it, you see a spatula 1.",
+      "feedback_template": "You open the {drawer} 4. The {drawer} 4 is open. In it, you see a {spatula} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "open drawer 4",
+          "example_context": "pick_clean_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the drawer 5. The drawer 5 is open. In it, you see a fork 3, and a ladle 1.",
+      "feedback_template": "You open the {drawer} 5. The {drawer} 5 is open. In it, you see a {fork} 3, and a {ladle} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "open drawer 5",
+          "example_context": "pick_clean_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the fridge 1. The fridge 1 is open. In it, you see a bowl 1, a egg 1, a lettuce 2, a lettuce 1, a mug 2, a mug 1, a potato 1, and a tomato 1.",
+      "feedback_template": "You open the {fridge} 1. The {fridge} 1 is open. In it, you see a {bowl} 1, a {egg} 1, a {lettuce} 2, a {lettuce} 1, a {mug} 2, a {mug} 1, a {potato} 1, and a {tomato} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "open fridge 1",
+          "example_context": "pick_clean_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at garbagecan 1. On the garbagecan 1, you see a soapbottle 3.",
+      "feedback_template": "You arrive at {garbagecan} 1. On the {garbagecan} 1, you see a {soapbottle} 3.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to garbagecan 1",
+          "example_context": "pick_clean_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at sinkbasin 1. On the sinkbasin 1, you see a fork 2.",
+      "feedback_template": "You arrive at {sinkbasin} 1. On the {sinkbasin} 1, you see a {fork} 2.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to sinkbasin 1",
+          "example_context": "pick_clean_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at stoveburner 1. On the stoveburner 1, you see a pot 1.",
+      "feedback_template": "You arrive at {stoveburner} 1. On the {stoveburner} 1, you see a pot 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to stoveburner 1",
+          "example_context": "pick_clean_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at stoveburner 2. On the stoveburner 2, you see nothing.",
+      "feedback_template": "You arrive at {stoveburner} 2. On the {stoveburner} 2, you see nothing.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to stoveburner 2",
+          "example_context": "pick_clean_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at stoveburner 3. On the stoveburner 3, you see nothing.",
+      "feedback_template": "You arrive at {stoveburner} 3. On the {stoveburner} 3, you see nothing.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to stoveburner 3",
+          "example_context": "pick_clean_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at diningtable 2. On the diningtable 2, you see a apple 1, a bread 3, a cup 3, a egg 3, a peppershaker 2, a soapbottle 2, and a soapbottle 1.",
+      "feedback_template": "You arrive at {diningtable} 2. On the {diningtable} 2, you see a {apple} 1, a {bread} 3, a {cup} 3, a {egg} 3, a peppershaker 2, a {soapbottle} 2, and a {soapbottle} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to diningtable 2",
+          "example_context": "pick_heat_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You pick up the apple 1 from the diningtable 2.",
+      "feedback_template": "You pick up the {apple} 1 from the {diningtable} 2.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "take apple 1 from diningtable 2",
+          "example_context": "pick_heat_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the cabinet 5. The cabinet 5 is open. In it, you see a cup 2, and a dishsponge 2.",
+      "feedback_template": "You open the {cabinet} 5. The {cabinet} 5 is open. In it, you see a {cup} 2, and a {dishsponge} 2.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "open cabinet 5",
+          "example_context": "pick_heat_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the cabinet 6. The cabinet 6 is open. In it, you see a dishsponge 3.",
+      "feedback_template": "You open the {cabinet} 6. The {cabinet} 6 is open. In it, you see a {dishsponge} 3.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "open cabinet 6",
+          "example_context": "pick_heat_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at cabinet 8. On the cabinet 8, you see nothing.",
+      "feedback_template": "You arrive at {cabinet} 8. On the {cabinet} 8, you see nothing.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to cabinet 8",
+          "example_context": "pick_heat_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at countertop 1. On the countertop 1, you see a butterknife 1, and a mug 1.",
+      "feedback_template": "You arrive at {countertop} 1. On the {countertop} 1, you see a {butterknife} 1, and a {mug} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to countertop 1",
+          "example_context": "pick_heat_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at countertop 2. On the countertop 2, you see a bowl 2, and a knife 1.",
+      "feedback_template": "You arrive at {countertop} 2. On the {countertop} 2, you see a {bowl} 2, and a {knife} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to countertop 2",
+          "example_context": "pick_heat_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the drawer 2. The drawer 2 is open. In it, you see a knife 2, and a saltshaker 1.",
+      "feedback_template": "You open the {drawer} 2. The {drawer} 2 is open. In it, you see a {knife} 2, and a saltshaker 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "open drawer 2",
+          "example_context": "pick_heat_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the drawer 3. The drawer 3 is open. In it, you see a peppershaker 3, and a peppershaker 1.",
+      "feedback_template": "You open the {drawer} 3. The {drawer} 3 is open. In it, you see a peppershaker 3, and a peppershaker 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "open drawer 3",
+          "example_context": "pick_heat_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the fridge 1. The fridge 1 is open. In it, you see a bowl 1, a cup 1, a egg 1, a lettuce 1, a plate 1, and a tomato 1.",
+      "feedback_template": "You open the {fridge} 1. The {fridge} 1 is open. In it, you see a {bowl} 1, a {cup} 1, a {egg} 1, a {lettuce} 1, a {plate} 1, and a {tomato} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "open fridge 1",
+          "example_context": "pick_heat_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the microwave 1. The microwave 1 is open. In it, you see a egg 2, and a mug 2.",
+      "feedback_template": "You open the {microwave} 1. The {microwave} 1 is open. In it, you see a {egg} 2, and a {mug} 2.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "open microwave 1",
+          "example_context": "pick_heat_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at sinkbasin 1. On the sinkbasin 1, you see a plate 2, and a spoon 1.",
+      "feedback_template": "You arrive at {sinkbasin} 1. On the {sinkbasin} 1, you see a {plate} 2, and a {spoon} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to sinkbasin 1",
+          "example_context": "pick_heat_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at stoveburner 3. On the stoveburner 3, you see a pan 1.",
+      "feedback_template": "You arrive at {stoveburner} 3. On the {stoveburner} 3, you see a {pan} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to stoveburner 3",
+          "example_context": "pick_heat_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at stoveburner 2. On the stoveburner 2, you see a pot 1.",
+      "feedback_template": "You arrive at {stoveburner} 2. On the {stoveburner} 2, you see a pot 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to stoveburner 2",
+          "example_context": "pick_heat_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "There's nothing special about apple 1.",
+      "feedback_template": "There's nothing special about {apple} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "examine apple 1",
+          "example_context": "pick_heat_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You are carrying: a apple 1.",
+      "feedback_template": "You are carrying: a {apple} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "inventory",
+          "example_context": "pick_heat_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "On the diningtable 1, you see a bread 2, a bread 1, a butterknife 2, a dishsponge 1, a fork 1, a potato 1, and a spatula 1.",
+      "feedback_template": "On the {diningtable} 1, you see a {bread} 2, a {bread} 1, a {butterknife} 2, a {dishsponge} 1, a {fork} 1, a {potato} 1, and a {spatula} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "examine diningtable 1",
+          "example_context": "pick_heat_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the fridge 1. The fridge 1 is open. In it, you see a apple 1, and a lettuce 1.",
+      "feedback_template": "You open the {fridge} 1. The {fridge} 1 is open. In it, you see a {apple} 1, and a {lettuce} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "open fridge 1",
+          "example_context": "pick_heat_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You pick up the apple 1 from the fridge 1.",
+      "feedback_template": "You pick up the {apple} 1 from the {fridge} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "take apple 1 from fridge 1",
+          "example_context": "pick_heat_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the cabinet 1. The cabinet 1 is open. In it, you see a plate 1.",
+      "feedback_template": "You open the {cabinet} 1. The {cabinet} 1 is open. In it, you see a {plate} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "open cabinet 1",
+          "example_context": "pick_heat_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the cabinet 13. The cabinet 13 is open. In it, you see a bowl 1.",
+      "feedback_template": "You open the {cabinet} 13. The {cabinet} 13 is open. In it, you see a {bowl} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "open cabinet 13",
+          "example_context": "pick_heat_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the cabinet 14. The cabinet 14 is open. In it, you see a soapbottle 1.",
+      "feedback_template": "You open the {cabinet} 14. The {cabinet} 14 is open. In it, you see a {soapbottle} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "open cabinet 14",
+          "example_context": "pick_heat_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the cabinet 15. The cabinet 15 is open. In it, you see a peppershaker 2.",
+      "feedback_template": "You open the {cabinet} 15. The {cabinet} 15 is open. In it, you see a peppershaker 2.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "open cabinet 15",
+          "example_context": "pick_heat_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at cabinet 16. On the cabinet 16, you see a soapbottle 2.",
+      "feedback_template": "You arrive at {cabinet} 16. On the {cabinet} 16, you see a {soapbottle} 2.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to cabinet 16",
+          "example_context": "pick_heat_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the cabinet 17. The cabinet 17 is open. In it, you see nothing.",
+      "feedback_template": "You open the {cabinet} 17. The {cabinet} 17 is open. In it, you see nothing.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "open cabinet 17",
+          "example_context": "pick_heat_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at cabinet 19. The cabinet 19 is closed.",
+      "feedback_template": "You arrive at {cabinet} 19. The {cabinet} 19 is closed.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to cabinet 19",
+          "example_context": "pick_heat_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the cabinet 19. The cabinet 19 is open. In it, you see a bowl 2.",
+      "feedback_template": "You open the {cabinet} 19. The {cabinet} 19 is open. In it, you see a {bowl} 2.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "open cabinet 19",
+          "example_context": "pick_heat_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the cabinet 21. The cabinet 21 is open. In it, you see nothing.",
+      "feedback_template": "You open the {cabinet} 21. The {cabinet} 21 is open. In it, you see nothing.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "open cabinet 21",
+          "example_context": "pick_heat_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at cabinet 21. The cabinet 21 is open. In it, you see nothing.",
+      "feedback_template": "You arrive at {cabinet} 21. The {cabinet} 21 is open. In it, you see nothing.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to cabinet 21",
+          "example_context": "pick_heat_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at cabinet 22. The cabinet 22 is closed.",
+      "feedback_template": "You arrive at {cabinet} 22. The {cabinet} 22 is closed.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to cabinet 22",
+          "example_context": "pick_heat_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the cabinet 22. The cabinet 22 is open. In it, you see nothing.",
+      "feedback_template": "You open the {cabinet} 22. The {cabinet} 22 is open. In it, you see nothing.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "open cabinet 22",
+          "example_context": "pick_heat_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at cabinet 23. The cabinet 23 is closed.",
+      "feedback_template": "You arrive at {cabinet} 23. The {cabinet} 23 is closed.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to cabinet 23",
+          "example_context": "pick_heat_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the cabinet 23. The cabinet 23 is open. In it, you see nothing.",
+      "feedback_template": "You open the {cabinet} 23. The {cabinet} 23 is open. In it, you see nothing.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "open cabinet 23",
+          "example_context": "pick_heat_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at cabinet 3. On the cabinet 3, you see a saltshaker 1.",
+      "feedback_template": "You arrive at {cabinet} 3. On the {cabinet} 3, you see a saltshaker 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to cabinet 3",
+          "example_context": "pick_heat_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at cabinet 5. The cabinet 5 is open. In it, you see nothing.",
+      "feedback_template": "You arrive at {cabinet} 5. The {cabinet} 5 is open. In it, you see nothing.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to cabinet 5",
+          "example_context": "pick_heat_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the cabinet 8. The cabinet 8 is open. In it, you see a cup 1.",
+      "feedback_template": "You open the {cabinet} 8. The {cabinet} 8 is open. In it, you see a {cup} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "open cabinet 8",
+          "example_context": "pick_heat_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at countertop 2. On the countertop 2, you see a bread 1, a cup 1, a dishsponge 2, a dishsponge 1, a knife 2, a lettuce 1, a mug 1, a peppershaker 3, a peppershaker 1, a spoon 2, and a spoon 1.",
+      "feedback_template": "You arrive at {countertop} 2. On the {countertop} 2, you see a {bread} 1, a {cup} 1, a {dishsponge} 2, a {dishsponge} 1, a {knife} 2, a {lettuce} 1, a {mug} 1, a peppershaker 3, a peppershaker 1, a {spoon} 2, and a {spoon} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to countertop 2",
+          "example_context": "pick_cool_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You pick up the bread 1 from the countertop 2.",
+      "feedback_template": "You pick up the {bread} 1 from the {countertop} 2.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "take bread 1 from countertop 2",
+          "example_context": "pick_cool_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at cabinet 1. On the cabinet 1, you see a soapbottle 1.",
+      "feedback_template": "You arrive at {cabinet} 1. On the {cabinet} 1, you see a {soapbottle} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to cabinet 1",
+          "example_context": "pick_cool_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at cabinet 2. On the cabinet 2, you see a peppershaker 2, and a saltshaker 2.",
+      "feedback_template": "You arrive at {cabinet} 2. On the {cabinet} 2, you see a peppershaker 2, and a saltshaker 2.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to cabinet 2",
+          "example_context": "pick_cool_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the cabinet 5. The cabinet 5 is open. In it, you see a ladle 1.",
+      "feedback_template": "You open the {cabinet} 5. The {cabinet} 5 is open. In it, you see a {ladle} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "open cabinet 5",
+          "example_context": "pick_cool_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at cabinet 5. The cabinet 5 is open. In it, you see a ladle 1.",
+      "feedback_template": "You arrive at {cabinet} 5. The {cabinet} 5 is open. In it, you see a {ladle} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to cabinet 5",
+          "example_context": "pick_cool_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at cabinet 6. On the cabinet 6, you see nothing.",
+      "feedback_template": "You arrive at {cabinet} 6. On the {cabinet} 6, you see nothing.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to cabinet 6",
+          "example_context": "pick_cool_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at cabinet 7. On the cabinet 7, you see a saltshaker 1.",
+      "feedback_template": "You arrive at {cabinet} 7. On the {cabinet} 7, you see a saltshaker 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to cabinet 7",
+          "example_context": "pick_cool_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the cabinet 8. The cabinet 8 is open. In it, you see a bowl 1.",
+      "feedback_template": "You open the {cabinet} 8. The {cabinet} 8 is open. In it, you see a {bowl} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "open cabinet 8",
+          "example_context": "pick_cool_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the fridge 1. The fridge 1 is open. In it, you see a bowl 2, a bread 3, a egg 1, a mug 2, and a plate 1.",
+      "feedback_template": "You open the {fridge} 1. The {fridge} 1 is open. In it, you see a {bowl} 2, a {bread} 3, a {egg} 1, a {mug} 2, and a {plate} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "open fridge 1",
+          "example_context": "pick_cool_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at garbagecan 1. On the garbagecan 1, you see a soapbottle 2.",
+      "feedback_template": "You arrive at {garbagecan} 1. On the {garbagecan} 1, you see a {soapbottle} 2.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to garbagecan 1",
+          "example_context": "pick_cool_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at sinkbasin 1. On the sinkbasin 1, you see a butterknife 1.",
+      "feedback_template": "You arrive at {sinkbasin} 1. On the {sinkbasin} 1, you see a {butterknife} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to sinkbasin 1",
+          "example_context": "pick_cool_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at stoveburner 2. On the stoveburner 2, you see a pan 1.",
+      "feedback_template": "You arrive at {stoveburner} 2. On the {stoveburner} 2, you see a {pan} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to stoveburner 2",
+          "example_context": "pick_cool_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at stoveburner 3. On the stoveburner 3, you see a pot 1, and a spatula 1.",
+      "feedback_template": "You arrive at {stoveburner} 3. On the {stoveburner} 3, you see a pot 1, and a {spatula} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to stoveburner 3",
+          "example_context": "pick_cool_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at stoveburner 4. On the stoveburner 4, you see a pan 2.",
+      "feedback_template": "You arrive at {stoveburner} 4. On the {stoveburner} 4, you see a {pan} 2.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to stoveburner 4",
+          "example_context": "pick_cool_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "There's nothing special about bread 1.",
+      "feedback_template": "There's nothing special about {bread} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "examine bread 1",
+          "example_context": "pick_cool_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You are carrying: a bread 1.",
+      "feedback_template": "You are carrying: a {bread} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "inventory",
+          "example_context": "pick_cool_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "On the countertop 1, you see a bread 2, a butterknife 2, a fork 2, a fork 1, a knife 3, a knife 1, a lettuce 2, a potato 1, a saltshaker 3, a soapbottle 3, a tomato 3, a tomato 2, and a tomato 1.",
+      "feedback_template": "On the {countertop} 1, you see a {bread} 2, a {butterknife} 2, a {fork} 2, a {fork} 1, a {knife} 3, a {knife} 1, a {lettuce} 2, a {potato} 1, a saltshaker 3, a {soapbottle} 3, a {tomato} 3, a {tomato} 2, and a {tomato} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "examine countertop 1",
+          "example_context": "pick_cool_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You move the bread 1 to the countertop 1.",
+      "feedback_template": "You move the {bread} 1 to the {countertop} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "move bread 1 to countertop 1",
+          "example_context": "pick_cool_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at countertop 2. On the countertop 2, you see a cup 1, a dishsponge 2, a dishsponge 1, a knife 2, a lettuce 1, a mug 1, a peppershaker 3, a peppershaker 1, a spoon 2, and a spoon 1.",
+      "feedback_template": "You arrive at {countertop} 2. On the {countertop} 2, you see a {cup} 1, a {dishsponge} 2, a {dishsponge} 1, a {knife} 2, a {lettuce} 1, a {mug} 1, a peppershaker 3, a peppershaker 1, a {spoon} 2, and a {spoon} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to countertop 2",
+          "example_context": "pick_cool_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "On the coffeemachine 1, you see nothing.",
+      "feedback_template": "On the {coffeemachine} 1, you see nothing.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "examine coffeemachine 1",
+          "example_context": "pick_cool_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "On the countertop 2, you see a cup 1, a dishsponge 2, a dishsponge 1, a knife 2, a lettuce 1, a mug 1, a peppershaker 3, a peppershaker 1, a spoon 2, and a spoon 1.",
+      "feedback_template": "On the {countertop} 2, you see a {cup} 1, a {dishsponge} 2, a {dishsponge} 1, a {knife} 2, a {lettuce} 1, a {mug} 1, a peppershaker 3, a peppershaker 1, a {spoon} 2, and a {spoon} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "examine countertop 2",
+          "example_context": "pick_cool_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You move the bread 1 to the countertop 2.",
+      "feedback_template": "You move the {bread} 1 to the {countertop} 2.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "move bread 1 to countertop 2",
+          "example_context": "pick_cool_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You pick up the cup 1 from the countertop 2.",
+      "feedback_template": "You pick up the {cup} 1 from the {countertop} 2.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "take cup 1 from countertop 2",
+          "example_context": "pick_cool_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "This is a normal cup 1. In it, you see nothing.",
+      "feedback_template": "This is a normal {cup} 1. In it, you see nothing.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "examine cup 1",
+          "example_context": "pick_cool_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You move the cup 1 to the countertop 2.",
+      "feedback_template": "You move the {cup} 1 to the {countertop} 2.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "move cup 1 to countertop 2",
+          "example_context": "pick_cool_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You pick up the dishsponge 1 from the countertop 2.",
+      "feedback_template": "You pick up the {dishsponge} 1 from the {countertop} 2.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "take dishsponge 1 from countertop 2",
+          "example_context": "pick_cool_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "There's nothing special about dishsponge 1.",
+      "feedback_template": "There's nothing special about {dishsponge} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "examine dishsponge 1",
+          "example_context": "pick_cool_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at diningtable 1. On the diningtable 1, you see a bowl 2, a bread 1, a butterknife 1, a dishsponge 1, a kettle 1, a spatula 2, a spatula 1, a tomato 1, and a winebottle 1.",
+      "feedback_template": "You arrive at {diningtable} 1. On the {diningtable} 1, you see a {bowl} 2, a {bread} 1, a {butterknife} 1, a {dishsponge} 1, a {kettle} 1, a {spatula} 2, a {spatula} 1, a {tomato} 1, and a {winebottle} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to diningtable 1",
+          "example_context": "pick_cool_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You pick up the winebottle 1 from the diningtable 1.",
+      "feedback_template": "You pick up the {winebottle} 1 from the {diningtable} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "take winebottle 1 from diningtable 1",
+          "example_context": "pick_cool_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at diningtable 2. On the diningtable 2, you see a butterknife 3, a cellphone 2, a cellphone 1, a dishsponge 2, a knife 3, a knife 2, a knife 1, a lettuce 1, a plate 3, a plate 2, a soapbottle 3, a spraybottle 1, and a tomato 3.",
+      "feedback_template": "You arrive at {diningtable} 2. On the {diningtable} 2, you see a {butterknife} 3, a {cellphone} 2, a {cellphone} 1, a {dishsponge} 2, a {knife} 3, a {knife} 2, a {knife} 1, a {lettuce} 1, a {plate} 3, a {plate} 2, a {soapbottle} 3, a {spraybottle} 1, and a {tomato} 3.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to diningtable 2",
+          "example_context": "pick_cool_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at cabinet 12. On the cabinet 12, you see a plate 1.",
+      "feedback_template": "You arrive at {cabinet} 12. On the {cabinet} 12, you see a {plate} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to cabinet 12",
+          "example_context": "pick_cool_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at cabinet 14. On the cabinet 14, you see nothing.",
+      "feedback_template": "You arrive at {cabinet} 14. On the {cabinet} 14, you see nothing.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to cabinet 14",
+          "example_context": "pick_cool_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at cabinet 16. On the cabinet 16, you see nothing.",
+      "feedback_template": "You arrive at {cabinet} 16. On the {cabinet} 16, you see nothing.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to cabinet 16",
+          "example_context": "pick_cool_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the cabinet 17. The cabinet 17 is open. In it, you see a kettle 3.",
+      "feedback_template": "You open the {cabinet} 17. The {cabinet} 17 is open. In it, you see a {kettle} 3.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "open cabinet 17",
+          "example_context": "pick_cool_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at cabinet 18. On the cabinet 18, you see nothing.",
+      "feedback_template": "You arrive at {cabinet} 18. On the {cabinet} 18, you see nothing.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to cabinet 18",
+          "example_context": "pick_cool_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at cabinet 19. On the cabinet 19, you see nothing.",
+      "feedback_template": "You arrive at {cabinet} 19. On the {cabinet} 19, you see nothing.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to cabinet 19",
+          "example_context": "pick_cool_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at cabinet 2. On the cabinet 2, you see nothing.",
+      "feedback_template": "You arrive at {cabinet} 2. On the {cabinet} 2, you see nothing.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to cabinet 2",
+          "example_context": "pick_cool_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the cabinet 8. The cabinet 8 is open. In it, you see a mug 1.",
+      "feedback_template": "You open the {cabinet} 8. The {cabinet} 8 is open. In it, you see a {mug} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "open cabinet 8",
+          "example_context": "pick_cool_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the cabinet 9. The cabinet 9 is open. In it, you see a glassbottle 1.",
+      "feedback_template": "You open the {cabinet} 9. The {cabinet} 9 is open. In it, you see a {glassbottle} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "open cabinet 9",
+          "example_context": "pick_cool_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at countertop 1. On the countertop 1, you see a bowl 1, a butterknife 2, a cup 1, a egg 1, a fork 1, a peppershaker 1, a saltshaker 1, a soapbottle 1, a spoon 1, and a tomato 2.",
+      "feedback_template": "You arrive at {countertop} 1. On the {countertop} 1, you see a {bowl} 1, a {butterknife} 2, a {cup} 1, a {egg} 1, a {fork} 1, a peppershaker 1, a saltshaker 1, a {soapbottle} 1, a {spoon} 1, and a {tomato} 2.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to countertop 1",
+          "example_context": "pick_cool_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at countertop 2. On the countertop 2, you see a fork 2, a pan 1, a peppershaker 2, a soapbottle 2, and a spatula 3.",
+      "feedback_template": "You arrive at {countertop} 2. On the {countertop} 2, you see a {fork} 2, a {pan} 1, a peppershaker 2, a {soapbottle} 2, and a {spatula} 3.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to countertop 2",
+          "example_context": "pick_cool_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at drawer 2. On the drawer 2, you see nothing.",
+      "feedback_template": "You arrive at {drawer} 2. On the {drawer} 2, you see nothing.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to drawer 2",
+          "example_context": "pick_cool_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at drawer 3. On the drawer 3, you see nothing.",
+      "feedback_template": "You arrive at {drawer} 3. On the {drawer} 3, you see nothing.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to drawer 3",
+          "example_context": "pick_cool_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at drawer 4. On the drawer 4, you see a spoon 2.",
+      "feedback_template": "You arrive at {drawer} 4. On the {drawer} 4, you see a {spoon} 2.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to drawer 4",
+          "example_context": "pick_cool_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at drawer 5. On the drawer 5, you see a spoon 3.",
+      "feedback_template": "You arrive at {drawer} 5. On the {drawer} 5, you see a {spoon} 3.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to drawer 5",
+          "example_context": "pick_cool_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the fridge 1. The fridge 1 is open. In it, you see a apple 2, a bowl 3, a cup 2, and a potato 1.",
+      "feedback_template": "You open the {fridge} 1. The {fridge} 1 is open. In it, you see a {apple} 2, a {bowl} 3, a {cup} 2, and a {potato} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "open fridge 1",
+          "example_context": "pick_cool_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at drawer 6. On the drawer 6, you see nothing.",
+      "feedback_template": "You arrive at {drawer} 6. On the {drawer} 6, you see nothing.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to drawer 6",
+          "example_context": "pick_cool_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at garbagecan 1. On the garbagecan 1, you see a apple 1.",
+      "feedback_template": "You arrive at {garbagecan} 1. On the {garbagecan} 1, you see a {apple} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to garbagecan 1",
+          "example_context": "pick_cool_then_place_in_recep"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at dresser 1. On the dresser 1, you see a cd 3, a cellphone 1, and a desklamp 1.",
+      "feedback_template": "You arrive at dresser 1. On the dresser 1, you see a {cd} 3, a {cellphone} 1, and a {desklamp} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to dresser 1",
+          "example_context": "pick_two_obj_and_place"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at desk 1. On the desk 1, you see a alarmclock 3, a alarmclock 2, a alarmclock 1, a book 1, a bowl 2, a bowl 1, a cd 2, a creditcard 1, and a pen 2.",
+      "feedback_template": "You arrive at {desk} 1. On the {desk} 1, you see a {alarmclock} 3, a {alarmclock} 2, a {alarmclock} 1, a {book} 1, a {bowl} 2, a {bowl} 1, a {cd} 2, a {creditcard} 1, and a {pen} 2.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to desk 1",
+          "example_context": "pick_two_obj_and_place"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the drawer 2. The drawer 2 is open. In it, you see a pen 3.",
+      "feedback_template": "You open the {drawer} 2. The {drawer} 2 is open. In it, you see a {pen} 3.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "open drawer 2",
+          "example_context": "pick_two_obj_and_place"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the drawer 3. The drawer 3 is open. In it, you see a pencil 1.",
+      "feedback_template": "You open the {drawer} 3. The {drawer} 3 is open. In it, you see a {pencil} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "open drawer 3",
+          "example_context": "pick_two_obj_and_place"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at drawer 4. On the drawer 4, you see a creditcard 2.",
+      "feedback_template": "You arrive at {drawer} 4. On the {drawer} 4, you see a {creditcard} 2.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to drawer 4",
+          "example_context": "pick_two_obj_and_place"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at drawer 5. On the drawer 5, you see nothing.",
+      "feedback_template": "You arrive at {drawer} 5. On the {drawer} 5, you see nothing.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to drawer 5",
+          "example_context": "pick_two_obj_and_place"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at laundryhamper 1. On the laundryhamper 1, you see nothing.",
+      "feedback_template": "You arrive at laundryhamper 1. On the laundryhamper 1, you see nothing.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to laundryhamper 1",
+          "example_context": "pick_two_obj_and_place"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at shelf 1. On the shelf 1, you see a keychain 2, a keychain 1, a mug 1, and a pen 1.",
+      "feedback_template": "You arrive at {shelf} 1. On the {shelf} 1, you see a {keychain} 2, a {keychain} 1, a {mug} 1, and a {pen} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to shelf 1",
+          "example_context": "pick_two_obj_and_place"
+        }
+      ]
+    },
+    {
+      "feedback_text": "There's nothing special about cd 3.",
+      "feedback_template": "There's nothing special about {cd} 3.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "examine cd 3",
+          "example_context": "pick_two_obj_and_place"
+        }
+      ]
+    },
+    {
+      "feedback_text": "On the shelf 1, you see a keychain 2, a keychain 1, a mug 1, and a pen 1.",
+      "feedback_template": "On the {shelf} 1, you see a {keychain} 2, a {keychain} 1, a {mug} 1, and a {pen} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "examine shelf 1",
+          "example_context": "pick_two_obj_and_place"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You are carrying: a cd 3.",
+      "feedback_template": "You are carrying: a {cd} 3.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "inventory",
+          "example_context": "pick_two_obj_and_place"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You are facing the shelf 1. Next to it, you see nothing.",
+      "feedback_template": "You are facing the {shelf} 1. Next to it, you see nothing.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "look",
+          "example_context": "pick_two_obj_and_place"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You move the cd 3 to the shelf 1.",
+      "feedback_template": "You move the {cd} 3 to the {shelf} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "move cd 3 to shelf 1",
+          "example_context": "pick_two_obj_and_place"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You pick up the cd 3 from the shelf 1.",
+      "feedback_template": "You pick up the {cd} 3 from the {shelf} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "take cd 3 from shelf 1",
+          "example_context": "pick_two_obj_and_place"
+        }
+      ]
+    },
+    {
+      "feedback_text": "On the dresser 1, you see a cellphone 1, and a desklamp 1.",
+      "feedback_template": "On the dresser 1, you see a {cellphone} 1, and a {desklamp} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "examine dresser 1",
+          "example_context": "pick_two_obj_and_place"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You move the cd 3 to the dresser 1.",
+      "feedback_template": "You move the {cd} 3 to the dresser 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "move cd 3 to dresser 1",
+          "example_context": "pick_two_obj_and_place"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You pick up the cellphone 1 from the dresser 1.",
+      "feedback_template": "You pick up the {cellphone} 1 from the dresser 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "take cellphone 1 from dresser 1",
+          "example_context": "pick_two_obj_and_place"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You move the cellphone 1 to the dresser 1.",
+      "feedback_template": "You move the {cellphone} 1 to the dresser 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "move cellphone 1 to dresser 1",
+          "example_context": "pick_two_obj_and_place"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You turn on the desklamp 1.",
+      "feedback_template": "You turn on the {desklamp} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "use desklamp 1",
+          "example_context": "pick_two_obj_and_place"
+        }
+      ]
+    },
+    {
+      "feedback_text": "On the bed 1, you see a laptop 3, a laptop 2, a laptop 1, and a pillow 1.",
+      "feedback_template": "On the {bed} 1, you see a {laptop} 3, a {laptop} 2, a {laptop} 1, and a {pillow} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "examine bed 1",
+          "example_context": "pick_two_obj_and_place"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You pick up the creditcard 1 from the armchair 1.",
+      "feedback_template": "You pick up the {creditcard} 1 from the {armchair} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "take creditcard 1 from armchair 1",
+          "example_context": "pick_two_obj_and_place"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at armchair 2. On the armchair 2, you see a laptop 1.",
+      "feedback_template": "You arrive at {armchair} 2. On the {armchair} 2, you see a {laptop} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to armchair 2",
+          "example_context": "pick_two_obj_and_place"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at diningtable 1. On the diningtable 1, you see a laptop 3, a laptop 2, a remotecontrol 3, a statue 3, a statue 2, a watch 2, and a watch 1.",
+      "feedback_template": "You arrive at {diningtable} 1. On the {diningtable} 1, you see a {laptop} 3, a {laptop} 2, a {remotecontrol} 3, a {statue} 3, a {statue} 2, a {watch} 2, and a {watch} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to diningtable 1",
+          "example_context": "pick_two_obj_and_place"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the drawer 3. The drawer 3 is open. In it, you see a keychain 2.",
+      "feedback_template": "You open the {drawer} 3. The {drawer} 3 is open. In it, you see a {keychain} 2.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "open drawer 3",
+          "example_context": "pick_two_obj_and_place"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You open the drawer 4. The drawer 4 is open. In it, you see a creditcard 2.",
+      "feedback_template": "You open the {drawer} 4. The {drawer} 4 is open. In it, you see a {creditcard} 2.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "open drawer 4",
+          "example_context": "pick_two_obj_and_place"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at ottoman 1. On the ottoman 1, you see nothing.",
+      "feedback_template": "You arrive at {ottoman} 1. On the {ottoman} 1, you see nothing.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to ottoman 1",
+          "example_context": "pick_two_obj_and_place"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at sidetable 1. On the sidetable 1, you see a remotecontrol 1.",
+      "feedback_template": "You arrive at {sidetable} 1. On the {sidetable} 1, you see a {remotecontrol} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to sidetable 1",
+          "example_context": "pick_two_obj_and_place"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at sidetable 2. On the sidetable 2, you see a statue 1.",
+      "feedback_template": "You arrive at {sidetable} 2. On the {sidetable} 2, you see a {statue} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to sidetable 2",
+          "example_context": "pick_two_obj_and_place"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at sidetable 3. On the sidetable 3, you see a desklamp 1, and a houseplant 1.",
+      "feedback_template": "You arrive at {sidetable} 3. On the {sidetable} 3, you see a {desklamp} 1, and a houseplant 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to sidetable 3",
+          "example_context": "pick_two_obj_and_place"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at sofa 1. On the sofa 1, you see a keychain 1, and a pillow 1.",
+      "feedback_template": "You arrive at {sofa} 1. On the {sofa} 1, you see a {keychain} 1, and a {pillow} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to sofa 1",
+          "example_context": "pick_two_obj_and_place"
+        }
+      ]
+    },
+    {
+      "feedback_text": "There's nothing special about creditcard 1.",
+      "feedback_template": "There's nothing special about {creditcard} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "examine creditcard 1",
+          "example_context": "pick_two_obj_and_place"
+        }
+      ]
+    },
+    {
+      "feedback_text": "On the sofa 1, you see a keychain 1, and a pillow 1.",
+      "feedback_template": "On the {sofa} 1, you see a {keychain} 1, and a {pillow} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "examine sofa 1",
+          "example_context": "pick_two_obj_and_place"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You are carrying: a creditcard 1.",
+      "feedback_template": "You are carrying: a {creditcard} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "inventory",
+          "example_context": "pick_two_obj_and_place"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You are facing the sofa 1. Next to it, you see nothing.",
+      "feedback_template": "You are facing the {sofa} 1. Next to it, you see nothing.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "look",
+          "example_context": "pick_two_obj_and_place"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You move the creditcard 1 to the sofa 1.",
+      "feedback_template": "You move the {creditcard} 1 to the {sofa} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "move creditcard 1 to sofa 1",
+          "example_context": "pick_two_obj_and_place"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You pick up the creditcard 1 from the sofa 1.",
+      "feedback_template": "You pick up the {creditcard} 1 from the {sofa} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "take creditcard 1 from sofa 1",
+          "example_context": "pick_two_obj_and_place"
+        }
+      ]
+    },
+    {
+      "feedback_text": "On the dresser 1, you see a television 1.",
+      "feedback_template": "On the dresser 1, you see a television 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "examine dresser 1",
+          "example_context": "pick_two_obj_and_place"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You move the creditcard 1 to the dresser 1.",
+      "feedback_template": "You move the {creditcard} 1 to the dresser 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "move creditcard 1 to dresser 1",
+          "example_context": "pick_two_obj_and_place"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You pick up the creditcard 1 from the dresser 1.",
+      "feedback_template": "You pick up the {creditcard} 1 from the dresser 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "take creditcard 1 from dresser 1",
+          "example_context": "pick_two_obj_and_place"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You arrive at armchair 1. On the armchair 1, you see nothing.",
+      "feedback_template": "You arrive at {armchair} 1. On the {armchair} 1, you see nothing.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "go to armchair 1",
+          "example_context": "pick_two_obj_and_place"
+        }
+      ]
+    },
+    {
+      "feedback_text": "On the armchair 1, you see nothing.",
+      "feedback_template": "On the {armchair} 1, you see nothing.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "examine armchair 1",
+          "example_context": "pick_two_obj_and_place"
+        }
+      ]
+    },
+    {
+      "feedback_text": "You move the creditcard 1 to the armchair 1.",
+      "feedback_template": "You move the {creditcard} 1 to the {armchair} 1.",
+      "total_occurrences": 1,
+      "distinct_causes": 1,
+      "causes": [
+        {
+          "cause": "successful_action",
+          "count": 1,
+          "example_action": "move creditcard 1 to armchair 1",
+          "example_context": "pick_two_obj_and_place"
+        }
+      ]
+    }
+  ],
+  "task_type_summaries": {
+    "pick_and_place_simple": {
+      "games_probed": 2,
+      "games_completed": 0,
+      "avg_steps_to_complete": null,
+      "common_errors": [
+        "completely_invalid_command",
+        "put_while_empty_hands",
+        "put_nonexistent_object",
+        "open_nonexistent_container",
+        "take_nonexistent_object"
+      ],
+      "error_counts": {
+        "completely_invalid_command": 360,
+        "put_while_empty_hands": 90,
+        "put_nonexistent_object": 90,
+        "open_nonexistent_container": 90,
+        "take_nonexistent_object": 90,
+        "go_to_nonexistent_location": 90,
+        "take_from_wrong_location": 90,
+        "clean_without_holding": 90,
+        "heat_without_holding": 90,
+        "cool_without_holding": 90,
+        "use_nonexistent_lamp": 90,
+        "open_already_open": 21,
+        "take_from_closed_container": 19,
+        "close_already_closed": 19
+      }
+    },
+    "look_at_obj_in_light": {
+      "games_probed": 2,
+      "games_completed": 0,
+      "avg_steps_to_complete": null,
+      "common_errors": [
+        "completely_invalid_command",
+        "put_while_empty_hands",
+        "put_nonexistent_object",
+        "open_nonexistent_container",
+        "take_nonexistent_object"
+      ],
+      "error_counts": {
+        "completely_invalid_command": 360,
+        "put_while_empty_hands": 90,
+        "put_nonexistent_object": 90,
+        "open_nonexistent_container": 90,
+        "take_nonexistent_object": 90,
+        "go_to_nonexistent_location": 90,
+        "take_from_wrong_location": 90,
+        "clean_without_holding": 90,
+        "heat_without_holding": 90,
+        "cool_without_holding": 90,
+        "use_nonexistent_lamp": 90,
+        "examine_without_lamp_on": 37,
+        "open_already_open": 16,
+        "take_from_closed_container": 14,
+        "close_already_closed": 14
+      }
+    },
+    "pick_clean_then_place_in_recep": {
+      "games_probed": 2,
+      "games_completed": 0,
+      "avg_steps_to_complete": null,
+      "common_errors": [
+        "completely_invalid_command",
+        "put_while_empty_hands",
+        "put_nonexistent_object",
+        "open_nonexistent_container",
+        "take_nonexistent_object"
+      ],
+      "error_counts": {
+        "completely_invalid_command": 360,
+        "put_while_empty_hands": 90,
+        "put_nonexistent_object": 90,
+        "open_nonexistent_container": 90,
+        "take_nonexistent_object": 90,
+        "go_to_nonexistent_location": 90,
+        "take_from_wrong_location": 90,
+        "clean_without_holding": 90,
+        "heat_without_holding": 90,
+        "cool_without_holding": 90,
+        "use_nonexistent_lamp": 90,
+        "open_already_open": 35,
+        "take_from_closed_container": 33,
+        "close_already_closed": 33
+      }
+    },
+    "pick_heat_then_place_in_recep": {
+      "games_probed": 2,
+      "games_completed": 0,
+      "avg_steps_to_complete": null,
+      "common_errors": [
+        "completely_invalid_command",
+        "put_while_empty_hands",
+        "put_nonexistent_object",
+        "open_nonexistent_container",
+        "take_nonexistent_object"
+      ],
+      "error_counts": {
+        "completely_invalid_command": 360,
+        "put_while_empty_hands": 90,
+        "put_nonexistent_object": 90,
+        "open_nonexistent_container": 90,
+        "take_nonexistent_object": 90,
+        "go_to_nonexistent_location": 90,
+        "take_from_wrong_location": 90,
+        "clean_without_holding": 90,
+        "heat_without_holding": 90,
+        "use_nonexistent_lamp": 90,
+        "cool_without_holding": 89,
+        "open_already_open": 33,
+        "take_from_closed_container": 28,
+        "close_already_closed": 28
+      }
+    },
+    "pick_cool_then_place_in_recep": {
+      "games_probed": 2,
+      "games_completed": 0,
+      "avg_steps_to_complete": null,
+      "common_errors": [
+        "completely_invalid_command",
+        "put_while_empty_hands",
+        "put_nonexistent_object",
+        "open_nonexistent_container",
+        "take_nonexistent_object"
+      ],
+      "error_counts": {
+        "completely_invalid_command": 360,
+        "put_while_empty_hands": 90,
+        "put_nonexistent_object": 90,
+        "open_nonexistent_container": 90,
+        "take_nonexistent_object": 90,
+        "go_to_nonexistent_location": 90,
+        "take_from_wrong_location": 90,
+        "clean_without_holding": 90,
+        "heat_without_holding": 90,
+        "cool_without_holding": 90,
+        "use_nonexistent_lamp": 90,
+        "open_already_open": 17,
+        "take_from_closed_container": 15,
+        "close_already_closed": 15
+      }
+    },
+    "pick_two_obj_and_place": {
+      "games_probed": 2,
+      "games_completed": 0,
+      "avg_steps_to_complete": null,
+      "common_errors": [
+        "completely_invalid_command",
+        "put_while_empty_hands",
+        "put_nonexistent_object",
+        "open_nonexistent_container",
+        "take_nonexistent_object"
+      ],
+      "error_counts": {
+        "completely_invalid_command": 360,
+        "put_while_empty_hands": 90,
+        "put_nonexistent_object": 90,
+        "open_nonexistent_container": 90,
+        "take_nonexistent_object": 90,
+        "go_to_nonexistent_location": 90,
+        "take_from_wrong_location": 90,
+        "clean_without_holding": 90,
+        "heat_without_holding": 90,
+        "cool_without_holding": 90,
+        "use_nonexistent_lamp": 90,
+        "take_from_closed_container": 7,
+        "close_already_closed": 7,
+        "open_already_open": 7
+      }
+    }
+  }
+}

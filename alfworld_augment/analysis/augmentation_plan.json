@@ -1,0 +1,181 @@
+{
+  "version": "1.0",
+  "description": "Augmentation rules for replacing uninformative 'Nothing happens.' feedback with targeted, diagnostic messages. Rules are evaluated in priority order. No rule leaks the solution path.",
+  "detection_strategy": "Compare attempted command against admissible_commands. If command matches 'Nothing happens.' observation, analyze command structure and current PDDL facts to identify cause.",
+  "rules": [
+    {
+      "rule_id": "R01",
+      "name": "put_while_hands_empty",
+      "priority": 1,
+      "description": "Agent tries 'move X to Y' or 'put X in/on Y' while holding nothing",
+      "trigger": {
+        "obs_equals": "Nothing happens.",
+        "command_pattern": "^move .+ to .+$",
+        "state_check": "no holds(agent1, *) fact present"
+      },
+      "detection_logic": "Command matches 'move <obj> to <recep>' AND no 'holds' fact exists in current facts",
+      "augmented_feedback": "You are not holding anything. You need to pick up an object before you can place it somewhere.",
+      "example_command": "move apple 1 to countertop 1",
+      "catalog_cause": "put_while_empty_hands"
+    },
+    {
+      "rule_id": "R02",
+      "name": "take_from_closed_container",
+      "priority": 2,
+      "description": "Agent tries to take an object from a container that is closed",
+      "trigger": {
+        "obs_equals": "Nothing happens.",
+        "command_pattern": "^take .+ from .+$",
+        "state_check": "target receptacle has 'openable' fact but NOT 'opened' fact"
+      },
+      "detection_logic": "Command matches 'take <obj> from <recep>' AND <recep> is openable but not opened AND obj would be in that recep if opened",
+      "augmented_feedback": "The {container} is closed. You need to open it first before you can take anything from it.",
+      "example_command": "take apple 1 from fridge 1",
+      "catalog_cause": "take_from_closed_container"
+    },
+    {
+      "rule_id": "R03",
+      "name": "take_object_not_at_location",
+      "priority": 3,
+      "description": "Agent tries to take an object that is not in the specified receptacle (object exists somewhere else, or receptacle doesn't have it)",
+      "trigger": {
+        "obs_equals": "Nothing happens.",
+        "command_pattern": "^take .+ from .+$",
+        "state_check": "object exists in facts but is NOT in the specified receptacle"
+      },
+      "detection_logic": "Command matches 'take <obj> from <recep>' AND object is known (has inreceptacle fact) but is in a DIFFERENT receptacle (not <recep>), AND container is not closed (ruled out by R02)",
+      "augmented_feedback": "You cannot take {object} from {container}. That object is not there. Try looking around other locations.",
+      "example_command": "take apple 1 from countertop 1",
+      "catalog_cause": "take_from_wrong_location"
+    },
+    {
+      "rule_id": "R04",
+      "name": "open_already_open",
+      "priority": 4,
+      "description": "Agent tries to open a container that is already open",
+      "trigger": {
+        "obs_equals": "Nothing happens.",
+        "command_pattern": "^open .+$",
+        "state_check": "target receptacle has 'opened' fact"
+      },
+      "detection_logic": "Command matches 'open <recep>' AND 'opened(<recep>)' fact is present",
+      "augmented_feedback": "The {container} is already open.",
+      "example_command": "open drawer 1",
+      "catalog_cause": "open_already_open"
+    },
+    {
+      "rule_id": "R05",
+      "name": "close_already_closed",
+      "priority": 5,
+      "description": "Agent tries to close a container that is already closed",
+      "trigger": {
+        "obs_equals": "Nothing happens.",
+        "command_pattern": "^close .+$",
+        "state_check": "target receptacle is openable but has no 'opened' fact"
+      },
+      "detection_logic": "Command matches 'close <recep>' AND <recep> is openable but not opened",
+      "augmented_feedback": "The {container} is already closed.",
+      "example_command": "close drawer 1",
+      "catalog_cause": "close_already_closed"
+    },
+    {
+      "rule_id": "R06",
+      "name": "heat_cool_clean_without_holding",
+      "priority": 6,
+      "description": "Agent tries to heat/cool/clean an object without holding it",
+      "trigger": {
+        "obs_equals": "Nothing happens.",
+        "command_pattern": "^(heat|cool|clean) .+ with .+$",
+        "state_check": "no holds(agent1, *) fact OR held object does not match"
+      },
+      "detection_logic": "Command matches 'heat/cool/clean <obj> with <appliance>' AND either agent holds nothing OR agent holds a different object than <obj>",
+      "augmented_feedback": "You are not holding {object}. You need to pick it up before you can {action} it.",
+      "example_command": "heat apple 1 with microwave 1",
+      "catalog_cause": "heat_without_holding / cool_without_holding / clean_without_holding"
+    },
+    {
+      "rule_id": "R07",
+      "name": "pick_up_second_object",
+      "priority": 7,
+      "description": "Agent tries to take an object while already holding one",
+      "trigger": {
+        "obs_equals": "Nothing happens.",
+        "command_pattern": "^take .+ from .+$",
+        "state_check": "holds(agent1, X) fact present for some X"
+      },
+      "detection_logic": "Command matches 'take <obj> from <recep>' AND a 'holds' fact is present (agent already holds something) AND container is open or not openable (so it's not a closed container error)",
+      "augmented_feedback": "You are already holding {held_object}. You can only carry one object at a time. Put it down first.",
+      "example_command": "take book 2 from bed 1",
+      "catalog_cause": "pick_up_second_object (implicit - not in catalog, but mechanically the same as take_from_wrong_location when holding)"
+    },
+    {
+      "rule_id": "R08",
+      "name": "use_appliance_without_holding",
+      "priority": 8,
+      "description": "Agent tries 'use <desklamp>' or interacts with an appliance without holding the target object",
+      "trigger": {
+        "obs_equals": "Nothing happens.",
+        "command_pattern": "^use .+$",
+        "state_check": "no holds(agent1, *) fact present"
+      },
+      "detection_logic": "Command matches 'use <lamp/appliance>' AND no 'holds' fact is present",
+      "augmented_feedback": "You are not holding anything. To examine an object under a lamp, you must first pick up the object, then use the lamp.",
+      "example_command": "use desklamp 1",
+      "catalog_cause": "use_nonexistent_lamp / examine_without_lamp_on"
+    },
+    {
+      "rule_id": "R09",
+      "name": "invalid_unrecognized_command",
+      "priority": 9,
+      "description": "Command is completely unrecognized (does not match any known command template)",
+      "trigger": {
+        "obs_equals": "Nothing happens.",
+        "command_pattern": "does not match any known grammar pattern",
+        "state_check": "none needed"
+      },
+      "detection_logic": "Command does not match any of the recognized verb patterns (go to, take, move, open, close, examine, use, heat, cool, clean, slice, inventory, look, help)",
+      "augmented_feedback": "That command is not recognized. Valid actions include: go to, take, move, open, close, examine, use, heat, cool, clean. Type 'help' to see all commands.",
+      "example_command": "fly to mars",
+      "catalog_cause": "completely_invalid_command"
+    },
+    {
+      "rule_id": "R10",
+      "name": "progress_hint_correct_object_picked_up",
+      "priority": 10,
+      "description": "Agent picks up an object that is relevant to the current task goal (positive reinforcement)",
+      "trigger": {
+        "obs_pattern": "You pick up the .+",
+        "state_check": "held object type matches a type needed for task completion per goal description"
+      },
+      "detection_logic": "Observation matches 'You pick up the <obj>' AND the object type appears in the task goal string (e.g., goal says 'heat some apple' and agent picks up 'apple 1')",
+      "augmented_feedback": "You pick up the {object}. [Good - you are holding the {object_type} needed for the task.]",
+      "example_command": "take apple 1 from diningtable 1",
+      "catalog_cause": "successful_action (positive augmentation, not an error)"
+    },
+    {
+      "rule_id": "R11",
+      "name": "exploration_guidance_nothing_here",
+      "priority": 11,
+      "description": "Agent arrives at a location that has nothing relevant to the task",
+      "trigger": {
+        "obs_pattern": "you see nothing",
+        "state_check": "agent holds nothing AND no task-relevant objects are here"
+      },
+      "detection_logic": "Observation contains 'you see nothing' AND agent is not holding the target object type AND this location has no task-relevant items",
+      "augmented_feedback": "{original_obs} There is nothing useful here for your current task. Keep exploring.",
+      "example_command": "go to sidetable 1",
+      "catalog_cause": "successful_action (location has nothing relevant)"
+    }
+  ],
+  "fallback": {
+    "description": "If 'Nothing happens.' but none of the above rules match, append a generic hint",
+    "augmented_feedback": "Nothing happens. The action could not be performed in the current state. Check your inventory and the state of nearby objects."
+  },
+  "invariants": [
+    "NEVER modify the score (reward signal)",
+    "NEVER modify the done flag",
+    "NEVER reveal the exact solution path",
+    "NEVER tell the agent exactly where the target object is",
+    "ONLY augment the observation text"
+  ]
+}

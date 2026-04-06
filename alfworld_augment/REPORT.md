@@ -81,7 +81,66 @@
 - `docs/alfworld_new_node_checklist.md`
 - `docs/alfworld_environment_requirements.md`
 
-## 4. 目前状态
+## 4. 增强方式概述
+
+### 4.1 `Nothing happens.` 的增强方式
+
+ALFWorld 原始环境中，大量失败动作都会统一返回 `Nothing happens.`。  
+当前做法是在 `analysis/augmented_env.py` 中包一层 Wrapper，在每次 `step()` 后：
+
+- 读取环境返回的 `facts` 和 `admissible_commands`
+- 构造内部状态，例如：
+  - 当前是否持有物品
+  - 容器是否打开
+  - 物品当前位于哪个 receptacle
+- 根据动作类型和内部状态匹配规则
+- 将模糊失败反馈替换为更具体、可操作的反馈
+
+例如会区分出：
+
+- 手里没有东西却执行 `move`
+- 容器没开却执行 `take`
+- 已经拿着别的物体又继续 `take`
+- 命令格式本身无效
+
+这样环境不再只返回统一报错，而是返回带原因的反馈文本。
+
+### 4.2 Progress Reward 的构造方式
+
+当前 progress reward 也是在 `analysis/augmented_env.py` 中构造，并只通过 `infos` 返回给训练框架。
+
+构造方式是：
+
+- 先从任务描述中解析任务目标
+  - 目标物体类型
+  - 目标位置类型
+  - 任务类型
+- 再结合当前 observation、内部状态和历史访问记录
+- 识别 milestone 事件
+
+目前使用的 milestone 包括：
+
+- `found_target_object`
+- `found_target_destination`
+- `holding_target_object`
+- `placed_target_object`
+- `completed_light_inspection`
+- `task_completed`
+
+同时也对明显空转行为给轻微负反馈，例如：
+
+- `revisited_empty_location`
+
+每步会输出：
+
+- `progress_events`
+- `progress_reward`
+- `progress_score`
+- `progress_milestones`
+
+这些字段不会暴露给模型，只供 trainer 和 evaluator 使用。
+
+## 5. 目前状态
 
 目前代码侧准备已经基本完成。
 
@@ -96,7 +155,7 @@
 
 当前阶段不需要重新跑整套环境增强 pipeline，现有增强结果已经可以直接进入训练阶段。
 
-## 5. 下一步
+## 6. 下一步
 
 下一步工作是进入训练阶段，在 GPU 节点上完成 ALFWorld GRPO pilot。
 
@@ -108,7 +167,7 @@
 4. 完成 baseline 与增强环境的训练对比
 5. 观察 success rate、progress return、invalid action 和训练曲线
 
-## 6. 当前汇报结论
+## 7. 当前汇报结论
 
 当前可以对外汇报为：
 

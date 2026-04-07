@@ -12,7 +12,6 @@ import json
 import os
 import re
 import glob
-import random
 from collections import defaultdict
 from pathlib import Path
 
@@ -71,6 +70,7 @@ def make_env(game_files: list, env_name: str):
     request_infos = textworld.EnvInfos(
         won=True,
         admissible_commands=True,
+        facts=True,
         extras=["gamefile"],
     )
     # max_episode_steps must be large enough to cover error probes (~50/step)
@@ -112,6 +112,35 @@ def extract_location_from_obs(obs: str) -> str:
     return ""
 
 
+def serialize_fact(fact) -> dict:
+    """Convert a TextWorld proposition into a JSON-serializable record."""
+    args = [arg.name for arg in getattr(fact, "arguments", [])]
+    fact_text = f"{fact.name}({', '.join(args)})" if args else fact.name
+    return {
+        "name": fact.name,
+        "arguments": args,
+        "text": fact_text,
+    }
+
+
+def serialize_facts(facts: list) -> list:
+    """Serialize and sort facts for stable JSON output."""
+    serialized = [serialize_fact(fact) for fact in (facts or [])]
+    return sorted(serialized, key=lambda item: item["text"])
+
+
+def compute_fact_delta(before_facts: list, after_facts: list) -> dict:
+    """Return added/removed fact records between two serialized fact lists."""
+    before_map = {fact["text"]: fact for fact in before_facts}
+    after_map = {fact["text"]: fact for fact in after_facts}
+    added = [after_map[key] for key in sorted(after_map.keys() - before_map.keys())]
+    removed = [before_map[key] for key in sorted(before_map.keys() - after_map.keys())]
+    return {
+        "added": added,
+        "removed": removed,
+    }
+
+
 def parse_inventory(admissible: list) -> tuple:
     """
     Determine inventory state from admissible commands.
@@ -123,6 +152,19 @@ def parse_inventory(admissible: list) -> tuple:
         if m:
             return "holding", m.group(1)
     return "empty", ""
+
+
+def build_state_snapshot(obs: str, admissible: list, facts: list) -> dict:
+    """Capture the observable and latent state around a transition."""
+    inventory_state, holding = parse_inventory(admissible)
+    return {
+        "location": extract_location_from_obs(obs),
+        "visible_entities": extract_objects_from_obs(obs),
+        "inventory_state": inventory_state,
+        "holding": holding,
+        "admissible_commands": list(admissible),
+        "facts": serialize_facts(facts),
+    }
 
 
 def find_closed_containers(obs: str) -> list:
@@ -494,12 +536,16 @@ def probe_game(game_file: str, task_type: str, game_idx: int) -> dict:
 
     obs_tuple, infos = env.reset()
     obs = obs_tuple[0]
+    current_admissible = infos["admissible_commands"][0]
+    current_facts = infos.get("facts", [[]])[0]
+    current_snapshot = build_state_snapshot(obs, current_admissible, current_facts)
 
     trajectory = {
         "game_file": game_file,
         "game_id": game_id,
         "task_type": task_type,
         "initial_obs": obs,
+        "initial_state": current_snapshot,
         "steps": [],
         "error_probes": [],
         "completed": False,
@@ -512,13 +558,12 @@ def probe_game(game_file: str, task_type: str, game_idx: int) -> dict:
     print(f"    Goal: {task_goal}")
 
     current_obs = obs
-    current_admissible = infos["admissible_commands"][0]
     step_number = 0
     done = False
 
-    inventory_state = "empty"
-    holding = ""
-    current_location = "start"
+    inventory_state = current_snapshot["inventory_state"]
+    holding = current_snapshot["holding"]
+    current_location = current_snapshot["location"] or "start"
     visited_actions = set()
 
     while not done and step_number < MAX_STEPS:
@@ -533,8 +578,12 @@ def probe_game(game_file: str, task_type: str, game_idx: int) -> dict:
             if probe_action in current_admissible:
                 continue
 
+            probe_pre_snapshot = build_state_snapshot(current_obs, current_admissible, current_facts)
             probe_obs_tuple, probe_scores, probe_dones, probe_infos = env.step([probe_action])
             probe_obs = probe_obs_tuple[0]
+            probe_admissible = probe_infos["admissible_commands"][0]
+            probe_facts = probe_infos.get("facts", [[]])[0]
+            probe_post_snapshot = build_state_snapshot(probe_obs, probe_admissible, probe_facts)
 
             probe_record = {
                 "action": probe_action,
@@ -542,12 +591,21 @@ def probe_game(game_file: str, task_type: str, game_idx: int) -> dict:
                 "task_type": task_type,
                 "game_file": game_file,
                 "step_number": step_number,
+                "score": probe_scores[0],
+                "done": probe_dones[0],
+                "won": probe_infos.get("won", [False])[0],
+                "state_before": probe_pre_snapshot,
+                "state_after": probe_post_snapshot,
+                "fact_delta": compute_fact_delta(
+                    probe_pre_snapshot["facts"],
+                    probe_post_snapshot["facts"],
+                ),
                 "context": {
                     "description": description,
                     "inventory_state": inventory_state,
                     "holding": holding,
                     "current_location": current_location,
-                    "admissible_commands": current_admissible[:10],
+                    "admissible_commands": list(current_admissible),
                     "cause": cause,
                 },
                 "was_admissible": False,
@@ -577,10 +635,14 @@ def probe_game(game_file: str, task_type: str, game_idx: int) -> dict:
         score = scores[0]
         done = dones[0]
         new_admissible = new_infos["admissible_commands"][0]
+        new_facts = new_infos.get("facts", [[]])[0]
         won = new_infos.get("won", [False])[0]
 
-        new_inv_state, new_holding = parse_inventory(new_admissible)
-        new_location = extract_location_from_obs(new_obs) or current_location
+        state_before = build_state_snapshot(current_obs, current_admissible, current_facts)
+        state_after = build_state_snapshot(new_obs, new_admissible, new_facts)
+        new_inv_state = state_after["inventory_state"]
+        new_holding = state_after["holding"]
+        new_location = state_after["location"] or current_location
 
         step_record = {
             "step": step_number,
@@ -589,10 +651,16 @@ def probe_game(game_file: str, task_type: str, game_idx: int) -> dict:
             "score": score,
             "done": done,
             "won": won,
-            "admissible_commands": new_admissible[:15],
+            "admissible_commands": list(new_admissible),
             "inventory_state": new_inv_state,
             "holding": new_holding,
             "location": new_location,
+            "state_before": state_before,
+            "state_after": state_after,
+            "fact_delta": compute_fact_delta(
+                state_before["facts"],
+                state_after["facts"],
+            ),
         }
         trajectory["steps"].append(step_record)
 
@@ -601,6 +669,7 @@ def probe_game(game_file: str, task_type: str, game_idx: int) -> dict:
         visited_actions.add(action)
         current_obs = new_obs
         current_admissible = new_admissible
+        current_facts = new_facts
         inventory_state = new_inv_state
         holding = new_holding
         current_location = new_location
@@ -713,6 +782,7 @@ def build_feedback_catalog(all_trajectories: list) -> dict:
             "total_steps": total_steps,
             "total_error_probes": total_error_probes,
             "task_types_covered": list(task_summaries_final.keys()),
+            "state_transition_fields": ["state_before", "state_after", "fact_delta"],
         },
         "feedback_patterns": feedback_patterns,
         "task_type_summaries": task_summaries_final,

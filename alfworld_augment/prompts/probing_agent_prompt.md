@@ -33,7 +33,7 @@ import os, json, glob
 data_path = os.path.join(alfworld.ALFWORLD_DATA, "json_2.1.1", "valid_seen")
 # Walk data_path to find game.tw-pddl files
 # Use textworld.gym.register_games() with:
-#   request_infos = textworld.EnvInfos(won=True, admissible_commands=True, extras=["gamefile"])
+#   request_infos = textworld.EnvInfos(won=True, admissible_commands=True, facts=True, extras=["gamefile"])
 #   wrappers = [AlfredDemangler(shuffle=False), AlfredInfos]
 #   batch_size=1, max_episode_steps=50
 ```
@@ -42,7 +42,12 @@ For each of the 6 task types, load 2-3 game instances and run these probes:
 
 **A. Correct path exploration:**
 - Follow admissible_commands, picking actions that seem to advance the goal
-- Record: (step, action, observation, score, done, admissible_commands)
+- Record full transition data, not just surface observations:
+  - `(step, action, observation, score, done, admissible_commands)`
+  - `state_before`, `state_after`
+  - serialized `facts`
+  - `fact_delta.added`, `fact_delta.removed`
+  - visible entities and location before/after
 
 **B. Systematic error probing — at each step, ALSO try these wrong actions:**
 - `put X in/on Y` when hands are empty (no prior pick up)
@@ -70,9 +75,17 @@ For each probe, record:
         "current_location": "shelf 1",
         "admissible_commands": ["go to ...", ...]
     },
+    "state_before": {...},
+    "state_after": {...},
+    "fact_delta": {
+        "added": [],
+        "removed": []
+    },
     "was_admissible": false
 }
 ```
+
+The enriched trajectory data will be consumed downstream by a dedicated Progress Mining Agent, so it must support state-transition analysis rather than only feedback cataloging.
 
 ### Step 2: Run the script
 
@@ -87,7 +100,8 @@ The probe_runner.py should also output this summary file:
     "meta": {
         "total_games_probed": 12,
         "total_steps": 500,
-        "total_error_probes": 200
+        "total_error_probes": 200,
+        "state_transition_fields": ["state_before", "state_after", "fact_delta"]
     },
     "feedback_patterns": [
         {
@@ -139,6 +153,7 @@ The probe_runner.py should also output this summary file:
 - Each game directory contains `game.tw-pddl` and `traj_data.json`
 - The environment returns observations as strings, scores as floats, dones as bools
 - `infos["admissible_commands"][0]` gives the list of valid commands at each step
+- `infos["facts"][0]` should be captured and serialized for downstream progress mining
 - You MUST run the script and verify it produces non-empty output files
 - Aim for breadth: cover all 6 task types and as many error conditions as you can think of
 - Use batch_size=1 to keep things simple

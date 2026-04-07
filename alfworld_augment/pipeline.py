@@ -2,16 +2,18 @@
 """
 ALFWorld Environment Augmentation Pipeline
 
-Orchestrates 3 sub-agents via Claude Code CLI (headless mode):
+Orchestrates 4 sub-agents via Claude Code CLI (headless mode):
   1. Probing Agent   — explore environment, collect feedback patterns
   2. Analysis Agent  — read source + trajectories, design augmentations, implement wrapper
-  3. Verify Agent    — check leakage, validate effectiveness
+  3. Progress Mining Agent — infer progress milestones from state transitions
+  4. Verify Agent    — check leakage, validate effectiveness
 
 Usage:
     python pipeline.py                          # run full pipeline
     python pipeline.py --agent probing          # run only probing
     python pipeline.py --agent analysis         # run only analysis (requires probing output)
-    python pipeline.py --agent verify           # run only verify (requires analysis output)
+    python pipeline.py --agent progress_mining  # run only progress mining
+    python pipeline.py --agent verify           # run only verify (requires analysis + progress mining output)
     python pipeline.py --resume analysis        # resume from analysis onward
     python pipeline.py --budget 10.0            # adjust per-agent budget
 """
@@ -28,11 +30,12 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 PROBING_DIR = ROOT / "probing"
 ANALYSIS_DIR = ROOT / "analysis"
+PROGRESS_DIR = ROOT / "progress"
 VERIFY_DIR = ROOT / "verification"
 PROMPTS_DIR = ROOT / "prompts"
 
 # Agent definitions: order matters (pipeline sequence)
-AGENTS = ["probing", "analysis", "verify"]
+AGENTS = ["probing", "analysis", "progress_mining", "verify"]
 
 AGENT_CONFIG = {
     "probing": {
@@ -55,13 +58,23 @@ AGENT_CONFIG = {
         ],
         "prerequisites": ["probing"],               # needs probing output
     },
+    "progress_mining": {
+        "prompt_file": "progress_mining_agent_prompt.md",
+        "log_file": "progress_mining_agent.log",
+        "expected_outputs": [
+            PROGRESS_DIR / "mine_progress_rules.py",
+            PROGRESS_DIR / "progress_rules.json",
+            PROGRESS_DIR / "progress_mining_report.md",
+        ],
+        "prerequisites": ["probing", "analysis"],   # needs enriched trajectories + analysis context
+    },
     "verify": {
         "prompt_file": "verify_agent_prompt.md",
         "log_file": "verify_agent.log",
         "expected_outputs": [
             VERIFY_DIR / "verify_report.md",
         ],
-        "prerequisites": ["analysis"],              # needs analysis output
+        "prerequisites": ["analysis", "progress_mining"],  # needs analysis + progress outputs
     },
 }
 

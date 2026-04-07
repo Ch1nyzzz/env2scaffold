@@ -13,6 +13,8 @@ Validate the augmented environment produced by the Analysis Agent. Check two thi
 - Wrapper code: `/data/home/yuhan/env-aug/alfworld_augment/analysis/augmented_env.py`
 - Smoke test results: `/data/home/yuhan/env-aug/alfworld_augment/analysis/smoke_test_result.json`
 - Probing data: `/data/home/yuhan/env-aug/alfworld_augment/probing/feedback_catalog.json`
+- Progress mining report: `/data/home/yuhan/env-aug/alfworld_augment/progress/progress_mining_report.md`
+- Progress rules: `/data/home/yuhan/env-aug/alfworld_augment/progress/progress_rules.json`
 
 Read ALL of these first.
 
@@ -59,6 +61,14 @@ Write and run `verification/verify_runner.py` that:
    - Run 5 full episodes on augmented env
    - Verify: rewards are unchanged, done signals are unchanged, admissible_commands are unchanged
    - Only observations should differ
+
+### Check 4: Progress Rule Sanity
+
+Review the mined progress rules and check:
+- Are milestones tied to real state transitions rather than task-template-only parsing?
+- Could any milestone be repeatedly exploited for reward farming?
+- Do mined milestones correlate with genuine advancement toward success?
+- Are there role-inference mistakes that would make shaping misleading?
 
 ### Check 3: Code Quality
 

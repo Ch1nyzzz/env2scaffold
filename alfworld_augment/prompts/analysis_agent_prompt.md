@@ -22,6 +22,8 @@ Bad augmentation (leaks solution): "Pick up the plate from countertop 2 and put 
 
 Read ALL of these files first before doing anything else.
 
+Progress shaping is handled by a separate Progress Mining Agent. Your primary scope here is feedback augmentation, wrapper implementation, and smoke testing.
+
 ## What You Must Do
 
 ### Step 1: Source code analysis → `analysis/source_analysis.md`
@@ -94,7 +96,7 @@ Design rules for AT LEAST these scenarios:
 5. open something already open
 6. invalid/unrecognized command
 7. pick up second object while already holding one
-8. progress hints — when agent picks up the right object, hint about next step direction (WITHOUT naming the exact destination)
+8. optional lightweight success hints that do NOT depend on hardcoded task-template parsing
 9. exploration guidance — when agent visits a location with nothing relevant, suggest it hasn't found what it needs yet
 
 ### Step 3: Implement wrapper → `analysis/augmented_env.py`

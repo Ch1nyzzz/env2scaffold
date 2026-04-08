@@ -19,25 +19,23 @@ export NCCL_TIMEOUT=9999999999
 LOG_DIR="logs"
 mkdir -p $LOG_DIR
 
-HOME="/ossfs/workspace/"
-USER_ROOT_PATH="/agent/share/public/*"
-
 PROJECT_DIR="$(pwd)"
 CONFIG_PATH="$PROJECT_DIR/env_tuning/config"
 PROJECT_NAME="alfworld_grpo"
-EXPERIMENT_NAME="Qwen2.5-7B-Instruct-alfworld-stage1-$(now)"
-MODEL="/agent/*Your local model path."
+EXPERIMENT_NAME="Qwen3-8B-alfworld-stage1-$(now)"
+MODEL="/home/nvidia/models/Qwen3-8B"
 DATA_DIR="$PROJECT_DIR/data"
-ROLLOUT_DIR="$USER_ROOT_PATH/rollout/$PROJECT_NAME/$EXPERIMENT_NAME"
+OUTPUT_ROOT="/home/nvidia/env2scaffold/outputs"
+ROLLOUT_DIR="$OUTPUT_ROOT/rollout/$PROJECT_NAME/$EXPERIMENT_NAME"
 LOG_FILE="$LOG_DIR/alfworld_grpo_train_${TIMESTAMP}.log"
-DEFAULT_LOCAL_DIR="$USER_ROOT_PATH/models/checkpoints/$PROJECT_NAME/$EXPERIMENT_NAME"
+DEFAULT_LOCAL_DIR="$OUTPUT_ROOT/checkpoints/$PROJECT_NAME/$EXPERIMENT_NAME"
 
 TRAIN_BATCH_SIZE=16
 MINI_BATCH_SIZE=32
 MAX_TOEKN_LEN_PER_GPU=32768
 EPOCH=10
 
-export TENSORBOARD_DIR="$HOME/tensorboard/$EXPERIMENT_NAME"
+export TENSORBOARD_DIR="$OUTPUT_ROOT/tensorboard/$EXPERIMENT_NAME"
 
 
 python3 -m verl.trainer.main_ppo \

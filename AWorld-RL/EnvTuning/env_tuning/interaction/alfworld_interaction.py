@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import glob
+import os
+import random
 import re
 import sys
 from dataclasses import dataclass, field
@@ -33,6 +36,19 @@ from augmented_env import AugmentedAlfWorldEnv  # noqa: E402
 PARSE_ERROR_REWARD = -0.25
 EXECUTION_ERROR_REWARD = -0.5
 DEFAULT_SUCCESS_REWARD = 3.0
+
+ALFWORLD_CACHE = Path(os.path.expanduser("~/.cache/alfworld/json_2.1.1"))
+
+
+def _scan_game_files(split: str = "train") -> List[str]:
+    """Scan ALFWorld cache for all game.tw-pddl files in a given split."""
+    split_dir = ALFWORLD_CACHE / split
+    if not split_dir.exists():
+        raise FileNotFoundError(f"ALFWorld data not found at {split_dir}. Run `alfworld-download` first.")
+    files = sorted(str(p) for p in split_dir.glob("*/trial_*/game.tw-pddl"))
+    if not files:
+        raise FileNotFoundError(f"No game files found in {split_dir}")
+    return files
 
 
 @dataclass
@@ -128,11 +144,16 @@ class AlfWorldInteraction(BaseInteraction):
     """
     Multi-turn ALFWorld interaction for verl/GRPO.
 
-    Expected dataset interaction_kwargs fields:
-      - game_file: absolute path to one ALFWorld `game.tw-pddl`
-      - max_episode_steps: optional int, default 50
-      - use_augmented_env: optional bool, default true
-      - verbose: optional bool, default false
+    Supports two modes:
+    1. Static: game_file provided in interaction_kwargs (from parquet)
+    2. Dynamic: no game_file → randomly sample from ALFWorld cache
+
+    Config fields:
+      - max_episode_steps: int, default 50
+      - use_augmented_env: bool, default true
+      - verbose: bool, default false
+      - train_split: str, default "train" (for dynamic game selection)
+      - val_split: str, default "valid_seen" (for dynamic game selection)
     """
 
     def __init__(self, config: Dict[str, Any]):
@@ -142,6 +163,17 @@ class AlfWorldInteraction(BaseInteraction):
         self.default_use_augmented_env = _coerce_bool(config.get("use_augmented_env", True), default=True)
         self.default_verbose = _coerce_bool(config.get("verbose", False), default=False)
         self._instance_dict: Dict[str, AlfWorldInstanceState] = {}
+
+        # Scan available game files for dynamic selection
+        train_split = config.get("train_split", "train")
+        val_split = config.get("val_split", "valid_seen")
+        self._train_games = _scan_game_files(train_split)
+        self._val_games = _scan_game_files(val_split)
+        self._rng = random.Random(config.get("seed", None))
+
+    def _pick_random_game(self, split: str = "train") -> str:
+        games = self._train_games if split == "train" else self._val_games
+        return self._rng.choice(games)
 
     def _make_base_env(self, game_file: str, max_episode_steps: int):
         request_infos = textworld.EnvInfos(
@@ -171,8 +203,10 @@ class AlfWorldInteraction(BaseInteraction):
             merged_kwargs = dict(kwargs)
 
         game_file = merged_kwargs.get("game_file")
+        # Dynamic mode: pick a random game if not specified
         if not game_file:
-            raise ValueError("ALFWorld interaction requires `game_file` in interaction_kwargs.")
+            split = merged_kwargs.get("split", "train")
+            game_file = self._pick_random_game(split)
 
         max_episode_steps = int(merged_kwargs.get("max_episode_steps", self.default_max_episode_steps))
         use_augmented_env = _coerce_bool(

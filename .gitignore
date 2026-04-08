@@ -1,0 +1,23 @@
+# Virtual environments
+venv/
+venv310/
+
+# Outputs and logs
+outputs/
+AWorld-RL/EnvTuning/outputs/
+AWorld-RL/EnvTuning/wandb/
+AWorld-RL/EnvTuning/logs/
+verl-agent/logs/
+verl-agent/wandb/
+
+# Docker
+alfworld-envtuning.tar.gz
+
+# Models and data caches
+*.parquet
+__pycache__/
+*.pyc
+*.egg-info/
+
+# OS
+.DS_Store

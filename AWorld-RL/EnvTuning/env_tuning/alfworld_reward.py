@@ -1,9 +1,11 @@
+"""EnvTuning ALFWorld reward: fine-grained progress shaping, normalized to [0, 1]."""
 from __future__ import annotations
 
 from typing import Any, Dict, Iterable, List
 
 
-SUCCESS_BONUS = 5.0
+PROGRESS_WEIGHT = 0.5   # half from progress
+SUCCESS_WEIGHT = 0.5    # half from final success
 POSITIVE_CLIP = 3.0
 NEGATIVE_CLIP = -1.0
 
@@ -49,28 +51,42 @@ def compute_score(
     **kwargs,
 ) -> Dict[str, Any]:
     """
-    Aggregate ALFWorld interaction rewards into a single GRPO scalar.
+    Fine-grained progress reward, normalized to [0, 1].
 
-    The interaction emits per-step shaped rewards derived from the augmented
-    environment's internal `progress_reward`. This function sums the clipped
-    shaped returns and adds a sparse terminal success bonus.
+    score = PROGRESS_WEIGHT * progress_ratio + SUCCESS_WEIGHT * success
+    - progress_ratio: fraction of positive steps vs total steps, in [0, 1]
+    - success: 1.0 if task completed, else 0.0
+    Total score is in [0, 1], same scale as vanilla for fair comparison.
     """
-
     user_turn_rewards = _coerce_float_list(reward_scores.get("user_turn_rewards", []))
     clipped_turn_rewards = [
         max(NEGATIVE_CLIP, min(POSITIVE_CLIP, reward))
         for reward in user_turn_rewards
     ]
 
-    progress_return = sum(clipped_turn_rewards)
     success = _extract_success_flag(reward_scores, extra_info, clipped_turn_rewards)
-    success_bonus = SUCCESS_BONUS if success else 0.0
+
+    # Normalize progress to [0, 1]
+    if clipped_turn_rewards:
+        positive_sum = sum(max(0.0, r) for r in clipped_turn_rewards)
+        max_possible = POSITIVE_CLIP * len(clipped_turn_rewards)
+        progress_ratio = min(1.0, positive_sum / max_possible) if max_possible > 0 else 0.0
+    else:
+        progress_ratio = 0.0
+
+    success_val = 1.0 if success else 0.0
+    # Success = full reward; failure = progress only (scaled to [0, 1))
+    if success:
+        score = 1.0
+    else:
+        score = progress_ratio * PROGRESS_WEIGHT
+
     error_turns = sum(1 for reward in clipped_turn_rewards if reward < 0)
 
     return {
-        "score": progress_return + success_bonus,
-        "progress_return": progress_return,
-        "success_bonus": success_bonus,
+        "score": score,
+        "progress_return": progress_ratio,
+        "success_bonus": success_val,
         "success": float(success),
         "total_interaction_rounds": len(clipped_turn_rewards),
         "negative_reward_turns": error_turns,

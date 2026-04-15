@@ -18,6 +18,9 @@ mkdir -p $LOG_DIR
 LOG_FILE="$LOG_DIR/alfworld_full_envtuning_${TIMESTAMP}.log"
 ERR_FILE="$LOG_DIR/alfworld_full_envtuning_${TIMESTAMP}.err"
 PROGRESS_FILE="$LOG_DIR/alfworld_full_envtuning_progress.log"
+OUTPUT_ROOT="${OUTPUT_ROOT:-/home/nvidia/env2scaffold/outputs}"
+EXPERIMENT_NAME="Qwen3-8B-full-envtuning-grpo-v2-${TIMESTAMP}"
+ROLLOUT_DIR="$OUTPUT_ROOT/rollout/full-envtuning-grpo-v2/${EXPERIMENT_NAME}"
 
 num_cpus_per_env_worker=0.1
 train_data_size=16
@@ -35,7 +38,7 @@ python3 -m verl.trainer.main_ppo \
     data.val_files=$HOME/data/verl-agent/text/test.parquet \
     data.train_batch_size=$train_data_size \
     data.val_batch_size=$val_data_size \
-    data.max_prompt_length=2048 \
+    data.max_prompt_length=4096 \
     data.max_response_length=512 \
     data.filter_overlong_prompts=True \
     data.truncation='error' \
@@ -44,14 +47,14 @@ python3 -m verl.trainer.main_ppo \
     actor_rollout_ref.actor.optim.lr=1e-6 \
     actor_rollout_ref.model.use_remove_padding=True \
     actor_rollout_ref.actor.ppo_mini_batch_size=256 \
-    actor_rollout_ref.actor.ppo_micro_batch_size_per_gpu=8 \
+    actor_rollout_ref.actor.ppo_micro_batch_size_per_gpu=32 \
     actor_rollout_ref.actor.use_kl_loss=True \
     actor_rollout_ref.actor.kl_loss_coef=0.01 \
     actor_rollout_ref.actor.kl_loss_type=low_var_kl \
     actor_rollout_ref.model.enable_gradient_checkpointing=True \
-    actor_rollout_ref.actor.fsdp_config.param_offload=True \
-    actor_rollout_ref.actor.fsdp_config.optimizer_offload=True \
-    actor_rollout_ref.rollout.log_prob_micro_batch_size_per_gpu=8 \
+    actor_rollout_ref.actor.fsdp_config.param_offload=False \
+    actor_rollout_ref.actor.fsdp_config.optimizer_offload=False \
+    actor_rollout_ref.rollout.log_prob_micro_batch_size_per_gpu=32 \
     actor_rollout_ref.rollout.tensor_model_parallel_size=2 \
     actor_rollout_ref.rollout.name=$ENGINE \
     actor_rollout_ref.rollout.gpu_memory_utilization=0.4 \
@@ -60,7 +63,7 @@ python3 -m verl.trainer.main_ppo \
     actor_rollout_ref.rollout.free_cache_engine=False \
     actor_rollout_ref.rollout.val_kwargs.temperature=0.4 \
     actor_rollout_ref.rollout.val_kwargs.do_sample=True \
-    actor_rollout_ref.ref.log_prob_micro_batch_size_per_gpu=8 \
+    actor_rollout_ref.ref.log_prob_micro_batch_size_per_gpu=32 \
     actor_rollout_ref.ref.fsdp_config.param_offload=True \
     actor_rollout_ref.actor.use_invalid_action_penalty=True \
     actor_rollout_ref.actor.invalid_action_penalty_coef=0.1 \
@@ -75,22 +78,24 @@ python3 -m verl.trainer.main_ppo \
     trainer.critic_warmup=0 \
     trainer.logger=['console','wandb'] \
     trainer.project_name='alfworld-grpo' \
-    trainer.experiment_name="Qwen3-8B-full-envtuning-grpo-${TIMESTAMP}" \
+    trainer.experiment_name="${EXPERIMENT_NAME}" \
     trainer.n_gpus_per_node=8 \
     trainer.nnodes=1 \
     trainer.save_freq=20 \
     trainer.test_freq=5 \
     trainer.total_epochs=150 \
     trainer.val_before_train=True \
-    trainer.default_local_dir="${CKPT_DIR:-/home/nvidia/env2scaffold/outputs/checkpoints}/full-envtuning-grpo" \
+    trainer.rollout_data_dir="${ROLLOUT_DIR}" \
+    trainer.default_local_dir="${CKPT_DIR:-${OUTPUT_ROOT}/checkpoints}/full-envtuning-grpo-v2" \
     >"$LOG_FILE" 2>"$ERR_FILE" &
 
 TRAIN_PID=$!
 echo "PID: $TRAIN_PID" > "$PROGRESS_FILE"
-echo "Experiment: Qwen3-8B-full-envtuning-grpo-${TIMESTAMP}" >> "$PROGRESS_FILE"
+echo "Experiment: ${EXPERIMENT_NAME}" >> "$PROGRESS_FILE"
 echo "Started: $(date)" >> "$PROGRESS_FILE"
 echo "Log: $LOG_FILE" >> "$PROGRESS_FILE"
 echo "Err: $ERR_FILE" >> "$PROGRESS_FILE"
+echo "Rollout Dir: $ROLLOUT_DIR" >> "$PROGRESS_FILE"
 
 wait $TRAIN_PID
 echo "Finished: $(date), exit code: $?" >> "$PROGRESS_FILE"

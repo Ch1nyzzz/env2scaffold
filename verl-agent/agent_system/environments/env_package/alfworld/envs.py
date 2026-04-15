@@ -225,15 +225,25 @@ class AugmentedAlfworldWorker:
         raw_env.seed(seed)
         self.env = AugmentedAlfWorldEnv(raw_env, verbose=False)
 
+    def _rewrap_infos(self, infos, obs):
+        """Match the vanilla AlfworldWorker batch_size=1 info shape."""
+        wrapped_infos = {}
+        for key, value in infos.items():
+            if isinstance(value, list):
+                wrapped_infos[key] = value
+            else:
+                wrapped_infos[key] = [value]
+        wrapped_infos["observation_text"] = [obs]
+        return wrapped_infos
+
     def step(self, action):
         obs, score, done, infos = self.env.step(action)
-        # Re-wrap into batch format to match AlfworldWorker interface
-        infos['observation_text'] = [obs]
+        infos = self._rewrap_infos(infos, obs)
         return [obs], [score], [done], infos
 
     def reset(self):
         obs, infos = self.env.reset()
-        infos['observation_text'] = [obs]
+        infos = self._rewrap_infos(infos, obs)
         return [obs], infos
 
     def getobs(self):

@@ -229,10 +229,11 @@ class AugmentedAlfworldWorker:
         """Match the vanilla AlfworldWorker batch_size=1 info shape."""
         wrapped_infos = {}
         for key, value in infos.items():
-            if isinstance(value, list):
-                wrapped_infos[key] = value
-            else:
-                wrapped_infos[key] = [value]
+            # The downstream env manager unpacks batch_size=1 info values with
+            # `info[k] = info[k][0]`. Keep every field wrapped in an outer list
+            # so structured values such as admissible_commands/facts survive
+            # that flattening step intact.
+            wrapped_infos[key] = [value]
         wrapped_infos["observation_text"] = [obs]
         return wrapped_infos
 

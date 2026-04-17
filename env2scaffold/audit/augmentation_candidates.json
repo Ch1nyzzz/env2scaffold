@@ -1,0 +1,278 @@
+{
+  "benchmark": "alfworld",
+  "source_catalog_path": "env2scaffold/probing/feedback_catalog.json",
+  "source_spec_path": "env2scaffold/benchmark_spec/benchmark_spec.json",
+  "ambiguity_summary": {
+    "total_distinct_feedback_strings": 344,
+    "total_ambiguity_clusters": 6,
+    "estimated_total_coverage_fraction": 0.93
+  },
+  "candidates": [
+    {
+      "candidate_id": "C01",
+      "kind": "disambiguate_failure",
+      "trigger": {
+        "observation_text_pattern": "^Nothing happens\\.$",
+        "action_pattern": "^[a-z]+ .*",
+        "internal_state_condition": null
+      },
+      "ambiguity_cluster": {
+        "shared_emitted_text": "Nothing happens.",
+        "distinct_underlying_causes": [
+          "completely_invalid_command: command verb is not in any valid grammar rule (e.g. 'fly to mars'); the command string has no recognizable action type"
+        ],
+        "observed_frequency": 2160,
+        "example_trajectory_refs": [
+          "look_at_obj_in_light_1_trial_T20190909_044715_250790_look_at_obj_in_light-AlarmClock-None-DeskLamp-323.json#step=0",
+          "look_at_obj_in_light_2_trial_T20190907_150418_457594_look_at_obj_in_light-Vase-None-DeskLamp-303.json#step=0",
+          "pick_and_place_simple_1_trial_T20190908_050633_745514_pick_and_place_simple-Book-None-SideTable-329.json#step=0"
+        ]
+      },
+      "proposed_feedback_intent": "Indicate that the submitted command string could not be parsed as any recognized action type, and suggest the agent consult the admissible command list to see valid action formats.",
+      "priors": {
+        "utility": {
+          "verdict": "plausibly_useful",
+          "reason": "An agent training signal distinguishing 'unrecognized verb' from all other Nothing-happens causes prevents the agent from inferring that nearby entities or inventory state are the culprit."
+        },
+        "novelty": {
+          "verdict": "novel",
+          "reason": "admissible_commands shows valid command strings but does not expose a 'verb-is-unrecognized' diagnostic; the agent must scan all AC entries to infer the verb class is absent."
+        },
+        "non_leakage": {
+          "verdict": "safe",
+          "reason": "Saying 'command format unrecognized' reveals no game-state information—it only restates that the command failed at the parse layer."
+        },
+        "testability": {
+          "verdict": "testable",
+          "reason": "admissible_commands_validity_heuristic oracle can verify the test case: send a garbage-verb command and confirm it is not in admissible_commands while the feedback changes to the new form."
+        }
+      },
+      "downstream_notes": "The augmentation wrapper must parse the raw command string to identify the action-type prefix (e.g., 'go to', 'take', 'put', 'open', 'close', 'clean', 'heat', 'cool', 'use', 'examine', 'look', 'inventory', 'help') and check whether it matches any known verb. This cluster is logically upstream of C02: first check verb, then check entity. Order of checks matters for the augmentation_builder."
+    },
+    {
+      "candidate_id": "C02",
+      "kind": "disambiguate_failure",
+      "trigger": {
+        "observation_text_pattern": "^Nothing happens\\.$",
+        "action_pattern": "^(take .+ from .+|go to .+|open .+|put .+ in/on .+|use .+)$",
+        "internal_state_condition": null
+      },
+      "ambiguity_cluster": {
+        "shared_emitted_text": "Nothing happens.",
+        "distinct_underlying_causes": [
+          "take_nonexistent_object: object name referenced in 'take X from Y' does not exist in the game world",
+          "open_nonexistent_container: receptacle name in 'open X' does not exist in the game world",
+          "go_to_nonexistent_location: location name in 'go to X' does not exist in the game world",
+          "use_nonexistent_lamp: lamp name in 'use X' does not exist in the game world",
+          "put_nonexistent_object: object name in 'put X in/on Y' does not exist in the game world"
+        ],
+        "observed_frequency": 2700,
+        "example_trajectory_refs": [
+          "look_at_obj_in_light_1_trial_T20190909_044715_250790_look_at_obj_in_light-AlarmClock-None-DeskLamp-323.json#step=0",
+          "look_at_obj_in_light_2_trial_T20190907_150418_457594_look_at_obj_in_light-Vase-None-DeskLamp-303.json#step=0",
+          "pick_and_place_simple_1_trial_T20190908_050633_745514_pick_and_place_simple-Book-None-SideTable-329.json#step=0"
+        ]
+      },
+      "proposed_feedback_intent": "Indicate that the entity referenced in the command does not exist anywhere in the current game world, as opposed to the entity existing but being inaccessible from the current state.",
+      "priors": {
+        "utility": {
+          "verdict": "plausibly_useful",
+          "reason": "Distinguishing 'entity never exists' from 'entity exists but not accessible' is critical for exploration strategy: if an entity doesn't exist, no amount of navigation will find it."
+        },
+        "novelty": {
+          "verdict": "novel",
+          "reason": "admissible_commands only reflects the current state; an entity that exists but hasn't been found yet (e.g., in an unopened container) would also be absent from admissible_commands—so absence from AC does not confirm non-existence."
+        },
+        "non_leakage": {
+          "verdict": "safe",
+          "reason": "Confirming entity non-existence reveals nothing about task-relevant objects; entity names in admissible_commands already imply existence of those entities."
+        },
+        "testability": {
+          "verdict": "testable",
+          "reason": "pddl_facts_state oracle can verify: if the referenced entity name appears nowhere in the full pddl_facts set, it does not exist; augmentation correctness can be validated against pddl_facts."
+        }
+      },
+      "downstream_notes": "The augmentation wrapper needs access to pddl_facts (request_infos.facts=True with AlfredDemangler) to verify entity existence. Alternatively it can scan admissible_commands across all known game states, but that requires history. pddl_facts at the current step is the cleanest oracle. Note that the five sub-causes share the same 'entity does not exist' semantics and can be handled by a single rule checking the entity token against pddl_facts."
+    },
+    {
+      "candidate_id": "C03",
+      "kind": "disambiguate_failure",
+      "trigger": {
+        "observation_text_pattern": "^Nothing happens\\.$",
+        "action_pattern": "^(put .+ in/on .+|clean .+ with .+|heat .+ with .+|cool .+ with .+)$",
+        "internal_state_condition": "pddl_facts: NOT holds(agent_1, <object>)"
+      },
+      "ambiguity_cluster": {
+        "shared_emitted_text": "Nothing happens.",
+        "distinct_underlying_causes": [
+          "put_while_empty_hands: agent tried to put an object while holding nothing (inventory empty)",
+          "clean_without_holding: agent tried to clean an object it is not currently holding",
+          "heat_without_holding: agent tried to heat an object it is not currently holding",
+          "cool_without_holding: agent tried to cool an object it is not currently holding"
+        ],
+        "observed_frequency": 2159,
+        "example_trajectory_refs": [
+          "look_at_obj_in_light_1_trial_T20190909_044715_250790_look_at_obj_in_light-AlarmClock-None-DeskLamp-323.json#step=0",
+          "look_at_obj_in_light_2_trial_T20190907_150418_457594_look_at_obj_in_light-Vase-None-DeskLamp-303.json#step=0",
+          "pick_and_place_simple_1_trial_T20190908_050633_745514_pick_and_place_simple-Book-None-SideTable-329.json#step=0"
+        ]
+      },
+      "proposed_feedback_intent": "Indicate that the action requires the agent to be holding the target object first, and communicate whether the current inventory is empty or holds a different object than what the command specified.",
+      "priors": {
+        "utility": {
+          "verdict": "plausibly_useful",
+          "reason": "An agent that received 'Nothing happens.' for 'heat apple 1 with microwave 1' cannot distinguish 'apple 1 does not exist' (C02) from 'you are not holding apple 1'; disambiguating into the latter enables a correct pick-then-operate recovery strategy."
+        },
+        "novelty": {
+          "verdict": "novel",
+          "reason": "Although inventory info (request_infos.inventory=True) is available, checking inventory is a separate agent step and the connection to the failed operation is not spelled out in existing feedback."
+        },
+        "non_leakage": {
+          "verdict": "safe",
+          "reason": "Telling the agent it needs to hold the target object reveals inventory state, which is already available via the inventory info channel—no new privileged information is disclosed."
+        },
+        "testability": {
+          "verdict": "testable",
+          "reason": "pddl_facts_state oracle can verify the precondition: check that holds(agent_1, X) is absent from pddl_facts at the step where clean/heat/cool/put of X was attempted."
+        }
+      },
+      "downstream_notes": "C03 and C02 can both fire for 'clean X with Y' if X does not exist (C02) vs. X exists but not held (C03). The augmentation wrapper must check entity existence first (C02 guard), then check holds predicate. This determines rule ordering. For 'put X in/on Y', the 'empty hands' sub-case is detectable via inventory channel (empty string or 'You are not carrying anything.'); the wrapper can use inventory info rather than pddl_facts for the empty-hands case."
+    },
+    {
+      "candidate_id": "C04",
+      "kind": "disambiguate_failure",
+      "trigger": {
+        "observation_text_pattern": "^Nothing happens\\.$",
+        "action_pattern": "^take .+ from .+$",
+        "internal_state_condition": "pddl_facts: inreceptacle(<object>, <receptacle>) OR opened(<receptacle>)"
+      },
+      "ambiguity_cluster": {
+        "shared_emitted_text": "Nothing happens.",
+        "distinct_underlying_causes": [
+          "take_from_wrong_location: object exists in the game but is not at the receptacle specified in the command",
+          "take_from_closed_container: object exists and is at the specified receptacle, but the receptacle is currently closed"
+        ],
+        "observed_frequency": 656,
+        "example_trajectory_refs": [
+          "look_at_obj_in_light_1_trial_T20190909_044715_250790_look_at_obj_in_light-AlarmClock-None-DeskLamp-323.json#step=5",
+          "look_at_obj_in_light_2_trial_T20190907_150418_457594_look_at_obj_in_light-Vase-None-DeskLamp-303.json#step=5",
+          "pick_and_place_simple_1_trial_T20190908_050633_745514_pick_and_place_simple-Book-None-SideTable-329.json#step=6"
+        ]
+      },
+      "proposed_feedback_intent": "Indicate whether the take failure is because (a) the object is at a different location than specified, or (b) the specified receptacle is closed and must be opened first.",
+      "priors": {
+        "utility": {
+          "verdict": "plausibly_useful",
+          "reason": "The two sub-causes require completely different recovery actions—navigate elsewhere to find the object vs. open the container first—so confusing them wastes exploration steps."
+        },
+        "novelty": {
+          "verdict": "partially_redundant",
+          "reason": "For the closed-container case, admissible_commands will include 'open X' but not 'take Y from X', allowing the agent to infer the container is closed; for wrong-location, scanning admissible_commands for 'take Y from *' reveals where Y actually is—but this requires multi-step inference over the AC list."
+        },
+        "non_leakage": {
+          "verdict": "needs_review",
+          "reason": "Reporting the actual current location of the object ('take X from Y fails; X is at Z') would reveal game-world object placement that the agent hasn't explored to find yet—augmentation_builder must decide whether to report cause only (closed/wrong-location) or also the correct location."
+        },
+        "testability": {
+          "verdict": "testable",
+          "reason": "pddl_facts_state oracle can verify: check inreceptacle(X, Y) to distinguish wrong-location from correct-location cases, and opened(Y) to distinguish closed-container from wrong-location."
+        }
+      },
+      "downstream_notes": "The non_leakage concern applies specifically to 'wrong location' sub-case: if feedback reveals WHERE the object is, it leaks the solution. Safe approach: indicate category of failure ('object not at that receptacle' vs 'receptacle is closed') without disclosing the actual location. augmentation_builder must make this call explicitly."
+    },
+    {
+      "candidate_id": "C05",
+      "kind": "disambiguate_failure",
+      "trigger": {
+        "observation_text_pattern": "^Nothing happens\\.$",
+        "action_pattern": "^examine .+$",
+        "internal_state_condition": "pddl_facts: NOT toggled(<desklamp>)"
+      },
+      "ambiguity_cluster": {
+        "shared_emitted_text": "Nothing happens.",
+        "distinct_underlying_causes": [
+          "examine_without_lamp_on: for look_at_obj_in_light task, the examine action on certain objects is not admissible when no desklamp is active—probing data shows all 37 instances had was_admissible=false, but the PDDL non-admissibility may reflect lamp-off state rather than wrong-location"
+        ],
+        "observed_frequency": 37,
+        "example_trajectory_refs": [
+          "look_at_obj_in_light_1_trial_T20190909_044715_250790_look_at_obj_in_light-AlarmClock-None-DeskLamp-323.json#step=0",
+          "look_at_obj_in_light_2_trial_T20190907_150418_457594_look_at_obj_in_light-Vase-None-DeskLamp-303.json#step=0"
+        ]
+      },
+      "proposed_feedback_intent": "For look_at_obj_in_light task contexts: indicate that examining an object in this task requires a light source to be active, distinguishing this failure from a generic wrong-location or non-existent entity failure.",
+      "priors": {
+        "utility": {
+          "verdict": "plausibly_useful",
+          "reason": "37 observed occurrences across only 2 task instances implies high per-episode frequency for look_at tasks; the task requires a specific prerequisite (lamp on) that 'Nothing happens.' does not communicate."
+        },
+        "novelty": {
+          "verdict": "novel",
+          "reason": "admissible_commands does not distinguish 'examine X not in AC because lamp is off' from 'examine X not in AC because not at X'; pddl_facts toggled predicate would reveal the difference but is not in the text observation."
+        },
+        "non_leakage": {
+          "verdict": "needs_review",
+          "reason": "Reporting 'a light source must be on' implicitly reveals task structure for look_at_obj_in_light; whether this constitutes task-structure leakage depends on how the task description was framed in the intro observation."
+        },
+        "testability": {
+          "verdict": "hard_to_test",
+          "reason": "There is an unresolved open question in benchmark_spec.json about whether the PDDL grammar for look_at_obj_in_light explicitly gates examine admissibility on toggled(desklamp); without confirming this, oracle_designer cannot rely on toggled predicate from pddl_facts_state as a reliable discriminant."
+        }
+      },
+      "downstream_notes": "This candidate has an open question dependency: benchmark_spec.json open_question #3 and the probing data ambiguity. All 37 instances had was_admissible=false; it is unclear whether non-admissibility is caused by lamp being off or by the agent not being at the target object's location. Before augmentation_builder acts on this candidate, a targeted probe should confirm whether 'examine X' becomes admissible after 'use desklamp' is executed while at the correct location. Mark as speculative until confirmed."
+    },
+    {
+      "candidate_id": "C06",
+      "kind": "emit_missing_signal",
+      "trigger": {
+        "observation_text_pattern": "<absent>",
+        "action_pattern": ".*",
+        "internal_state_condition": "pddl_facts: done=True AND won=False (step limit reached via Limit wrapper)"
+      },
+      "ambiguity_cluster": {
+        "shared_emitted_text": "<absent>",
+        "distinct_underlying_causes": [
+          "step_limit_silent_termination: Limit wrapper sets done=True after max_episode_steps without changing observation text; the final observation is indistinguishable from any mid-episode step"
+        ],
+        "observed_frequency": 0,
+        "example_trajectory_refs": [
+          "pick_and_place_simple_1_trial_T20190908_050633_745514_pick_and_place_simple-Book-None-SideTable-329.json#step=44",
+          "pick_heat_then_place_in_recep_2_trial_T20190908_033721_967359_pick_heat_then_place_in_recep-Tomato-None-Fridge-24.json#step=44"
+        ]
+      },
+      "proposed_feedback_intent": "Emit a distinct observation when the episode terminates due to step limit exhaustion, allowing the agent to distinguish training-episode boundaries caused by timeout from boundaries caused by task success.",
+      "priors": {
+        "utility": {
+          "verdict": "unclear",
+          "reason": "Silent step-limit termination means done=True arrives with no observation change; for RL training this creates a misleading terminal state, but whether a text change improves learning depends on training loop design."
+        },
+        "novelty": {
+          "verdict": "novel",
+          "reason": "No current observation, info field, or admissible_commands signal distinguishes step-limit termination from normal step; the agent can only infer it from counting steps externally."
+        },
+        "non_leakage": {
+          "verdict": "safe",
+          "reason": "A step-limit notification reveals no game-world information—only that the episode is ending due to a training constraint rather than task completion."
+        },
+        "testability": {
+          "verdict": "hard_to_test",
+          "reason": "Requires running a game to exactly max_episode_steps and verifying done=True without won=True; benchmark_spec.json open_question #5 confirms this behavior has not been directly validated from Limit wrapper source."
+        }
+      },
+      "downstream_notes": "This candidate is speculative: the observed_frequency is 0 because all 12 probed trajectories used a 45-step cutoff that did not reach the Limit wrapper's threshold (likely 50 per the spec example). Direct evidence requires a live run at max_episode_steps. The augmentation wrapper for this candidate would intercept the done=True AND NOT won=True condition in the step return rather than modifying grammar feedback—a structurally different augmentation hook than C01–C05. Flag this for augmentation_builder as a wrapper-hook candidate, not a grammar-rule candidate. The referenced step=44 examples are the LAST observed steps before probing stopped—they are not confirmed Limit-wrapper terminations."
+    }
+  ],
+  "deferred": [
+    {
+      "reason": "open_already_open and close_already_closed (245 total occurrences) are inferable from admissible_commands without ambiguity: when 'open X' fails, if 'close X' appears in admissible_commands the container is already open; if 'open X' appears the container is already closed. The AC field at the returned step directly discriminates these causes with no additional information needed.",
+      "example": "open fridge 1 -> Nothing happens. + admissible_commands contains 'close fridge 1' => fridge is already open; no new feedback text adds utility."
+    },
+    {
+      "reason": "clean/heat/cool success feedback grammar rules are unobserved in probing data (no trajectory completed the transformation step in 45 steps). Cannot confirm whether current grammar feedback is informative or absent without live execution. Noted as a coverage gap in Cross-Check Against Spec rather than made into a candidate.",
+      "example": "clean butterknife 1 with sinkbasin 1 -> (grammar-derived text, unobserved); cannot validate whether result confirms isclean state change."
+    },
+    {
+      "reason": "GotoLocation feedback is already context-rich (includes room name and visible objects) and has exactly 1 cause per feedback string; no ambiguity cluster exists to address.",
+      "example": "go to sinkbasin 1 -> 'You arrive at sinkbasin 1. On the sinkbasin 1, you see a fork 2.' — self-explanatory, 1 cause."
+    }
+  ]
+}

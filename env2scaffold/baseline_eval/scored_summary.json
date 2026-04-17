@@ -1,0 +1,362 @@
+{
+  "original": {
+    "n": 640,
+    "errors": 0,
+    "avg_score": 1.016796875,
+    "by_task_type": {
+      "look_at_obj_in_light": {
+        "n": 60,
+        "avg_score": 0.8941666666666668,
+        "success_rate": 0.5666666666666667
+      },
+      "pick_and_place_simple": {
+        "n": 144,
+        "avg_score": 1.091319444444445,
+        "success_rate": 0.8194444444444444
+      },
+      "pick_clean_then_place_in_recep": {
+        "n": 112,
+        "avg_score": 0.9093749999999996,
+        "success_rate": 0.5714285714285714
+      },
+      "pick_two_obj_and_place": {
+        "n": 140,
+        "avg_score": 1.283571428571429,
+        "success_rate": 0.8
+      },
+      "pick_cool_then_place_in_recep": {
+        "n": 99,
+        "avg_score": 0.9080808080808074,
+        "success_rate": 0.5959595959595959
+      },
+      "pick_heat_then_place_in_recep": {
+        "n": 85,
+        "avg_score": 0.8058823529411756,
+        "success_rate": 0.29411764705882354
+      }
+    },
+    "by_unit_test": {
+      "UT_LOIL_01": {
+        "n_applicable": 60,
+        "pass_rate": 0.8166666666666667,
+        "avg_contribution": 0.20416666666666666
+      },
+      "UT_LOIL_02": {
+        "n_applicable": 60,
+        "pass_rate": 0.7166666666666667,
+        "avg_contribution": 0.14333333333333337
+      },
+      "UT_LOIL_03": {
+        "n_applicable": 60,
+        "pass_rate": 0.3333333333333333,
+        "avg_contribution": 0.11666666666666663
+      },
+      "UT_LOIL_04": {
+        "n_applicable": 60,
+        "pass_rate": 0.95,
+        "avg_contribution": 0.18999999999999986
+      },
+      "UT_PAS_01": {
+        "n_applicable": 144,
+        "pass_rate": 0.8680555555555556,
+        "avg_contribution": 0.2604166666666667
+      },
+      "UT_PAS_02": {
+        "n_applicable": 144,
+        "pass_rate": 0.0,
+        "avg_contribution": 0.0
+      },
+      "UT_PAS_03": {
+        "n_applicable": 144,
+        "pass_rate": 0.8472222222222222,
+        "avg_contribution": 0.29652777777777845
+      },
+      "UT_PAS_04": {
+        "n_applicable": 144,
+        "pass_rate": 0.9513888888888888,
+        "avg_contribution": 0.14270833333333321
+      },
+      "UT_PCLEAN_01": {
+        "n_applicable": 112,
+        "pass_rate": 0.7321428571428571,
+        "avg_contribution": 0.14642857142857119
+      },
+      "UT_PCLEAN_02": {
+        "n_applicable": 112,
+        "pass_rate": 0.5982142857142857,
+        "avg_contribution": 0.14955357142857142
+      },
+      "UT_PCLEAN_03": {
+        "n_applicable": 112,
+        "pass_rate": 0.5892857142857143,
+        "avg_contribution": 0.17678571428571452
+      },
+      "UT_PCLEAN_04": {
+        "n_applicable": 112,
+        "pass_rate": 0.5714285714285714,
+        "avg_contribution": 0.057142857142857086
+      },
+      "UT_PCLEAN_05": {
+        "n_applicable": 112,
+        "pass_rate": 0.9107142857142857,
+        "avg_contribution": 0.1366071428571431
+      },
+      "UT_PTWO_01": {
+        "n_applicable": 140,
+        "pass_rate": 0.9571428571428572,
+        "avg_contribution": 0.19142857142857098
+      },
+      "UT_PTWO_02": {
+        "n_applicable": 140,
+        "pass_rate": 0.8928571428571429,
+        "avg_contribution": 0.22321428571428573
+      },
+      "UT_PTWO_03": {
+        "n_applicable": 140,
+        "pass_rate": 0.9071428571428571,
+        "avg_contribution": 0.18142857142857102
+      },
+      "UT_PTWO_04": {
+        "n_applicable": 140,
+        "pass_rate": 0.85,
+        "avg_contribution": 0.2125
+      },
+      "UT_PTWO_05": {
+        "n_applicable": 140,
+        "pass_rate": 0.95,
+        "avg_contribution": 0.09499999999999978
+      },
+      "UT_PCOOL_01": {
+        "n_applicable": 99,
+        "pass_rate": 0.6464646464646465,
+        "avg_contribution": 0.12929292929292915
+      },
+      "UT_PCOOL_02": {
+        "n_applicable": 99,
+        "pass_rate": 0.5959595959595959,
+        "avg_contribution": 0.14898989898989898
+      },
+      "UT_PCOOL_03": {
+        "n_applicable": 99,
+        "pass_rate": 0.5858585858585859,
+        "avg_contribution": 0.17575757575757595
+      },
+      "UT_PCOOL_04": {
+        "n_applicable": 99,
+        "pass_rate": 0.5252525252525253,
+        "avg_contribution": 0.0525252525252525
+      },
+      "UT_PCOOL_05": {
+        "n_applicable": 99,
+        "pass_rate": 0.9595959595959596,
+        "avg_contribution": 0.14393939393939417
+      },
+      "UT_PHEAT_01": {
+        "n_applicable": 85,
+        "pass_rate": 0.7647058823529411,
+        "avg_contribution": 0.15294117647058808
+      },
+      "UT_PHEAT_02": {
+        "n_applicable": 85,
+        "pass_rate": 0.6588235294117647,
+        "avg_contribution": 0.16470588235294117
+      },
+      "UT_PHEAT_03": {
+        "n_applicable": 85,
+        "pass_rate": 0.7058823529411765,
+        "avg_contribution": 0.2117647058823532
+      },
+      "UT_PHEAT_04": {
+        "n_applicable": 85,
+        "pass_rate": 0.5882352941176471,
+        "avg_contribution": 0.058823529411764684
+      },
+      "UT_PHEAT_05": {
+        "n_applicable": 85,
+        "pass_rate": 0.9411764705882353,
+        "avg_contribution": 0.14117647058823551
+      }
+    },
+    "scoring_errors": []
+  },
+  "augmented": {
+    "n": 640,
+    "errors": 0,
+    "avg_score": 1.0796875,
+    "by_task_type": {
+      "look_at_obj_in_light": {
+        "n": 60,
+        "avg_score": 0.9499999999999998,
+        "success_rate": 0.6
+      },
+      "pick_and_place_simple": {
+        "n": 144,
+        "avg_score": 1.1027777777777783,
+        "success_rate": 0.8333333333333334
+      },
+      "pick_clean_then_place_in_recep": {
+        "n": 112,
+        "avg_score": 1.0116071428571423,
+        "success_rate": 0.6428571428571429
+      },
+      "pick_cool_then_place_in_recep": {
+        "n": 99,
+        "avg_score": 0.899494949494949,
+        "success_rate": 0.5959595959595959
+      },
+      "pick_two_obj_and_place": {
+        "n": 140,
+        "avg_score": 1.345357142857143,
+        "success_rate": 0.8428571428571429
+      },
+      "pick_heat_then_place_in_recep": {
+        "n": 85,
+        "avg_score": 0.9941176470588233,
+        "success_rate": 0.6352941176470588
+      }
+    },
+    "by_unit_test": {
+      "UT_LOIL_01": {
+        "n_applicable": 60,
+        "pass_rate": 0.8,
+        "avg_contribution": 0.2
+      },
+      "UT_LOIL_02": {
+        "n_applicable": 60,
+        "pass_rate": 0.75,
+        "avg_contribution": 0.15
+      },
+      "UT_LOIL_03": {
+        "n_applicable": 60,
+        "pass_rate": 0.4,
+        "avg_contribution": 0.13999999999999996
+      },
+      "UT_LOIL_04": {
+        "n_applicable": 60,
+        "pass_rate": 1.0,
+        "avg_contribution": 0.19999999999999982
+      },
+      "UT_PAS_01": {
+        "n_applicable": 144,
+        "pass_rate": 0.8611111111111112,
+        "avg_contribution": 0.25833333333333336
+      },
+      "UT_PAS_02": {
+        "n_applicable": 144,
+        "pass_rate": 0.0,
+        "avg_contribution": 0.0
+      },
+      "UT_PAS_03": {
+        "n_applicable": 144,
+        "pass_rate": 0.8472222222222222,
+        "avg_contribution": 0.29652777777777845
+      },
+      "UT_PAS_04": {
+        "n_applicable": 144,
+        "pass_rate": 0.9861111111111112,
+        "avg_contribution": 0.1479166666666665
+      },
+      "UT_PCLEAN_01": {
+        "n_applicable": 112,
+        "pass_rate": 0.7678571428571429,
+        "avg_contribution": 0.1535714285714283
+      },
+      "UT_PCLEAN_02": {
+        "n_applicable": 112,
+        "pass_rate": 0.6607142857142857,
+        "avg_contribution": 0.16517857142857142
+      },
+      "UT_PCLEAN_03": {
+        "n_applicable": 112,
+        "pass_rate": 0.6785714285714286,
+        "avg_contribution": 0.20357142857142888
+      },
+      "UT_PCLEAN_04": {
+        "n_applicable": 112,
+        "pass_rate": 0.6428571428571429,
+        "avg_contribution": 0.0642857142857142
+      },
+      "UT_PCLEAN_05": {
+        "n_applicable": 112,
+        "pass_rate": 0.9285714285714286,
+        "avg_contribution": 0.1392857142857145
+      },
+      "UT_PCOOL_01": {
+        "n_applicable": 99,
+        "pass_rate": 0.6060606060606061,
+        "avg_contribution": 0.1212121212121211
+      },
+      "UT_PCOOL_02": {
+        "n_applicable": 99,
+        "pass_rate": 0.5959595959595959,
+        "avg_contribution": 0.14898989898989898
+      },
+      "UT_PCOOL_03": {
+        "n_applicable": 99,
+        "pass_rate": 0.5757575757575758,
+        "avg_contribution": 0.17272727272727292
+      },
+      "UT_PCOOL_04": {
+        "n_applicable": 99,
+        "pass_rate": 0.5353535353535354,
+        "avg_contribution": 0.053535353535353505
+      },
+      "UT_PCOOL_05": {
+        "n_applicable": 99,
+        "pass_rate": 0.9696969696969697,
+        "avg_contribution": 0.1454545454545457
+      },
+      "UT_PTWO_01": {
+        "n_applicable": 140,
+        "pass_rate": 0.9714285714285714,
+        "avg_contribution": 0.1942857142857138
+      },
+      "UT_PTWO_02": {
+        "n_applicable": 140,
+        "pass_rate": 0.9357142857142857,
+        "avg_contribution": 0.23392857142857143
+      },
+      "UT_PTWO_03": {
+        "n_applicable": 140,
+        "pass_rate": 0.9428571428571428,
+        "avg_contribution": 0.18857142857142814
+      },
+      "UT_PTWO_04": {
+        "n_applicable": 140,
+        "pass_rate": 0.9,
+        "avg_contribution": 0.225
+      },
+      "UT_PTWO_05": {
+        "n_applicable": 140,
+        "pass_rate": 0.9785714285714285,
+        "avg_contribution": 0.09785714285714263
+      },
+      "UT_PHEAT_01": {
+        "n_applicable": 85,
+        "pass_rate": 0.7294117647058823,
+        "avg_contribution": 0.14588235294117632
+      },
+      "UT_PHEAT_02": {
+        "n_applicable": 85,
+        "pass_rate": 0.6352941176470588,
+        "avg_contribution": 0.1588235294117647
+      },
+      "UT_PHEAT_03": {
+        "n_applicable": 85,
+        "pass_rate": 0.6823529411764706,
+        "avg_contribution": 0.2047058823529414
+      },
+      "UT_PHEAT_04": {
+        "n_applicable": 85,
+        "pass_rate": 0.5529411764705883,
+        "avg_contribution": 0.05529411764705881
+      },
+      "UT_PHEAT_05": {
+        "n_applicable": 85,
+        "pass_rate": 0.9882352941176471,
+        "avg_contribution": 0.1482352941176473
+      }
+    },
+    "scoring_errors": []
+  }
+}

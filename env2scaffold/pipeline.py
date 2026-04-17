@@ -7,11 +7,15 @@ docs/framework_architecture.md. Pipeline A (augmentation_builder) and
 Pipeline B (oracle_designer) run in parallel within a single stage.
 
 Stages:
-  1. probing           — explore the environment, collect feedback patterns
-  2. benchmark_reader  — spec the benchmark, enumerate oracle candidates
-  3. feedback_auditor  — cluster ambiguity, emit augmentation candidates
-  4. augmentation_builder ∥ oracle_designer  — Pipeline A and Pipeline B (parallel)
-  5. verify_runner     — execute three-layer verification, aggregate report
+  1. probing                                   — explore the environment, collect feedback patterns
+  2. benchmark_reader                          — spec the benchmark, enumerate oracle candidates
+  3. feedback_auditor ∥ trace_evaluator        — audit ambiguity (Pipeline C-prep) + design trace-level scoring (Pipeline C)
+  4. augmentation_builder ∥ oracle_designer    — Pipeline A (wrapper) and Pipeline B (wrapper tests), parallel
+  5. verify_runner                             — execute three-layer wrapper verification, aggregate report
+
+Pipeline C (trace_evaluator) is decoupled from Pipelines A/B: it runs as early as possible
+(with feedback_auditor) so its outputs are ready for trainers independently of wrapper design.
+Pipeline C does not read A's or B's artifacts; it does not produce wrapper text.
 
 Usage:
     python pipeline.py                              # run full pipeline
@@ -39,6 +43,7 @@ BENCHMARK_SPEC_DIR = ROOT / "benchmark_spec"
 AUDIT_DIR = ROOT / "audit"
 AUGMENTATION_DIR = ROOT / "augmentation"
 ORACLE_TEST_DIR = ROOT / "oracle_test"
+EVALUATION_DIR = ROOT / "evaluation"
 VERIFICATION_DIR = ROOT / "verification"
 PROMPTS_DIR = ROOT / "prompts"
 
@@ -48,7 +53,7 @@ PROMPTS_DIR = ROOT / "prompts"
 STAGES: list[list[str]] = [
     ["probing"],
     ["benchmark_reader"],
-    ["feedback_auditor"],
+    ["feedback_auditor", "trace_evaluator"],
     ["augmentation_builder", "oracle_designer"],
     ["verify_runner"],
 ]
@@ -80,6 +85,19 @@ AGENT_CONFIG: dict[str, dict] = {
             AUDIT_DIR / "augmentation_candidates.json",
             AUDIT_DIR / "feedback_audit.md",
         ],
+        "prerequisites": ["probing", "benchmark_reader"],
+    },
+    "trace_evaluator": {
+        "prompt_file": "trace_evaluator.md",
+        "log_file": "trace_evaluator.log",
+        "expected_outputs": [
+            EVALUATION_DIR / "trace_unit_test_plan.json",
+            EVALUATION_DIR / "trace_evaluator.py",
+            EVALUATION_DIR / "evaluation_report.md",
+        ],
+        # Deliberately does NOT depend on feedback_auditor: Pipeline C is decoupled
+        # from Pipelines A and B. See docs/framework_architecture.md separation
+        # of text augmentation (A) from trace-level evaluation (C).
         "prerequisites": ["probing", "benchmark_reader"],
     },
     "augmentation_builder": {

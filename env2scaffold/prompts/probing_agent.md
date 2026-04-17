@@ -142,9 +142,9 @@ The probe_runner.py should also output this summary file:
 
 ## File Paths
 
-- Script: `/data/home/yuhan/env-aug/alfworld_augment/probing/probe_runner.py`
-- Trajectories: `/data/home/yuhan/env-aug/alfworld_augment/probing/trajectories/` (one JSON per game)
-- Catalog: `/data/home/yuhan/env-aug/alfworld_augment/probing/feedback_catalog.json`
+- Script: `/data/home/yuhan/env-aug/env2scaffold/probing/probe_runner.py`
+- Trajectories: `/data/home/yuhan/env-aug/env2scaffold/probing/trajectories/` (one JSON per game)
+- Catalog: `/data/home/yuhan/env-aug/env2scaffold/probing/feedback_catalog.json`
 
 ## Important Notes
 

@@ -1,0 +1,109 @@
+{
+  "original": {
+    "label": "original",
+    "total": 64,
+    "errors": 0,
+    "won": 45,
+    "success_rate": 0.703125,
+    "avg_steps": 23.53125,
+    "avg_final_score": 0.703125,
+    "avg_wall_seconds": 197.20296875,
+    "by_task_type": {
+      "look_at_obj_in_light": {
+        "won": 3,
+        "total": 5,
+        "success_rate": 0.6,
+        "avg_steps": 27.4
+      },
+      "pick_and_place_simple": {
+        "won": 14,
+        "total": 17,
+        "success_rate": 0.8235294117647058,
+        "avg_steps": 17.294117647058822
+      },
+      "pick_clean_then_place_in_recep": {
+        "won": 9,
+        "total": 12,
+        "success_rate": 0.75,
+        "avg_steps": 23.583333333333332
+      },
+      "pick_cool_then_place_in_recep": {
+        "won": 7,
+        "total": 11,
+        "success_rate": 0.6363636363636364,
+        "avg_steps": 24.454545454545453
+      },
+      "pick_two_obj_and_place": {
+        "won": 10,
+        "total": 12,
+        "success_rate": 0.8333333333333334,
+        "avg_steps": 19.916666666666668
+      },
+      "pick_heat_then_place_in_recep": {
+        "won": 2,
+        "total": 7,
+        "success_rate": 0.2857142857142857,
+        "avg_steps": 40.57142857142857
+      }
+    }
+  },
+  "augmented": {
+    "label": "augmented",
+    "total": 64,
+    "errors": 0,
+    "won": 49,
+    "success_rate": 0.765625,
+    "avg_steps": 21.640625,
+    "avg_final_score": 0.765625,
+    "avg_wall_seconds": 183.13265625,
+    "by_task_type": {
+      "look_at_obj_in_light": {
+        "won": 3,
+        "total": 5,
+        "success_rate": 0.6,
+        "avg_steps": 27.4
+      },
+      "pick_and_place_simple": {
+        "won": 15,
+        "total": 17,
+        "success_rate": 0.8823529411764706,
+        "avg_steps": 16.58823529411765
+      },
+      "pick_clean_then_place_in_recep": {
+        "won": 8,
+        "total": 12,
+        "success_rate": 0.6666666666666666,
+        "avg_steps": 24.666666666666668
+      },
+      "pick_cool_then_place_in_recep": {
+        "won": 8,
+        "total": 11,
+        "success_rate": 0.7272727272727273,
+        "avg_steps": 20.727272727272727
+      },
+      "pick_two_obj_and_place": {
+        "won": 10,
+        "total": 12,
+        "success_rate": 0.8333333333333334,
+        "avg_steps": 21.666666666666668
+      },
+      "pick_heat_then_place_in_recep": {
+        "won": 5,
+        "total": 7,
+        "success_rate": 0.7142857142857143,
+        "avg_steps": 26.0
+      }
+    }
+  },
+  "config": {
+    "n": 64,
+    "max_steps": 50,
+    "model": "Qwen3.5-35B-A3B-FP8",
+    "base_url": "http://localhost:8000/v1",
+    "temperature": 0.0,
+    "concurrency": 64,
+    "seed": 0,
+    "out_dir": "/data/home/yuhan/env-aug/env2scaffold/baseline_eval",
+    "phase": "both"
+  }
+}

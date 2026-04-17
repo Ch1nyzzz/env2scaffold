@@ -58,20 +58,26 @@ HARD RULES:
 - Explore, pick up the target object(s), transform (clean/heat/cool) if required, then place at the target receptacle.
 """
 
-DATA_ROOT = Path.home() / ".cache" / "alfworld" / "json_2.1.1" / "valid_seen"
+DATA_ROOT_BASE = Path.home() / ".cache" / "alfworld" / "json_2.1.1"
+DEFAULT_SPLITS = ["valid_seen", "valid_unseen", "train"]
 DEFAULT_MODEL = "Qwen3.5-35B-A3B-FP8"
 DEFAULT_BASE_URL = "http://localhost:8000/v1"
 
 
 # ─── Game selection ──────────────────────────────────────────────────────────
-def sample_game_files(n: int, seed: int) -> list[Path]:
-    all_games = sorted(DATA_ROOT.glob("*/trial_*/game.tw-pddl"))
+def sample_game_files(n: int, seed: int, splits: list[str]) -> list[Path]:
+    all_games: list[Path] = []
+    for split in splits:
+        split_dir = DATA_ROOT_BASE / split
+        if split_dir.is_dir():
+            all_games.extend(split_dir.glob("*/trial_*/game.tw-pddl"))
+    all_games = sorted(all_games)
     if not all_games:
-        raise RuntimeError(f"No game files under {DATA_ROOT}")
+        raise RuntimeError(f"No game files across splits {splits}")
     rng = random.Random(seed)
     rng.shuffle(all_games)
     if n > len(all_games):
-        raise ValueError(f"Requested {n} games but only {len(all_games)} available")
+        raise ValueError(f"Requested {n} games but only {len(all_games)} available across {splits}")
     return all_games[:n]
 
 
@@ -389,10 +395,19 @@ def main() -> None:
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--out-dir", type=Path, default=SCRIPT_DIR)
     parser.add_argument("--phase", choices=["both", "original", "augmented"], default="both")
+    parser.add_argument("--splits", default=",".join(DEFAULT_SPLITS),
+                        help="comma-separated splits to sample from (default: "
+                             "valid_seen,valid_unseen,train — together 3827 games)")
     args = parser.parse_args()
 
-    game_files = sample_game_files(args.n, args.seed)
-    print(f"Sampled {len(game_files)} games (seed={args.seed})")
+    splits = [s.strip() for s in args.splits.split(",") if s.strip()]
+    game_files = sample_game_files(args.n, args.seed, splits)
+    split_counts: dict[str, int] = {}
+    for g in game_files:
+        split_name = g.parents[2].name  # .../json_2.1.1/<split>/<task>/trial_*/game.tw-pddl
+        split_counts[split_name] = split_counts.get(split_name, 0) + 1
+    print(f"Sampled {len(game_files)} games from splits {splits} (seed={args.seed})")
+    print(f"Split distribution: {split_counts}")
     print(f"First 3: {[g.parent.parent.name for g in game_files[:3]]}")
 
     args.out_dir.mkdir(parents=True, exist_ok=True)

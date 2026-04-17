@@ -1,0 +1,369 @@
+{
+  "benchmark_name": "alfworld",
+  "benchmark_version": "0.4.2",
+  "source_roots": [
+    {
+      "package": "alfworld",
+      "path": "/data/home/yuhan/cyh_dev/lib/python3.12/site-packages/alfworld/",
+      "role": "task_wrappers"
+    },
+    {
+      "package": "textworld",
+      "path": "/data/home/yuhan/cyh_dev/lib/python3.12/site-packages/textworld/",
+      "role": "runtime_engine"
+    },
+    {
+      "package": "alfworld_agents_eval",
+      "path": "/data/home/yuhan/cyh_dev/lib/python3.12/site-packages/alfworld/agents/eval/",
+      "role": "evaluator"
+    },
+    {
+      "package": "alfworld_data",
+      "path": "/home/yuhan/.cache/alfworld/json_2.1.1/",
+      "role": "assets"
+    },
+    {
+      "package": "verl_agent_alfworld_wrapper",
+      "path": "/data/home/yuhan/env-aug/verl-agent/agent_system/environments/env_package/alfworld/envs.py",
+      "role": "task_wrappers"
+    }
+  ],
+  "environment_api": {
+    "entry_point": "textworld.gym.make (registered via textworld.gym.register_games)",
+    "reset_signature": "env.reset() -> Tuple[str, Dict[str, Any]]  (single-game) or -> Tuple[List[str], Dict[str, List[Any]]]  (batch)",
+    "step_signature": "env.step(command: str) -> Tuple[str, float, bool, Dict[str, Any]]  (single-game: obs, score, done, infos) or env.step(commands: List[str]) -> Tuple[List[str], List[float], List[bool], Dict[str, List[Any]]]  (batch)",
+    "close_signature": "env.close() -> None",
+    "batched": true
+  },
+  "observation_schema": {
+    "type": "text",
+    "fields": [
+      {
+        "name": "feedback",
+        "type": "str",
+        "source": "textworld/envs/pddl/pddl.py:127 (reset), textworld/envs/pddl/pddl.py:158-162 (step); returned as first element of (obs, score, done, infos) tuple via textworld/envs/wrappers/filter.py:47-48"
+      }
+    ]
+  },
+  "action_schema": {
+    "type": "text",
+    "admissible_commands_channel": "admissible_commands",
+    "parser": "textworld/envs/pddl/pddl.py:145 — command.strip() is looked up via list.index() in self.prev_state['_valid_commands']; ValueError raised if not found, which triggers 'Nothing happens.' feedback"
+  },
+  "info_fields": [
+    {
+      "name": "won",
+      "type": "bool",
+      "populated_when": "every step and reset; True when PDDL goal is satisfied",
+      "exposed_to_agent": true
+    },
+    {
+      "name": "score",
+      "type": "float",
+      "populated_when": "every step; 1.0 if won else 0.0",
+      "exposed_to_agent": true
+    },
+    {
+      "name": "admissible_commands",
+      "type": "List[str]",
+      "populated_when": "every step and reset; derived from all currently applicable PDDL actions",
+      "exposed_to_agent": true
+    },
+    {
+      "name": "facts",
+      "type": "List[Proposition]",
+      "populated_when": "every step and reset when request_infos.facts=True; full set of PDDL world propositions",
+      "exposed_to_agent": false
+    },
+    {
+      "name": "policy_commands",
+      "type": "List[str]",
+      "populated_when": "every step and reset when request_infos.policy_commands=True; planner re-plans from current state each call",
+      "exposed_to_agent": false
+    },
+    {
+      "name": "extra.gamefile",
+      "type": "str",
+      "populated_when": "reset; path to the current game.tw-pddl file via AlfredInfos wrapper",
+      "exposed_to_agent": false
+    },
+    {
+      "name": "extra.expert_plan",
+      "type": "List[str]",
+      "populated_when": "reset and step when AlfredExpert wrapper is applied; contains one next action from the handcoded expert",
+      "exposed_to_agent": false
+    },
+    {
+      "name": "extra.walkthrough",
+      "type": "List[str]",
+      "populated_when": "reset when extras=['walkthrough'] requested; full solution sequence from game file or re-planned by planner",
+      "exposed_to_agent": false
+    },
+    {
+      "name": "description",
+      "type": "str",
+      "populated_when": "every step and reset when request_infos.description=True; text output of look command",
+      "exposed_to_agent": true
+    },
+    {
+      "name": "inventory",
+      "type": "str",
+      "populated_when": "every step and reset when request_infos.inventory=True; text listing of held objects",
+      "exposed_to_agent": true
+    },
+    {
+      "name": "location",
+      "type": "str",
+      "populated_when": "every step and reset when request_infos.location=True; name of player's current location",
+      "exposed_to_agent": true
+    },
+    {
+      "name": "moves",
+      "type": "int",
+      "populated_when": "every step when request_infos.moves=True; count of valid commands executed",
+      "exposed_to_agent": true
+    },
+    {
+      "name": "goal_condition_success_rate",
+      "type": "float",
+      "populated_when": "every step in ThorEnv path only (alfred_thor_env.py:178); ratio of goal conditions met",
+      "exposed_to_agent": false
+    }
+  ],
+  "reward_signature": {
+    "type": "scalar",
+    "range": "[0, 1] sparse binary; 1.0 only on the step when won becomes True",
+    "source": "textworld/envs/pddl/pddl.py:170 — self.state['score'] = 1 if self.state['won'] else 0"
+  },
+  "done_signature": {
+    "source": "textworld/envs/pddl/pddl.py:171 — self.state['done'] = self.state['won'] or self.state['lost']; augmented by textworld/envs/wrappers/limit.py (Limit wrapper) which sets done=True after max_episode_steps",
+    "semantics": "True when: (a) PDDL goal is satisfied (won=True), or (b) game is lost (lost always False in PDDL backend), or (c) max_episode_steps exceeded by the Limit wrapper"
+  },
+  "official_metrics": [
+    {
+      "name": "success_rate",
+      "entry": "alfworld/agents/eval/evaluate_dagger.py:evaluate_dagger — uses infos['won'] to compute game_points per episode",
+      "category": "success_rate"
+    },
+    {
+      "name": "average_game_points",
+      "entry": "alfworld/agents/eval/evaluate_dagger.py:evaluate_dagger — max(sequence_game_points) per episode, where game_points = max 1.0 (won) or 0.0",
+      "category": "score"
+    },
+    {
+      "name": "average_goal_condition_points",
+      "entry": "alfworld/agents/eval/evaluate_dagger.py:evaluate_dagger — uses infos['goal_condition_success_rate'] (only available in ThorEnv path)",
+      "category": "score"
+    },
+    {
+      "name": "average_steps",
+      "entry": "alfworld/agents/eval/evaluate_dagger.py:evaluate_dagger — steps taken until done",
+      "category": "other"
+    }
+  ],
+  "oracle_candidates": [
+    {
+      "name": "won_info_field",
+      "category": "official_evaluator",
+      "source_location": "textworld/envs/pddl/pddl.py:75 (_gather_infos) and pddl.py:171 (step)",
+      "accessibility": "direct_api",
+      "fidelity_to_goal": "Exact binary signal: True iff the PDDL goal check passes, matching the benchmark's success criterion precisely.",
+      "determinism": "deterministic",
+      "misuse_risk": "Using won as a dense reward signal instead of episode-level binary label will produce a delayed sparse signal that only fires on the final winning step."
+    },
+    {
+      "name": "score_info_field",
+      "category": "official_score",
+      "source_location": "textworld/envs/pddl/pddl.py:170",
+      "accessibility": "direct_api",
+      "fidelity_to_goal": "Numerically identical to won (1.0 or 0.0); same semantics but returned as float rather than bool.",
+      "determinism": "deterministic",
+      "misuse_risk": "Identical to won_info_field; treating this as a continuous signal is misleading since it is binary."
+    },
+    {
+      "name": "pddl_facts_state",
+      "category": "hidden_state_predicate",
+      "source_location": "textworld/envs/pddl/pddl.py:79-81 (_gather_infos); enabled by request_infos.facts=True",
+      "accessibility": "via_infos",
+      "fidelity_to_goal": "Exposes the complete symbolic world state as a list of Propositions; a downstream oracle can evaluate any predicate over this set to detect intermediate goal progress.",
+      "determinism": "deterministic",
+      "misuse_risk": "PDDL entity names in facts use internal IDs unless AlfredDemangler is applied; comparing facts against human-readable object names without demangling will fail silently."
+    },
+    {
+      "name": "policy_commands_plan",
+      "category": "reference_trajectory",
+      "source_location": "textworld/envs/pddl/pddl.py:107-108 (_gather_infos); enabled by request_infos.policy_commands=True",
+      "accessibility": "via_infos",
+      "fidelity_to_goal": "Provides the PDDL-planner's optimal action sequence from the current state; re-planned at every step so always reflects remaining optimal path.",
+      "determinism": "deterministic",
+      "misuse_risk": "Leaks the solution path directly; providing this field in the agent observation defeats the benchmark's challenge."
+    },
+    {
+      "name": "expert_plan_handcoded",
+      "category": "reference_trajectory",
+      "source_location": "alfworld/agents/environment/alfred_tw_env.py:76-88 (AlfredExpert._gather_infos); accessible via AlfredExpert wrapper",
+      "accessibility": "via_infos",
+      "fidelity_to_goal": "Handcoded heuristic expert provides a single next-step action recommendation per state; less brittle than planner but may time out (HandCodedAgentTimeout) on complex states.",
+      "determinism": "deterministic",
+      "misuse_risk": "Expert may return 'look' as a fallback when it cannot determine the next action; treating 'look' as always a valid oracle signal is incorrect."
+    },
+    {
+      "name": "traj_data_task_annotation",
+      "category": "task_annotation",
+      "source_location": "assets at ~/.cache/alfworld/json_2.1.1/**/traj_data.json; keys: pddl_params, plan, task_type",
+      "accessibility": "external_file",
+      "fidelity_to_goal": "Per-game structured annotation: task type, object/parent/toggle targets (pddl_params), high-level PDDL plan, and low-level action sequence; provides ground-truth for what the task is asking.",
+      "determinism": "deterministic",
+      "misuse_risk": "Must be correlated via extra.gamefile info field; path joining logic is fragile if data is relocated or split names differ."
+    },
+    {
+      "name": "admissible_commands_validity_heuristic",
+      "category": "derived_heuristic",
+      "source_location": "textworld/envs/pddl/pddl.py:88-102 (_gather_infos); accessible as info['admissible_commands']",
+      "accessibility": "direct_api",
+      "fidelity_to_goal": "Enumerates all currently executable PDDL actions; can serve as a binary oracle for action validity (action in admissible_commands implies no 'Nothing happens.' feedback).",
+      "determinism": "deterministic",
+      "misuse_risk": "admissible_commands reflects PDDL-executable actions but does not distinguish task-relevant from task-irrelevant ones; membership is necessary but not sufficient for goal progress."
+    },
+    {
+      "name": "goal_condition_success_rate_thor",
+      "category": "official_score",
+      "source_location": "alfworld/agents/environment/alfred_thor_env.py:178 (get_info); available only in AlfredThorEnv path",
+      "accessibility": "via_infos",
+      "fidelity_to_goal": "Fractional measure of sub-goals satisfied (pcs[0] / float(pcs[1])) per task class; more granular than binary won signal.",
+      "determinism": "deterministic",
+      "misuse_risk": "Only available when using AlfredThorEnv (visual simulator); not exposed in the text-only AlfredTWEnv path that is the primary ALFWorld interface."
+    }
+  ],
+  "feedback_generation_points": [
+    {
+      "condition": "command not in prev_state['_valid_commands'] (ValueError from list.index())",
+      "source_location": "textworld/envs/pddl/pddl.py:160-162",
+      "emitted_text": "Nothing happens."
+    },
+    {
+      "condition": "valid action applied successfully",
+      "source_location": "textworld/envs/pddl/pddl.py:158",
+      "emitted_text": null
+    },
+    {
+      "condition": "reset called (intro text)",
+      "source_location": "textworld/envs/pddl/pddl.py:126",
+      "emitted_text": null
+    },
+    {
+      "condition": "GotoLocation action succeeds",
+      "source_location": "game.tw-pddl:grammar['GotoLocation.feedback']",
+      "emitted_text": null
+    },
+    {
+      "condition": "OpenObject action succeeds",
+      "source_location": "game.tw-pddl:grammar['OpenObject.feedback']",
+      "emitted_text": null
+    },
+    {
+      "condition": "CloseObject action succeeds",
+      "source_location": "game.tw-pddl:grammar['CloseObject.feedback']",
+      "emitted_text": null
+    },
+    {
+      "condition": "PickupObject action succeeds",
+      "source_location": "game.tw-pddl:grammar['PickupObject.feedback']",
+      "emitted_text": null
+    },
+    {
+      "condition": "PutObject action succeeds",
+      "source_location": "game.tw-pddl:grammar['PutObject.feedback']",
+      "emitted_text": null
+    },
+    {
+      "condition": "CleanObject, HeatObject, CoolObject, or ToggleObject action succeeds",
+      "source_location": "game.tw-pddl:grammar (action-specific feedback rules)",
+      "emitted_text": null
+    },
+    {
+      "condition": "inventory command",
+      "source_location": "game.tw-pddl:grammar['inventory.feedback']",
+      "emitted_text": null
+    },
+    {
+      "condition": "examine command",
+      "source_location": "game.tw-pddl:grammar['examineReceptacle.feedback'] or grammar['examineObject.feedback']",
+      "emitted_text": null
+    }
+  ],
+  "latent_state_channels": [
+    {
+      "name": "pddl_facts",
+      "access": "Set request_infos.facts=True when calling textworld.gym.register_games(); available as info['facts'] (List[Proposition]) after each step/reset",
+      "examples": [
+        "inreceptacle(ladle_1, countertop_1)",
+        "holds(agent_1, ladle_1)",
+        "isclean(ladle_1)",
+        "opened(microwave_1)"
+      ]
+    },
+    {
+      "name": "policy_commands",
+      "access": "Set request_infos.policy_commands=True; available as info['policy_commands'] (List[str]); PDDL planner re-plans at each step from current state",
+      "examples": [
+        "go to sinkbasin 1",
+        "clean ladle 1 with sinkbasin 1",
+        "go to countertop 1",
+        "move ladle 1 to countertop 1"
+      ]
+    },
+    {
+      "name": "walkthrough",
+      "access": "Pass extras=['walkthrough'] in EnvInfos; available as info['extra.walkthrough'] (List[str]); value comes from game file's stored walkthrough or PDDL re-plan",
+      "examples": [
+        "go to sinkbasin 1",
+        "take ladle 1 from sinkbasin 1",
+        "clean ladle 1 with sinkbasin 1",
+        "go to countertop 2",
+        "move ladle 1 to countertop 2"
+      ]
+    },
+    {
+      "name": "expert_plan",
+      "access": "Apply AlfredExpert wrapper (alfred_tw_env.py:60-110) with AlfredExpertType.HANDCODED or PLANNER; available as info['extra.expert_plan'] (List[str] with one action)",
+      "examples": [
+        "look",
+        "go to sidetable 1",
+        "take book 1 from sidetable 1"
+      ]
+    },
+    {
+      "name": "traj_data_pddl_params",
+      "access": "Read traj_data.json from path derived via info['extra.gamefile']; keys: pddl_params (object/parent/toggle targets), task_type, plan (high_pddl, low_actions)",
+      "examples": [
+        "pddl_params.object_target: Ladle",
+        "pddl_params.parent_target: CounterTop",
+        "task_type: pick_clean_then_place_in_recep"
+      ]
+    }
+  ],
+  "minimal_runnable_commands": [
+    "python3 -c \"import textworld, textworld.gym; from alfworld.agents.environment.alfred_tw_env import AlfredDemangler, AlfredInfos; import glob; gf = glob.glob('/home/yuhan/.cache/alfworld/json_2.1.1/valid_train/**/*.tw-pddl', recursive=True)[:1]; ri = textworld.EnvInfos(won=True, admissible_commands=True, facts=True, extras=['gamefile']); eid = textworld.gym.register_games(gf, ri, batch_size=1, asynchronous=False, max_episode_steps=50, wrappers=[AlfredDemangler, AlfredInfos]); env = textworld.gym.make(eid); obs, infos = env.reset(); print('obs:', obs[:100]); obs2, score, done, infos2 = env.step(infos['admissible_commands'][0]); print('step obs:', obs2[:80], 'score:', score, 'done:', done); env.close()\""
+  ],
+  "runtime_dependencies": {
+    "python_version": "3.12",
+    "packages": [
+      {"name": "alfworld", "version": "0.4.2"},
+      {"name": "textworld", "version": "1.7.0"},
+      {"name": "fast-downward-textworld", "version": "20.6.4"},
+      {"name": "numpy", "version": "2.2.6"}
+    ],
+    "assets": [
+      "/home/yuhan/.cache/alfworld/json_2.1.1/**/*.tw-pddl",
+      "/home/yuhan/.cache/alfworld/json_2.1.1/**/traj_data.json"
+    ]
+  },
+  "open_questions": [
+    "Does the PDDL backend ever set state['lost'] = True in practice, or is it always False as the comment in pddl.py:77 suggests?",
+    "Is goal_condition_success_rate available in the AlfredTWEnv (text-only) path, or only in the AlfredThorEnv (visual) path?",
+    "What is the exact set of grammar feedback rules for CleanObject, HeatObject, CoolObject, SliceObject, and ToggleObject actions (these were not fully inspected from the grammar JSON)?",
+    "Are there any game files where the 'walkthrough' key in game.tw-pddl is populated vs. requiring re-planning?",
+    "Does the Limit wrapper (max_episode_steps) trigger done=True silently without any feedback text change, i.e., does the agent receive a final observation different from a normal step?"
+  ]
+}

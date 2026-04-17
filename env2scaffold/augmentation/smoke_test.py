@@ -2,10 +2,10 @@
 Smoke test for AugmentedAlfWorldEnv.
 
 Tests each augmentation rule against real ALFWorld games.
-Writes results to analysis/smoke_test_result.json.
+Writes results to augmentation/smoke_test_result.json.
 
-Run from repo root:
-    python3 analysis/smoke_test.py
+Run from env2scaffold/:
+    python3 augmentation/smoke_test.py
 """
 
 import sys
@@ -14,7 +14,7 @@ import json
 import logging
 from datetime import datetime
 
-# Make sure analysis/ is on path for imports
+# Make sure augmentation/ is on path for imports
 sys.path.insert(0, os.path.dirname(__file__))
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 

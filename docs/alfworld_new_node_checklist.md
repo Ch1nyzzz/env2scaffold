@@ -27,13 +27,13 @@ Use this checklist before launching ALFWorld GRPO on a new compute node.
 - Check one task file exists:
   - `ls ~/.cache/alfworld/json_2.1.1/valid_seen/*/trial_*/game.tw-pddl | head`
 - Smoke test the augmented wrapper:
-  - `cd alfworld_augment`
-  - `python analysis/smoke_test.py`
+  - `cd env2scaffold`
+  - `python augmentation/smoke_test.py`
 
 ## 3. ALFWorld Dataset
 
 - Confirm probing trajectories exist:
-  - `ls alfworld_augment/probing/trajectories/*.json | head`
+  - `ls env2scaffold/probing/trajectories/*.json | head`
 - Build EnvTuning parquet files:
   - `cd AWorld-RL/EnvTuning`
   - `python scripts/prepare_alfworld_dataset.py`
@@ -55,7 +55,7 @@ Use this checklist before launching ALFWorld GRPO on a new compute node.
   - `progress_score`
   - `progress_milestones`
 - Re-run behavior validation if wrapper logic changed:
-  - `python alfworld_augment/verification/llm_behavior_eval.py --max-games 12 --max-steps 50`
+  - `python env2scaffold/verification/llm_behavior_eval.py --max-games 12 --max-steps 50`
 
 ## 5. Training Readiness
 

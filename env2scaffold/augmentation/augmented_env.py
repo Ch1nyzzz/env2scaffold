@@ -13,7 +13,7 @@ Design principles:
 Usage:
     import textworld.gym, textworld
     from alfworld.agents.environment.alfred_tw_env import AlfredDemangler, AlfredInfos
-    from analysis.augmented_env import AugmentedAlfWorldEnv
+    from augmentation.augmented_env import AugmentedAlfWorldEnv
 
     gamefiles = ["/path/to/game.tw-pddl"]
     request_infos = textworld.EnvInfos(won=True, admissible_commands=True, facts=True, extras=["gamefile"])

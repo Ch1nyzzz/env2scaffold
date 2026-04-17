@@ -30,7 +30,7 @@ RUN pip install --no-cache-dir https://github.com/Dao-AILab/flash-attention/rele
 
 # Copy code
 COPY verl-agent /workspace/verl-agent
-COPY alfworld_augment /workspace/alfworld_augment
+COPY env2scaffold /workspace/env2scaffold
 
 # Install verl-agent
 WORKDIR /workspace/verl-agent

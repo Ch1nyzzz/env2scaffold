@@ -113,10 +113,10 @@ Probing Agent 写入:
                     │
                     ▼
 Analysis Agent 读取上述文件 + ALFWorld 源码，写入:
-  analysis/source_analysis.md      ← 源码分析报告
-  analysis/augmentation_plan.json  ← 增强规则定义
-  analysis/augmented_env.py        ← 环境增强 Wrapper
-  analysis/smoke_test_result.json  ← 冒烟测试结果
+  augmentation/source_analysis.md      ← 源码分析报告
+  augmentation/augmentation_plan.json  ← 增强规则定义
+  augmentation/augmented_env.py        ← 环境增强 Wrapper
+  augmentation/smoke_test_result.json  ← 冒烟测试结果
                     │
                     ▼
 Verify Agent 读取所有上述文件，写入:
@@ -367,7 +367,7 @@ R01 (空手放物)
 ### 运行完整 Pipeline
 
 ```bash
-cd alfworld_augment
+cd env2scaffold
 python pipeline.py                      # 全量运行三个 agent
 python pipeline.py --agent probing      # 只运行 Probing Agent
 python pipeline.py --agent analysis     # 只运行 Analysis Agent（需要 probing 产出）
@@ -436,7 +436,7 @@ Step 4: clean plate 1 with sinkbasin 1  (拿着 bowl 1 想清洗 plate 1)
 ## 7. 项目结构
 
 ```
-alfworld_augment/
+env2scaffold/
 ├── README.md                                   # 本文档
 ├── REPORT.md                                   # 技术报告（中文）
 ├── pipeline.py                                 # Pipeline orchestrator
@@ -451,7 +451,7 @@ alfworld_augment/
 │   ├── trajectories/                           # 12 个轨迹 JSON（每种任务 2 个）
 │   └── feedback_catalog.json                   # 反馈模式目录（7,957 个探测）
 │
-├── analysis/                                   # Phase 2 产出
+├── augmentation/                                   # Phase 2 产出
 │   ├── source_analysis.md                      # TextWorld/ALFWorld 源码分析
 │   ├── augmentation_plan.json                  # 12 条增强规则定义
 │   ├── augmented_env.py                        # AugmentedAlfWorldEnv Wrapper（558 行）

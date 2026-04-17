@@ -19,16 +19,16 @@ from verl.interactions.base import BaseInteraction
 def _find_repo_root() -> Path:
     current = Path(__file__).resolve()
     for parent in current.parents:
-        candidate = parent / "alfworld_augment" / "analysis" / "augmented_env.py"
+        candidate = parent / "env2scaffold" / "augmentation" / "augmented_env.py"
         if candidate.exists():
             return parent
-    raise RuntimeError("Could not locate repo root containing alfworld_augment/analysis/augmented_env.py.")
+    raise RuntimeError("Could not locate repo root containing env2scaffold/augmentation/augmented_env.py.")
 
 
 REPO_ROOT = _find_repo_root()
-ANALYSIS_DIR = REPO_ROOT / "alfworld_augment" / "analysis"
-if str(ANALYSIS_DIR) not in sys.path:
-    sys.path.insert(0, str(ANALYSIS_DIR))
+AUGMENTATION_DIR = REPO_ROOT / "env2scaffold" / "augmentation"
+if str(AUGMENTATION_DIR) not in sys.path:
+    sys.path.insert(0, str(AUGMENTATION_DIR))
 
 from augmented_env import AugmentedAlfWorldEnv  # noqa: E402
 

@@ -9,7 +9,7 @@ from typing import Any, Dict, List, Sequence, Tuple
 
 
 DEFAULT_REPO_ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_TRAJECTORY_DIR = DEFAULT_REPO_ROOT / "alfworld_augment" / "probing" / "trajectories"
+DEFAULT_TRAJECTORY_DIR = DEFAULT_REPO_ROOT / "env2scaffold" / "probing" / "trajectories"
 DEFAULT_OUTPUT_DIR = Path(__file__).resolve().parents[1] / "data"
 DEFAULT_SYSTEM_PROMPT = """You are controlling an ALFWorld household agent.
 

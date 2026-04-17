@@ -4,7 +4,7 @@
 
 This repository contains two Python-centered projects:
 
-- `alfworld_augment/`: the Benchmark2Scaffold MVP for ALFWorld. Main entrypoint is `pipeline.py`; generated artifacts live in `analysis/`, `probing/`, `prompts/`, and `verification/`.
+- `env2scaffold/`: the Benchmark2Scaffold MVP for ALFWorld. Main entrypoint is `pipeline.py`; generated artifacts live in `augmentation/`, `probing/`, `benchmark_spec/`, `audit/`, `oracle_test/`, `prompts/`, and `verification/`.
 - `AWorld-RL/EnvTuning/`: Environment Tuning training code and assets. Core logic is in `env_tuning/`, benchmark environment helpers are in `bfcl_env/`, configs are in `env_tuning/config/`, and runnable training scripts are in `scripts/`.
 
 Keep new code close to the subsystem it belongs to. Large data files, logs, and generated reports should stay inside the existing project-specific directories rather than the repo root.
@@ -14,14 +14,14 @@ Keep new code close to the subsystem it belongs to. Large data files, logs, and 
 Run commands from the relevant subproject directory.
 
 ```bash
-cd alfworld_augment
+cd env2scaffold
 python pipeline.py
 python pipeline.py --agent probing
-python analysis/smoke_test.py
+python augmentation/smoke_test.py
 python verification/verify_runner.py
 ```
 
-`pipeline.py` orchestrates the three-agent workflow. The smoke and verification scripts validate environment augmentation behavior.
+`pipeline.py` orchestrates the multi-agent workflow (see `docs/framework_architecture.md`). The smoke and verification scripts validate environment augmentation behavior.
 
 ```bash
 cd AWorld-RL/EnvTuning
@@ -39,7 +39,7 @@ Use 4-space indentation for Python and keep naming consistent with the existing 
 
 ## Testing Guidelines
 
-There is no single top-level test runner yet. For `alfworld_augment`, use `analysis/smoke_test.py` for quick checks and `verification/verify_runner.py` for end-to-end validation. For `AWorld-RL/EnvTuning`, validate changes with the smallest affected training stage or config path before scaling up. Include the command you ran and the key result in your PR.
+There is no single top-level test runner yet. For `env2scaffold`, use `augmentation/smoke_test.py` for quick checks and `verification/verify_runner.py` for end-to-end validation. For `AWorld-RL/EnvTuning`, validate changes with the smallest affected training stage or config path before scaling up. Include the command you ran and the key result in your PR.
 
 ## Commit & Pull Request Guidelines
 

@@ -6,7 +6,7 @@
 
 ### 1.1 环境增强 Pipeline
 
-`alfworld_augment/` 负责环境增强的自动化 pipeline，由 `pipeline.py` 串联三个阶段：
+`env2scaffold/` 负责环境增强的自动化 pipeline，由 `pipeline.py` 串联三个阶段：
 
 1. `Probing Agent`
    - 主动与 ALFWorld 环境交互
@@ -16,7 +16,7 @@
 2. `Analysis Agent`
    - 读取 probing 结果和环境源码
    - 生成增强规则
-   - 实现运行时 Wrapper `analysis/augmented_env.py`
+   - 实现运行时 Wrapper `augmentation/augmented_env.py`
 
 3. `Verify Agent`
    - 检查增强反馈是否泄露
@@ -64,9 +64,9 @@
 
 ### 环境增强
 
-- `alfworld_augment/pipeline.py`
-- `alfworld_augment/analysis/augmented_env.py`
-- `alfworld_augment/verification/verify_runner.py`
+- `env2scaffold/pipeline.py`
+- `env2scaffold/augmentation/augmented_env.py`
+- `env2scaffold/verification/verify_runner.py`
 
 ### 训练接入
 
@@ -86,7 +86,7 @@
 ### 4.1 `Nothing happens.` 的增强方式
 
 ALFWorld 原始环境中，大量失败动作都会统一返回 `Nothing happens.`。  
-当前做法是在 `analysis/augmented_env.py` 中包一层 Wrapper，在每次 `step()` 后：
+当前做法是在 `augmentation/augmented_env.py` 中包一层 Wrapper，在每次 `step()` 后：
 
 - 读取环境返回的 `facts` 和 `admissible_commands`
 - 构造内部状态，例如：
@@ -127,7 +127,7 @@ ALFWorld 原始环境中，大量失败动作都会统一返回 `Nothing happens
 
 ### 4.2 Progress Reward 的构造方式
 
-当前 progress reward 也是在 `analysis/augmented_env.py` 中构造，并只通过 `infos` 返回给训练框架。
+当前 progress reward 也是在 `augmentation/augmented_env.py` 中构造，并只通过 `infos` 返回给训练框架。
 
 构造方式是：
 

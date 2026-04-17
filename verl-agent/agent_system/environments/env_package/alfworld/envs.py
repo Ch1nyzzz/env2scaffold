@@ -30,7 +30,7 @@ import textworld.gym
 from alfworld.agents.environment.alfred_tw_env import AlfredDemangler, AlfredInfos
 
 # Import augmented environment from env2scaffold
-_AUGMENTED_ENV_DIR = os.path.join(os.path.dirname(__file__), '..', '..', '..', '..', '..', 'alfworld_augment', 'analysis')
+_AUGMENTED_ENV_DIR = os.path.join(os.path.dirname(__file__), '..', '..', '..', '..', '..', 'env2scaffold', 'augmentation')
 _AUGMENTED_ENV_DIR = os.path.abspath(_AUGMENTED_ENV_DIR)
 if _AUGMENTED_ENV_DIR not in sys.path:
     sys.path.insert(0, _AUGMENTED_ENV_DIR)

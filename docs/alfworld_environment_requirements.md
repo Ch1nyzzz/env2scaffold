@@ -43,7 +43,7 @@ python -c "import torch, textworld, alfworld, openai, pyarrow, pandas, numpy"
 ## 4. Repository Layout Assumptions
 
 - Repo root: `/path/to/env-aug`
-- ALFWorld augmentation code: `alfworld_augment/`
+- ALFWorld augmentation code: `env2scaffold/`
 - Agent RL code: `AWorld-RL/EnvTuning/`
 - Vendored trainer package: `AWorld-RL/EnvTuning/verl/`
 
@@ -54,7 +54,7 @@ python -c "import torch, textworld, alfworld, openai, pyarrow, pandas, numpy"
 - ALFWorld game files:
   - `~/.cache/alfworld/json_2.1.1/valid_seen/.../game.tw-pddl`
 - Probing trajectories used to build training parquet:
-  - `alfworld_augment/probing/trajectories/*.json`
+  - `env2scaffold/probing/trajectories/*.json`
 - Generated training data:
   - `AWorld-RL/EnvTuning/data/alfworld_train.parquet`
   - `AWorld-RL/EnvTuning/data/alfworld_val.parquet`
@@ -101,8 +101,8 @@ bash -n scripts/run_alfworld_grpo_stage1.sh
 Optional environment validation:
 
 ```bash
-cd /path/to/env-aug/alfworld_augment
-python analysis/smoke_test.py
+cd /path/to/env-aug/env2scaffold
+python augmentation/smoke_test.py
 python verification/verify_runner.py
 ```
 

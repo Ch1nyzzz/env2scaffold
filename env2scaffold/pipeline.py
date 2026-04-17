@@ -15,6 +15,10 @@ Usage:
     python pipeline.py --agent progress_mining  # run only progress mining
     python pipeline.py --agent verify           # run only verify (requires analysis + progress mining output)
     python pipeline.py --resume analysis        # resume from analysis onward
+
+NOTE: pipeline stages and agent names are being refactored in M2/M3 to match
+docs/framework_architecture.md. This file still references the legacy "analysis"
+agent pointing at env2scaffold/augmentation/ — the full new config is coming.
     python pipeline.py --budget 10.0            # adjust per-agent budget
 """
 
@@ -29,7 +33,7 @@ from pathlib import Path
 # ─── Paths ───────────────────────────────────────────────────────────────────
 ROOT = Path(__file__).resolve().parent
 PROBING_DIR = ROOT / "probing"
-ANALYSIS_DIR = ROOT / "analysis"
+AUGMENTATION_DIR = ROOT / "augmentation"
 PROGRESS_DIR = ROOT / "progress"
 VERIFY_DIR = ROOT / "verification"
 PROMPTS_DIR = ROOT / "prompts"
@@ -51,10 +55,10 @@ AGENT_CONFIG = {
         "prompt_file": "analysis_agent_prompt.md",
         "log_file": "analysis_agent.log",
         "expected_outputs": [
-            ANALYSIS_DIR / "source_analysis.md",
-            ANALYSIS_DIR / "augmentation_plan.json",
-            ANALYSIS_DIR / "augmented_env.py",
-            ANALYSIS_DIR / "smoke_test_result.json",
+            AUGMENTATION_DIR / "source_analysis.md",
+            AUGMENTATION_DIR / "augmentation_plan.json",
+            AUGMENTATION_DIR / "augmented_env.py",
+            AUGMENTATION_DIR / "smoke_test_result.json",
         ],
         "prerequisites": ["probing"],               # needs probing output
     },

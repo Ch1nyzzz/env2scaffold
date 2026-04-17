@@ -1,6 +1,6 @@
 # Env2Scaffold: ALFWorld Environment Tuning Experiments
 
-Automated environment augmentation + RL training for ALFWorld agents. Based on [Benchmark2Scaffold](https://github.com/Ch1nyzzz/env2scaffold/tree/main/alfworld_augment) (auto-discovers environment feedback rules) and [Environment Tuning](https://arxiv.org/abs/2510.10197) (trains agents with augmented environments).
+Automated environment augmentation + RL training for ALFWorld agents. Based on [Benchmark2Scaffold](https://github.com/Ch1nyzzz/env2scaffold/tree/main/env2scaffold) (auto-discovers environment feedback rules) and [Environment Tuning](https://arxiv.org/abs/2510.10197) (trains agents with augmented environments).
 
 Training framework: [verl-agent (GiGPO)](https://github.com/langfengQ/verl-agent)
 
@@ -154,12 +154,16 @@ Aligned with [GiGPO paper](https://arxiv.org/abs/2505.10978):
 ## Project Structure
 
 ```
-env2scaffold/
-├── alfworld_augment/          # Benchmark2Scaffold: auto environment augmentation
-│   ├── analysis/
+env-aug/
+├── env2scaffold/              # Benchmark2Scaffold: auto environment augmentation
+│   ├── augmentation/
 │   │   └── augmented_env.py   # AugmentedAlfWorldEnv wrapper
 │   ├── probing/               # Environment probing agent
-│   └── pipeline.py            # 3-agent augmentation pipeline
+│   ├── benchmark_spec/        # Stage 1: benchmark reader output
+│   ├── audit/                 # Stage 3: feedback audit + candidates
+│   ├── oracle_test/           # Pipeline B: oracle & test plan
+│   ├── verification/          # 3-layer verification runner
+│   └── pipeline.py            # Multi-agent augmentation pipeline
 ├── verl-agent/                # Training framework (modified verl-agent)
 │   ├── scripts/
 │   │   ├── run_alfworld_vanilla.sh

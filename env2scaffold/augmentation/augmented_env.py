@@ -26,13 +26,42 @@ Usage:
     obs, score, done, infos = env.step("some command")
 """
 
+import os
 import re
+import sys
 import logging
 from datetime import datetime
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 
 logger = logging.getLogger(__name__)
+
+
+# Allow importing Pipeline C adapter. The evaluation/ dir lives at a known
+# relative path within env2scaffold/.
+_EVAL_DIR = Path(__file__).resolve().parent.parent / "evaluation"
+if str(_EVAL_DIR) not in sys.path:
+    sys.path.insert(0, str(_EVAL_DIR))
+try:
+    from plan_driven_progress import (
+        PlanDrivenProgressTracker,
+        extract_task_type_from_gamefile,
+    )
+    _PLAN_PROGRESS_AVAILABLE = True
+except Exception as _plan_exc:  # noqa: BLE001 — keep wrapper usable even if Pipeline C missing
+    logger.warning("plan_driven_progress unavailable: %s", _plan_exc)
+    _PLAN_PROGRESS_AVAILABLE = False
+    PlanDrivenProgressTracker = None  # type: ignore
+    extract_task_type_from_gamefile = None  # type: ignore
+
+
+# Default scale factor for plan-driven progress reward. 10.0 aligns with the
+# 10*won terminal reward scale used in verl-agent/envs.py; trajectory return
+# is further capped at 10 by the envs.py (10 - accumulated) branch.
+DEFAULT_MAX_PROGRESS_PER_EPISODE = float(
+    os.environ.get("ENV2SCAFFOLD_MAX_PROGRESS_PER_EPISODE", "10.0")
+)
 
 
 # ---------------------------------------------------------------------------
@@ -527,9 +556,15 @@ class AugmentedAlfWorldEnv:
         If True, print augmentation messages to stdout.
     """
 
-    def __init__(self, env, verbose: bool = False):
+    def __init__(
+        self,
+        env,
+        verbose: bool = False,
+        max_progress_per_episode: float = DEFAULT_MAX_PROGRESS_PER_EPISODE,
+    ):
         self._env = env
         self.verbose = verbose
+        self._max_progress_per_episode = float(max_progress_per_episode)
 
         # Episode-level state
         self._task_description: str = ""
@@ -540,8 +575,13 @@ class AugmentedAlfWorldEnv:
         self._current_location: Optional[str] = None
         self._location_entities: Dict[str, List[str]] = {}
         self._location_visit_counts: Dict[str, int] = {}
-        self._progress_milestones: set = set()
-        self._progress_score: float = 0.0
+
+        # Plan-driven progress (Pipeline C). Tracker is created on reset() once
+        # the game_file is known via infos['extra.gamefile']. Until then it is
+        # None and progress signal is zero.
+        self._progress_tracker: Optional["PlanDrivenProgressTracker"] = None
+        self._progress_task_type: Optional[str] = None
+        self._progress_unavailable_reason: Optional[str] = None
 
         # Augmentation log
         self.augmentation_log: List[Dict[str, Any]] = []
@@ -605,8 +645,6 @@ class AugmentedAlfWorldEnv:
         self._current_location = _extract_location(obs)
         self._location_entities = {}
         self._location_visit_counts = {}
-        self._progress_milestones = set()
-        self._progress_score = 0.0
         self._record_observation_context(obs)
 
         # Build internal state from facts
@@ -614,9 +652,92 @@ class AugmentedAlfWorldEnv:
         admissible = infos.get("admissible_commands", []) or []
         self._current_state = InternalState(facts, admissible)
 
-        progress_events, progress_reward = self._compute_progress_events(obs, self._current_state, won=False)
-        infos = self._attach_progress_info(infos, progress_events, progress_reward)
+        # Initialise Pipeline C plan-driven progress tracker. Needs
+        # infos['extra.gamefile'] to resolve task_type and traj_data.json.
+        self._init_progress_tracker(infos)
+        infos = self._attach_progress_info(infos, progress_reward=0.0, fired_uts=[])
         return obs, infos
+
+    # ------------------------------------------------------------------
+    # Pipeline C plan-driven progress — adapter / glue only.
+    # Milestones, weights, and detectors all come from the trace_evaluator
+    # agent outputs (trace_unit_test_plan.json + trace_evaluator._TASK_RUNNERS).
+    # ------------------------------------------------------------------
+
+    def _init_progress_tracker(self, infos: Dict[str, Any]) -> None:
+        """Set up self._progress_tracker from the plan JSON. If the task
+        type cannot be resolved or Pipeline C artifacts are missing, leave
+        the tracker as None — progress_reward will be zero in that case."""
+        self._progress_tracker = None
+        self._progress_task_type = None
+        self._progress_unavailable_reason = None
+
+        if not _PLAN_PROGRESS_AVAILABLE:
+            self._progress_unavailable_reason = "plan_driven_progress module missing"
+            return
+
+        game_file = infos.get("extra.gamefile") or infos.get("gamefile")
+        if isinstance(game_file, (list, tuple)) and game_file:
+            game_file = game_file[0]
+        task_type = extract_task_type_from_gamefile(game_file)
+        if task_type is None:
+            self._progress_unavailable_reason = (
+                "extra.gamefile missing or task_type unparseable"
+            )
+            return
+
+        try:
+            self._progress_tracker = PlanDrivenProgressTracker(
+                task_type=task_type,
+                game_file=game_file,
+                max_progress_per_episode=self._max_progress_per_episode,
+            )
+            self._progress_tracker.reset()
+            self._progress_task_type = task_type
+        except Exception as exc:  # noqa: BLE001
+            self._progress_unavailable_reason = f"tracker init failed: {exc}"
+            self._progress_tracker = None
+
+    def _step_plan_progress(
+        self,
+        obs: str,
+        admissible: List[str],
+        score: float,
+        done: bool,
+        won: bool,
+    ) -> Tuple[float, List[str]]:
+        """Run one adapter step. Returns (progress_reward, newly_fired_ids)."""
+        if self._progress_tracker is None:
+            return 0.0, []
+        step_record = {
+            "step": self._step_count,
+            "action": self._last_command or "",
+            "observation": obs,
+            "admissible_commands": list(admissible or []),
+            "score": float(score),
+            "done": bool(done),
+            "won": bool(won),
+        }
+        return self._progress_tracker.step(step_record)
+
+    def _attach_progress_info(
+        self,
+        infos: Dict[str, Any],
+        progress_reward: float,
+        fired_uts: List[str],
+    ) -> Dict[str, Any]:
+        infos = dict(infos)
+        infos["progress_reward"] = float(progress_reward)
+        infos["progress_fired_uts"] = list(fired_uts)
+        if self._progress_tracker is not None:
+            infos["progress_accumulated"] = float(self._progress_tracker.accumulated)
+            infos["progress_task_type"] = self._progress_task_type
+        else:
+            infos["progress_accumulated"] = 0.0
+            infos["progress_task_type"] = None
+            if self._progress_unavailable_reason:
+                infos["progress_unavailable_reason"] = self._progress_unavailable_reason
+        return infos
 
     def step(self, command: str) -> Tuple[str, float, bool, Dict[str, Any]]:
         """
@@ -649,14 +770,23 @@ class AugmentedAlfWorldEnv:
         admissible = infos.get("admissible_commands", []) or []
         self._current_state = InternalState(facts, admissible)
         self._record_observation_context(obs)
-        progress_events, progress_reward = self._compute_progress_events(
-            obs, self._current_state, won=bool(infos.get("won", False))
-        )
-        infos = self._attach_progress_info(infos, progress_events, progress_reward)
 
         # Augment observation using pre-step state (more accurate for error detection)
         state_for_rules = pre_step_state if pre_step_state is not None else self._current_state
         augmented_obs = self._augment(obs, command, state_for_rules)
+
+        # Plan-driven progress — runs AFTER augmentation so the step record
+        # seen by detectors contains whatever observation the agent actually
+        # received. Detectors in trace_evaluator are action-based, so this
+        # does not affect UT outcomes, but keeps the record consistent.
+        progress_reward, fired_uts = self._step_plan_progress(
+            obs=augmented_obs,
+            admissible=admissible,
+            score=score,
+            done=bool(done),
+            won=bool(infos.get("won", False)),
+        )
+        infos = self._attach_progress_info(infos, progress_reward, fired_uts)
 
         return augmented_obs, score, done, infos
 
@@ -751,83 +881,6 @@ class AugmentedAlfWorldEnv:
             if _extract_object_type(location).lower() == target_type:
                 return location
         return None
-
-    def _compute_progress_events(
-        self,
-        obs: str,
-        state: Optional[InternalState],
-        won: bool,
-    ) -> Tuple[List[str], float]:
-        events: List[str] = []
-        reward = 0.0
-
-        if state is None:
-            return events, reward
-
-        target_obj = self._target_object_instance(state)
-        target_dest = self._remembered_destination_instance()
-        target_obj_type = self._task_context.get("target_object_type")
-        target_held = (
-            target_obj_type is not None
-            and state.held_object is not None
-            and _extract_object_type(state.held_object).lower() == target_obj_type
-        )
-
-        visible_entities = self._location_entities.get(self._current_location or "", [])
-        visible_target_obj = _find_entity_by_type(visible_entities, target_obj_type)
-        visible_target_dest = _find_entity_by_type(
-            visible_entities, self._task_context.get("target_destination_type")
-        )
-
-        def add_event(event: str, delta: float) -> None:
-            nonlocal reward
-            if event in self._progress_milestones:
-                return
-            self._progress_milestones.add(event)
-            events.append(event)
-            reward += delta
-
-        if visible_target_obj:
-            add_event("found_target_object", 0.5)
-        if visible_target_dest:
-            add_event("found_target_destination", 0.5)
-        if target_held:
-            add_event("holding_target_object", 1.0)
-
-        task_kind = self._task_context.get("task_kind")
-        if task_kind == "look_under_light" and won:
-            add_event("completed_light_inspection", 2.0)
-        if task_kind == "put" and target_dest and target_obj:
-            if state.object_location(target_obj) == target_dest and not target_held:
-                add_event("placed_target_object", 2.0)
-        if won:
-            add_event("task_completed", 3.0)
-
-        if (
-            self._current_location
-            and self._location_visit_counts.get(self._current_location, 0) >= 2
-            and not visible_target_obj
-            and not visible_target_dest
-            and not target_held
-        ):
-            events.append("revisited_empty_location")
-            reward -= 0.05
-
-        self._progress_score += reward
-        return events, reward
-
-    def _attach_progress_info(
-        self,
-        infos: Dict[str, Any],
-        progress_events: List[str],
-        progress_reward: float,
-    ) -> Dict[str, Any]:
-        progress_info = dict(infos)
-        progress_info["progress_events"] = progress_events
-        progress_info["progress_reward"] = progress_reward
-        progress_info["progress_score"] = self._progress_score
-        progress_info["progress_milestones"] = sorted(self._progress_milestones)
-        return progress_info
 
     def _log_augmentation(self, step: int, command: str,
                            original_obs: str, augmented_obs: str, rule: str) -> None:

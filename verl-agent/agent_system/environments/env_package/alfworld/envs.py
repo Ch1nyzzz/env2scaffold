@@ -281,12 +281,20 @@ class AugmentedAlfworldEnvs(AlfworldEnvs):
     def step(self, actions):
         text_obs_list, image_obs_list, rewards_list, dones_list, info_list = super().step(actions)
         if self.use_progress_reward:
-            # Replace sparse reward with progress-aware reward
+            # Plan-driven dense shaping + return normalised to vanilla scale.
+            # Non-terminal steps: emit per-step progress (pipeline C delta).
+            # Terminal success step: emit (10 - accumulated) so trajectory
+            # return equals 10 regardless of how many milestones fired,
+            # matching vanilla / obs-aug success scale.
             for i, info in enumerate(info_list):
                 progress = float(info.get('progress_reward', 0.0) or 0.0)
-                won = float(info.get('won', False))
-                # Success = 10.0 (same as vanilla); failure = progress signal
-                rewards_list[i] = 10.0 * won if won else progress
+                won = bool(info.get('won', False))
+                if won:
+                    accumulated = float(info.get('progress_accumulated', 0.0) or 0.0)
+                    # clip: if milestones already exceed 10 the terminal bonus is 0
+                    rewards_list[i] = max(0.0, 10.0 - accumulated)
+                else:
+                    rewards_list[i] = progress
         return text_obs_list, image_obs_list, rewards_list, dones_list, info_list
 
 

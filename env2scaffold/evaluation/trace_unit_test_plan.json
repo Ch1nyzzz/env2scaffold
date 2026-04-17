@@ -1,0 +1,474 @@
+{
+  "benchmark": "alfworld",
+  "source_spec_path": "env2scaffold/benchmark_spec/benchmark_spec.json",
+  "oracle_sources": [
+    {
+      "name": "won_info_field",
+      "used_for_unit_tests": ["UT_PAS_01", "UT_PAS_02", "UT_PAS_03", "UT_LOIL_01", "UT_LOIL_02", "UT_LOIL_03", "UT_PCLEAN_01", "UT_PCLEAN_02", "UT_PCLEAN_03", "UT_PCLEAN_04", "UT_PHEAT_01", "UT_PHEAT_02", "UT_PHEAT_03", "UT_PHEAT_04", "UT_PCOOL_01", "UT_PCOOL_02", "UT_PCOOL_03", "UT_PCOOL_04", "UT_PTWO_01", "UT_PTWO_02", "UT_PTWO_03", "UT_PTWO_04"],
+      "rationale": "The 'won' field is the benchmark's authoritative binary success signal; it is recorded per-step in every trajectory and directly indicates whether the PDDL goal was fully satisfied, making it the canonical oracle for episode-level success detection."
+    },
+    {
+      "name": "admissible_commands_validity_heuristic",
+      "used_for_unit_tests": ["UT_PAS_04", "UT_LOIL_03", "UT_LOIL_04", "UT_PCLEAN_05", "UT_PHEAT_05", "UT_PCOOL_05", "UT_PTWO_05"],
+      "rationale": "The per-step admissible_commands list is the exact set of PDDL-valid actions at each state; comparing consecutive steps allows detection of invalid actions (action at step N not in admissible_commands at step N-1) and inference of held-object state (presence of 'move <obj>' commands implies agent holds that object)."
+    },
+    {
+      "name": "traj_data_task_annotation",
+      "used_for_unit_tests": ["UT_PAS_01", "UT_PAS_02", "UT_PAS_03", "UT_LOIL_01", "UT_LOIL_02", "UT_LOIL_03", "UT_PCLEAN_01", "UT_PCLEAN_02", "UT_PCLEAN_03", "UT_PCLEAN_04", "UT_PHEAT_01", "UT_PHEAT_02", "UT_PHEAT_03", "UT_PHEAT_04", "UT_PCOOL_01", "UT_PCOOL_02", "UT_PCOOL_03", "UT_PCOOL_04", "UT_PTWO_01", "UT_PTWO_02", "UT_PTWO_03", "UT_PTWO_04"],
+      "rationale": "The traj_data.json pddl_params field provides the ground-truth target object (object_target), target receptacle (parent_target), and lamp/appliance identifier (toggle_target) for each game, enabling exact string-matching against action sequences rather than fragile heuristic pattern extraction."
+    }
+  ],
+  "task_types": [
+    {
+      "task_type": "pick_and_place_simple",
+      "rationale_for_tests": "The pick-and-place task has three necessary sub-goals: (1) the agent locates and picks up the target object, (2) the agent navigates to the target receptacle, and (3) the agent places the object there. Each sub-goal is independently detectable from the action sequence and location field. An avoided-error test measuring the invalid-action rate captures aimless or stuck behavior without relying on observation text. Together these four tests form a fine-grained progress ladder that awards partial credit for reaching earlier milestones even on failed episodes.",
+      "unit_tests": [
+        {
+          "unit_test_id": "UT_PAS_01",
+          "name": "target_object_picked_up",
+          "kind": "milestone",
+          "description": "Agent executed a 'take <object_target> from ...' action at least once during the episode, indicating it successfully picked up the task-relevant object.",
+          "detector": {
+            "scan": "whole_trace",
+            "oracle_reference": "traj_data_task_annotation",
+            "predicate": "obj = pddl_params['object_target'].lower(); any(step['action'].lower().startswith('take ') and obj in step['action'].lower() for step in steps)"
+          },
+          "weight": 0.30,
+          "leakage_risk": "none",
+          "rationale": "Picking up the target is the irreducible first step; a failing agent that never reaches this milestone is qualitatively different from one that grasps the right object but fails to place it."
+        },
+        {
+          "unit_test_id": "UT_PAS_02",
+          "name": "target_receptacle_visited",
+          "kind": "milestone",
+          "description": "Agent's 'location' field at some step starts with or contains the parent_target name (lowercased), indicating it navigated to the correct receptacle.",
+          "detector": {
+            "scan": "whole_trace",
+            "oracle_reference": "traj_data_task_annotation",
+            "predicate": "recep = pddl_params['parent_target'].lower(); any(recep in step['location'].lower() for step in steps)"
+          },
+          "weight": 0.20,
+          "leakage_risk": "none",
+          "rationale": "Reaching the destination receptacle is a distinct navigation milestone; an agent that holds the object but wanders never contributes to task completion."
+        },
+        {
+          "unit_test_id": "UT_PAS_03",
+          "name": "target_placed_at_receptacle",
+          "kind": "milestone",
+          "description": "Agent executed a 'move <object_target> to <parent_target>' action, indicating it placed the target object at the correct destination.",
+          "detector": {
+            "scan": "whole_trace",
+            "oracle_reference": "traj_data_task_annotation",
+            "predicate": "obj = pddl_params['object_target'].lower(); recep = pddl_params['parent_target'].lower(); any((step['action'].lower().startswith('move ') or step['action'].lower().startswith('put ')) and obj in step['action'].lower() and recep in step['action'].lower() for step in steps)"
+          },
+          "weight": 0.35,
+          "leakage_risk": "none",
+          "rationale": "Placing the target object at the correct receptacle is the terminal milestone directly preceding task success; detecting it awards the largest weight for this task type."
+        },
+        {
+          "unit_test_id": "UT_PAS_04",
+          "name": "low_invalid_action_rate",
+          "kind": "avoided_error",
+          "description": "Fewer than 30% of actions from step 1 onward were not in the admissible_commands list of the preceding step (i.e., produced 'Nothing happens.' feedback).",
+          "detector": {
+            "scan": "whole_trace",
+            "oracle_reference": "admissible_commands_validity_heuristic",
+            "predicate": "invalid = sum(1 for i in range(1, len(steps)) if steps[i]['action'] not in steps[i-1]['admissible_commands']); total = max(1, len(steps) - 1); (invalid / total) < 0.30"
+          },
+          "weight": 0.15,
+          "leakage_risk": "none",
+          "rationale": "A high rate of invalid actions signals an agent that is guessing or producing hallucinated commands; this test rewards coherent action selection without revealing the solution path."
+        }
+      ]
+    },
+    {
+      "task_type": "look_at_obj_in_light",
+      "rationale_for_tests": "The look-at-object-in-light task requires: (1) finding and picking up the target object, (2) locating the desklamp, (3) activating the lamp while holding the target. The third sub-goal is the hardest to detect without PDDL facts, but it can be approximated by checking whether a 'use <toggle_target>' action occurred while admissible_commands from the previous step contained a 'move <object_target>' command (which implies the agent was holding the object). An avoided-error test on invalid actions complements these milestone tests.",
+      "unit_tests": [
+        {
+          "unit_test_id": "UT_LOIL_01",
+          "name": "target_object_picked_up",
+          "kind": "milestone",
+          "description": "Agent executed a 'take <object_target> from ...' action at least once, indicating it grasped the task-relevant object.",
+          "detector": {
+            "scan": "whole_trace",
+            "oracle_reference": "traj_data_task_annotation",
+            "predicate": "obj = pddl_params['object_target'].lower(); any(step['action'].lower().startswith('take ') and obj in step['action'].lower() for step in steps)"
+          },
+          "weight": 0.25,
+          "leakage_risk": "none",
+          "rationale": "Picking up the target object is the first necessary step; without it the lamp-examination goal cannot be satisfied."
+        },
+        {
+          "unit_test_id": "UT_LOIL_02",
+          "name": "lamp_activated",
+          "kind": "milestone",
+          "description": "Agent executed a 'use <toggle_target>' action at any point in the episode.",
+          "detector": {
+            "scan": "whole_trace",
+            "oracle_reference": "traj_data_task_annotation",
+            "predicate": "lamp = pddl_params['toggle_target'].lower(); any(step['action'].lower().startswith('use ') and lamp in step['action'].lower() for step in steps)"
+          },
+          "weight": 0.20,
+          "leakage_risk": "none",
+          "rationale": "Interacting with the lamp is a necessary precondition for satisfying the look-under-light goal; detecting it independently from holding the object reveals whether the agent understood the lamp sub-goal."
+        },
+        {
+          "unit_test_id": "UT_LOIL_03",
+          "name": "lamp_used_while_holding_target",
+          "kind": "milestone",
+          "description": "There exists a step N where action is 'use <toggle_target>' AND admissible_commands at step N-1 include a 'move <object_target>' command (indicating the agent held the target when the lamp was activated).",
+          "detector": {
+            "scan": "whole_trace",
+            "oracle_reference": "admissible_commands_validity_heuristic",
+            "predicate": "lamp = pddl_params['toggle_target'].lower(); obj = pddl_params['object_target'].lower(); any(i > 0 and steps[i]['action'].lower().startswith('use ') and lamp in steps[i]['action'].lower() and any(cmd.lower().startswith('move ' + obj) for cmd in steps[i-1]['admissible_commands']) for i in range(len(steps)))"
+          },
+          "weight": 0.35,
+          "leakage_risk": "low",
+          "rationale": "This is the key compound milestone: the agent must simultaneously hold the target AND activate the lamp; detecting both conditions together is a reliable proxy for PDDL goal satisfaction without needing the facts oracle. Leakage risk is low because the offline scorer never feeds this result back as text to the agent."
+        },
+        {
+          "unit_test_id": "UT_LOIL_04",
+          "name": "low_invalid_action_rate",
+          "kind": "avoided_error",
+          "description": "Fewer than 30% of actions from step 1 onward were not in the admissible_commands list of the preceding step.",
+          "detector": {
+            "scan": "whole_trace",
+            "oracle_reference": "admissible_commands_validity_heuristic",
+            "predicate": "invalid = sum(1 for i in range(1, len(steps)) if steps[i]['action'] not in steps[i-1]['admissible_commands']); total = max(1, len(steps) - 1); (invalid / total) < 0.30"
+          },
+          "weight": 0.20,
+          "leakage_risk": "none",
+          "rationale": "A high rate of invalid actions indicates the agent is emitting hallucianted commands rather than planning; this error class is especially common when the agent cannot find the lamp."
+        }
+      ]
+    },
+    {
+      "task_type": "pick_clean_then_place_in_recep",
+      "rationale_for_tests": "This task has a strict pipeline: pickup → clean at sinkbasin → place at receptacle. The ordering constraint is the distinguishing feature vs. pick_and_place_simple. Five unit tests capture the three milestone stages, the pipeline ordering as an efficiency signal, and invalid-action rate. Detecting the 'clean X with sinkbasin' action (the PDDL clean verb) from the action string is reliable since the action grammar always uses this form.",
+      "unit_tests": [
+        {
+          "unit_test_id": "UT_PCLEAN_01",
+          "name": "target_object_picked_up",
+          "kind": "milestone",
+          "description": "Agent executed a 'take <object_target> from ...' action at least once.",
+          "detector": {
+            "scan": "whole_trace",
+            "oracle_reference": "traj_data_task_annotation",
+            "predicate": "obj = pddl_params['object_target'].lower(); any(step['action'].lower().startswith('take ') and obj in step['action'].lower() for step in steps)"
+          },
+          "weight": 0.20,
+          "leakage_risk": "none",
+          "rationale": "Picking up the target is the prerequisite for all subsequent sub-goals; missing this milestone means the agent never started the task pipeline."
+        },
+        {
+          "unit_test_id": "UT_PCLEAN_02",
+          "name": "target_object_cleaned",
+          "kind": "milestone",
+          "description": "Agent executed a 'clean <object_target> with ...' action at least once.",
+          "detector": {
+            "scan": "whole_trace",
+            "oracle_reference": "traj_data_task_annotation",
+            "predicate": "obj = pddl_params['object_target'].lower(); any(step['action'].lower().startswith('clean ') and obj in step['action'].lower() for step in steps)"
+          },
+          "weight": 0.25,
+          "leakage_risk": "none",
+          "rationale": "The clean step is the task-distinguishing transformation; detecting it confirms the agent understood the task requires cleaning before placement."
+        },
+        {
+          "unit_test_id": "UT_PCLEAN_03",
+          "name": "cleaned_object_placed_at_receptacle",
+          "kind": "milestone",
+          "description": "Agent executed a 'move <object_target> to <parent_target>' action at least once.",
+          "detector": {
+            "scan": "whole_trace",
+            "oracle_reference": "traj_data_task_annotation",
+            "predicate": "obj = pddl_params['object_target'].lower(); recep = pddl_params['parent_target'].lower(); any((step['action'].lower().startswith('move ') or step['action'].lower().startswith('put ')) and obj in step['action'].lower() and recep in step['action'].lower() for step in steps)"
+          },
+          "weight": 0.30,
+          "leakage_risk": "none",
+          "rationale": "Placing the target object at the correct receptacle is the final milestone; it receives the highest weight as it is closest to task completion."
+        },
+        {
+          "unit_test_id": "UT_PCLEAN_04",
+          "name": "correct_pipeline_order",
+          "kind": "efficiency",
+          "description": "The first take-target step occurs before the first clean-target step, and the first clean-target step occurs before the first place-target-at-recep step. All three must be detected for this test to pass.",
+          "detector": {
+            "scan": "whole_trace",
+            "oracle_reference": "traj_data_task_annotation",
+            "predicate": "obj = pddl_params['object_target'].lower(); recep = pddl_params['parent_target'].lower(); pickup_i = next((i for i,s in enumerate(steps) if s['action'].lower().startswith('take ') and obj in s['action'].lower()), -1); clean_i = next((i for i,s in enumerate(steps) if s['action'].lower().startswith('clean ') and obj in s['action'].lower()), -1); place_i = next((i for i,s in enumerate(steps) if (s['action'].lower().startswith('move ') or s['action'].lower().startswith('put ')) and obj in s['action'].lower() and recep in s['action'].lower()), -1); pickup_i != -1 and clean_i != -1 and place_i != -1 and pickup_i < clean_i < place_i"
+          },
+          "weight": 0.10,
+          "leakage_risk": "low",
+          "rationale": "The pipeline ordering bonus reveals whether the agent executed the sub-goals in the correct sequence; an agent that places before cleaning cannot succeed. Leakage risk is low because ordering information is not more than what the task description already implies."
+        },
+        {
+          "unit_test_id": "UT_PCLEAN_05",
+          "name": "low_invalid_action_rate",
+          "kind": "avoided_error",
+          "description": "Fewer than 30% of actions from step 1 onward were not in the admissible_commands list of the preceding step.",
+          "detector": {
+            "scan": "whole_trace",
+            "oracle_reference": "admissible_commands_validity_heuristic",
+            "predicate": "invalid = sum(1 for i in range(1, len(steps)) if steps[i]['action'] not in steps[i-1]['admissible_commands']); total = max(1, len(steps) - 1); (invalid / total) < 0.30"
+          },
+          "weight": 0.15,
+          "leakage_risk": "none",
+          "rationale": "Invalid actions are especially costly in this task because they signal the agent cannot identify the sinkbasin location or the correct clean syntax."
+        }
+      ]
+    },
+    {
+      "task_type": "pick_heat_then_place_in_recep",
+      "rationale_for_tests": "Structurally identical to pick_clean_then_place_in_recep except the transformation is heating via microwave or stoveburner. The 'heat X with ...' action verb distinguishes this task. The same five-test structure (pickup, transform, place, ordering, invalid-rate) applies with heating semantics.",
+      "unit_tests": [
+        {
+          "unit_test_id": "UT_PHEAT_01",
+          "name": "target_object_picked_up",
+          "kind": "milestone",
+          "description": "Agent executed a 'take <object_target> from ...' action at least once.",
+          "detector": {
+            "scan": "whole_trace",
+            "oracle_reference": "traj_data_task_annotation",
+            "predicate": "obj = pddl_params['object_target'].lower(); any(step['action'].lower().startswith('take ') and obj in step['action'].lower() for step in steps)"
+          },
+          "weight": 0.20,
+          "leakage_risk": "none",
+          "rationale": "Picking up the target is the entry point for the heating pipeline; without it no subsequent milestone is reachable."
+        },
+        {
+          "unit_test_id": "UT_PHEAT_02",
+          "name": "target_object_heated",
+          "kind": "milestone",
+          "description": "Agent executed a 'heat <object_target> with ...' action at least once.",
+          "detector": {
+            "scan": "whole_trace",
+            "oracle_reference": "traj_data_task_annotation",
+            "predicate": "obj = pddl_params['object_target'].lower(); any(step['action'].lower().startswith('heat ') and obj in step['action'].lower() for step in steps)"
+          },
+          "weight": 0.25,
+          "leakage_risk": "none",
+          "rationale": "Heating the object is the task-distinguishing transformation; detecting it confirms the agent recognized the heat requirement."
+        },
+        {
+          "unit_test_id": "UT_PHEAT_03",
+          "name": "heated_object_placed_at_receptacle",
+          "kind": "milestone",
+          "description": "Agent executed a 'move <object_target> to <parent_target>' action at least once.",
+          "detector": {
+            "scan": "whole_trace",
+            "oracle_reference": "traj_data_task_annotation",
+            "predicate": "obj = pddl_params['object_target'].lower(); recep = pddl_params['parent_target'].lower(); any((step['action'].lower().startswith('move ') or step['action'].lower().startswith('put ')) and obj in step['action'].lower() and recep in step['action'].lower() for step in steps)"
+          },
+          "weight": 0.30,
+          "leakage_risk": "none",
+          "rationale": "Placing the heated object at the target receptacle is the terminal milestone nearest to episode completion."
+        },
+        {
+          "unit_test_id": "UT_PHEAT_04",
+          "name": "correct_pipeline_order",
+          "kind": "efficiency",
+          "description": "The first take-target step occurs before the first heat-target step, and the first heat-target step occurs before the first place-target-at-recep step. All three must be detected.",
+          "detector": {
+            "scan": "whole_trace",
+            "oracle_reference": "traj_data_task_annotation",
+            "predicate": "obj = pddl_params['object_target'].lower(); recep = pddl_params['parent_target'].lower(); pickup_i = next((i for i,s in enumerate(steps) if s['action'].lower().startswith('take ') and obj in s['action'].lower()), -1); heat_i = next((i for i,s in enumerate(steps) if s['action'].lower().startswith('heat ') and obj in s['action'].lower()), -1); place_i = next((i for i,s in enumerate(steps) if (s['action'].lower().startswith('move ') or s['action'].lower().startswith('put ')) and obj in s['action'].lower() and recep in s['action'].lower()), -1); pickup_i != -1 and heat_i != -1 and place_i != -1 and pickup_i < heat_i < place_i"
+          },
+          "weight": 0.10,
+          "leakage_risk": "low",
+          "rationale": "The ordering check is the key differentiator: an agent that places before heating produces an unheated object and cannot satisfy the PDDL goal. Leakage risk is low since the correct order is already implied by the task description."
+        },
+        {
+          "unit_test_id": "UT_PHEAT_05",
+          "name": "low_invalid_action_rate",
+          "kind": "avoided_error",
+          "description": "Fewer than 30% of actions from step 1 onward were not in the admissible_commands list of the preceding step.",
+          "detector": {
+            "scan": "whole_trace",
+            "oracle_reference": "admissible_commands_validity_heuristic",
+            "predicate": "invalid = sum(1 for i in range(1, len(steps)) if steps[i]['action'] not in steps[i-1]['admissible_commands']); total = max(1, len(steps) - 1); (invalid / total) < 0.30"
+          },
+          "weight": 0.15,
+          "leakage_risk": "none",
+          "rationale": "Invalid actions in this task often signal the agent attempting to heat without finding the microwave or using an incorrect appliance name."
+        }
+      ]
+    },
+    {
+      "task_type": "pick_cool_then_place_in_recep",
+      "rationale_for_tests": "Structurally identical to the heat variant except the transformation is cooling via fridge. The 'cool X with ...' action verb identifies the transformation. The same five-test structure applies with cooling semantics.",
+      "unit_tests": [
+        {
+          "unit_test_id": "UT_PCOOL_01",
+          "name": "target_object_picked_up",
+          "kind": "milestone",
+          "description": "Agent executed a 'take <object_target> from ...' action at least once.",
+          "detector": {
+            "scan": "whole_trace",
+            "oracle_reference": "traj_data_task_annotation",
+            "predicate": "obj = pddl_params['object_target'].lower(); any(step['action'].lower().startswith('take ') and obj in step['action'].lower() for step in steps)"
+          },
+          "weight": 0.20,
+          "leakage_risk": "none",
+          "rationale": "Picking up the target is the mandatory entry step for the cooling pipeline."
+        },
+        {
+          "unit_test_id": "UT_PCOOL_02",
+          "name": "target_object_cooled",
+          "kind": "milestone",
+          "description": "Agent executed a 'cool <object_target> with ...' action at least once.",
+          "detector": {
+            "scan": "whole_trace",
+            "oracle_reference": "traj_data_task_annotation",
+            "predicate": "obj = pddl_params['object_target'].lower(); any(step['action'].lower().startswith('cool ') and obj in step['action'].lower() for step in steps)"
+          },
+          "weight": 0.25,
+          "leakage_risk": "none",
+          "rationale": "Cooling the object is the task-distinguishing transformation; detecting it confirms the agent navigated to and used the fridge."
+        },
+        {
+          "unit_test_id": "UT_PCOOL_03",
+          "name": "cooled_object_placed_at_receptacle",
+          "kind": "milestone",
+          "description": "Agent executed a 'move <object_target> to <parent_target>' action at least once.",
+          "detector": {
+            "scan": "whole_trace",
+            "oracle_reference": "traj_data_task_annotation",
+            "predicate": "obj = pddl_params['object_target'].lower(); recep = pddl_params['parent_target'].lower(); any((step['action'].lower().startswith('move ') or step['action'].lower().startswith('put ')) and obj in step['action'].lower() and recep in step['action'].lower() for step in steps)"
+          },
+          "weight": 0.30,
+          "leakage_risk": "none",
+          "rationale": "Placing the cooled object at the target receptacle is the final milestone nearest to task completion."
+        },
+        {
+          "unit_test_id": "UT_PCOOL_04",
+          "name": "correct_pipeline_order",
+          "kind": "efficiency",
+          "description": "The first take-target step occurs before the first cool-target step, and the first cool-target step occurs before the first place-target-at-recep step. All three must be detected.",
+          "detector": {
+            "scan": "whole_trace",
+            "oracle_reference": "traj_data_task_annotation",
+            "predicate": "obj = pddl_params['object_target'].lower(); recep = pddl_params['parent_target'].lower(); pickup_i = next((i for i,s in enumerate(steps) if s['action'].lower().startswith('take ') and obj in s['action'].lower()), -1); cool_i = next((i for i,s in enumerate(steps) if s['action'].lower().startswith('cool ') and obj in s['action'].lower()), -1); place_i = next((i for i,s in enumerate(steps) if (s['action'].lower().startswith('move ') or s['action'].lower().startswith('put ')) and obj in s['action'].lower() and recep in s['action'].lower()), -1); pickup_i != -1 and cool_i != -1 and place_i != -1 and pickup_i < cool_i < place_i"
+          },
+          "weight": 0.10,
+          "leakage_risk": "low",
+          "rationale": "Correct pipeline ordering is the distinguishing constraint for this task; placing before cooling violates the PDDL goal condition. Leakage risk is low since the ordering is implicit in the task description."
+        },
+        {
+          "unit_test_id": "UT_PCOOL_05",
+          "name": "low_invalid_action_rate",
+          "kind": "avoided_error",
+          "description": "Fewer than 30% of actions from step 1 onward were not in the admissible_commands list of the preceding step.",
+          "detector": {
+            "scan": "whole_trace",
+            "oracle_reference": "admissible_commands_validity_heuristic",
+            "predicate": "invalid = sum(1 for i in range(1, len(steps)) if steps[i]['action'] not in steps[i-1]['admissible_commands']); total = max(1, len(steps) - 1); (invalid / total) < 0.30"
+          },
+          "weight": 0.15,
+          "leakage_risk": "none",
+          "rationale": "Invalid actions in this task often indicate the agent cannot identify the fridge or uses wrong cool syntax."
+        }
+      ]
+    },
+    {
+      "task_type": "pick_two_obj_and_place",
+      "rationale_for_tests": "This task requires placing two instances of the target object type at the same receptacle, making it structurally different from single-object tasks. Four milestone tests track the two-object pipeline separately: first pickup, first placement, second pickup, second placement. Each is independently detectable by counting occurrences of take/place actions for the target object type. An avoided-error test on invalid actions completes the suite.",
+      "unit_tests": [
+        {
+          "unit_test_id": "UT_PTWO_01",
+          "name": "first_target_object_picked_up",
+          "kind": "milestone",
+          "description": "At least one 'take <object_target> from ...' action appears in the trace.",
+          "detector": {
+            "scan": "whole_trace",
+            "oracle_reference": "traj_data_task_annotation",
+            "predicate": "obj = pddl_params['object_target'].lower(); sum(1 for s in steps if s['action'].lower().startswith('take ') and obj in s['action'].lower()) >= 1"
+          },
+          "weight": 0.20,
+          "leakage_risk": "none",
+          "rationale": "Picking up the first target instance is the initial milestone; an agent that never picks up the correct object type cannot progress."
+        },
+        {
+          "unit_test_id": "UT_PTWO_02",
+          "name": "first_target_placed_at_receptacle",
+          "kind": "milestone",
+          "description": "At least one 'move <object_target> to <parent_target>' action appears in the trace.",
+          "detector": {
+            "scan": "whole_trace",
+            "oracle_reference": "traj_data_task_annotation",
+            "predicate": "obj = pddl_params['object_target'].lower(); recep = pddl_params['parent_target'].lower(); sum(1 for s in steps if (s['action'].lower().startswith('move ') or s['action'].lower().startswith('put ')) and obj in s['action'].lower() and recep in s['action'].lower()) >= 1"
+          },
+          "weight": 0.25,
+          "leakage_risk": "none",
+          "rationale": "Placing the first target object is an intermediate milestone showing the agent understands the destination receptacle."
+        },
+        {
+          "unit_test_id": "UT_PTWO_03",
+          "name": "second_target_object_picked_up",
+          "kind": "milestone",
+          "description": "At least two 'take <object_target> from ...' actions appear in the trace (indicating the agent retrieved a second instance).",
+          "detector": {
+            "scan": "whole_trace",
+            "oracle_reference": "traj_data_task_annotation",
+            "predicate": "obj = pddl_params['object_target'].lower(); sum(1 for s in steps if s['action'].lower().startswith('take ') and obj in s['action'].lower()) >= 2"
+          },
+          "weight": 0.20,
+          "leakage_risk": "none",
+          "rationale": "Picking up a second instance of the target type is the distinguishing milestone for this task; agents that pick up one object and stop will fail here."
+        },
+        {
+          "unit_test_id": "UT_PTWO_04",
+          "name": "second_target_placed_at_receptacle",
+          "kind": "milestone",
+          "description": "At least two 'move <object_target> to <parent_target>' actions appear in the trace (indicating both instances were placed).",
+          "detector": {
+            "scan": "whole_trace",
+            "oracle_reference": "traj_data_task_annotation",
+            "predicate": "obj = pddl_params['object_target'].lower(); recep = pddl_params['parent_target'].lower(); sum(1 for s in steps if (s['action'].lower().startswith('move ') or s['action'].lower().startswith('put ')) and obj in s['action'].lower() and recep in s['action'].lower()) >= 2"
+          },
+          "weight": 0.25,
+          "leakage_risk": "none",
+          "rationale": "Placing both target objects is the terminal milestone nearest to episode success; it receives the highest weight."
+        },
+        {
+          "unit_test_id": "UT_PTWO_05",
+          "name": "low_invalid_action_rate",
+          "kind": "avoided_error",
+          "description": "Fewer than 30% of actions from step 1 onward were not in the admissible_commands list of the preceding step.",
+          "detector": {
+            "scan": "whole_trace",
+            "oracle_reference": "admissible_commands_validity_heuristic",
+            "predicate": "invalid = sum(1 for i in range(1, len(steps)) if steps[i]['action'] not in steps[i-1]['admissible_commands']); total = max(1, len(steps) - 1); (invalid / total) < 0.30"
+          },
+          "weight": 0.10,
+          "leakage_risk": "none",
+          "rationale": "Invalid actions indicate aimless exploration; this task requires efficient search for two instances so a low invalid-action rate is a meaningful quality signal."
+        }
+      ]
+    }
+  ],
+  "scoring_rubric": {
+    "aggregation": "weighted_sum",
+    "success_bonus": {
+      "applies_when": "any(step['won'] for step in steps)",
+      "additive_value": 0.5
+    },
+    "failure_penalty": {
+      "applies_when": "steps[-1]['done'] == True and not any(step['won'] for step in steps)",
+      "additive_value": -0.1
+    },
+    "score_range": {"min": -0.1, "max": 1.5},
+    "weight_sum_policy": "Per-task-type unit test weights sum to exactly 1.0; the success_bonus and failure_penalty are additive on top of this base. Maximum achievable base score is 1.0 (all tests pass), plus 0.5 success bonus = 1.5. Minimum is 0.0 (all tests fail) minus 0.1 failure penalty = -0.1."
+  },
+  "limitations": [
+    "traj_data.json loading requires game_file path in trajectory metadata; when only raw steps are passed without a game_file field, all traj_data-dependent unit tests cannot evaluate and will be marked as not-evaluated (contributing 0).",
+    "The holding field in probing trajectories is always empty string; object-holding state is inferred from admissible_commands 'move <obj>' patterns, which may misfire if the environment emits move commands for objects not actively held.",
+    "Action-based milestone detection relies on the TextWorld grammar emitting 'take', 'move', 'clean', 'heat', 'cool', 'use' as the leading verb; if a future game file changes these verb forms, the predicates will fail silently.",
+    "The invalid-action threshold of 30% is calibrated to the probing trajectories; a tighter or looser threshold may be appropriate for agents with different failure modes.",
+    "For look_at_obj_in_light, UT_LOIL_03 uses admissible_commands to infer held object; if the engine batches multiple objects in a single step's admissible list, a false positive is possible.",
+    "The failure_penalty only activates when done=True (step limit exceeded) is recorded in the trajectory; truncated recordings that stop before the environment's done signal will not incur the penalty.",
+    "PDDL facts (pddl_facts_state oracle) are not present in the probing trajectories; a richer facts-based scorer (e.g., checking isclean, ishot, iscold predicates directly) is deferred until trajectories with request_infos.facts=True are available.",
+    "For pick_two_obj_and_place, counting take-action occurrences >= 2 may overcount if the agent picks up then drops then re-picks the same instance; a stricter test would require PDDL facts to track distinct instance IDs."
+  ]
+}

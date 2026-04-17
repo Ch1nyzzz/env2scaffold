@@ -1,5 +1,14 @@
 #!/bin/bash
-# ALFWorld Obs-Aug GRPO — augmented observation text, sparse reward
+# ALFWorld Obs-Aug GRPO
+# ------------------------------------------------------------------------
+# Observation text:  augmented via env2scaffold Pipeline A
+#                    (env2scaffold/augmentation/augmented_env.py — R01–R06,
+#                    produced by augmentation_builder agent; 0-change runtime
+#                    over vanilla except for the "Nothing happens." disambig.)
+# Reward:            sparse, identical to vanilla — 10*won, 0 otherwise.
+# Progress reward:   DISABLED (use_progress_reward=False).
+# Success return:    trajectory sum = 10 (matches vanilla / full).
+# ------------------------------------------------------------------------
 set -x
 export PATH="/home/nvidia/env2scaffold/venv310/bin:$PATH"
 source /home/nvidia/env2scaffold/venv310/bin/activate
@@ -19,8 +28,8 @@ LOG_FILE="$LOG_DIR/alfworld_envtuning_${TIMESTAMP}.log"
 ERR_FILE="$LOG_DIR/alfworld_envtuning_${TIMESTAMP}.err"
 PROGRESS_FILE="$LOG_DIR/alfworld_envtuning_progress.log"
 OUTPUT_ROOT="${OUTPUT_ROOT:-/home/nvidia/env2scaffold/outputs}"
-EXPERIMENT_NAME="Qwen3-8B-obs-aug-grpo-v2-${TIMESTAMP}"
-ROLLOUT_DIR="$OUTPUT_ROOT/rollout/obs-aug-grpo-v2/${EXPERIMENT_NAME}"
+EXPERIMENT_NAME="Qwen3-8B-obs-aug-grpo-v3-pipelineA-${TIMESTAMP}"
+ROLLOUT_DIR="$OUTPUT_ROOT/rollout/obs-aug-grpo-v3-pipelineA/${EXPERIMENT_NAME}"
 
 num_cpus_per_env_worker=0.1
 train_data_size=16

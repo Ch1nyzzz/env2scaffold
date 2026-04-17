@@ -1,5 +1,20 @@
 #!/bin/bash
-# ALFWorld Full EnvTuning GRPO — augmented observation + progress reward
+# ALFWorld Full EnvTuning GRPO
+# ------------------------------------------------------------------------
+# Observation text:  augmented via env2scaffold Pipeline A
+#                    (env2scaffold/augmentation/augmented_env.py — R01–R06,
+#                    produced by augmentation_builder agent)
+# Progress shaping:  DENSE, driven by env2scaffold Pipeline C
+#                    (env2scaffold/evaluation/trace_unit_test_plan.json —
+#                    28 unit tests across 6 task types, produced by
+#                    trace_evaluator agent; incremental per-step detection
+#                    via plan_driven_progress.PlanDrivenProgressTracker).
+# Scale factor:      ENV2SCAFFOLD_MAX_PROGRESS_PER_EPISODE (default 10.0,
+#                    maps plan's per-task weight-sum=1.0 onto 10 reward scale).
+# Success return:    trajectory sum = 10 (clipped by envs.py
+#                    `max(0, 10 - progress_accumulated)` at won step,
+#                    matches vanilla / obs-aug).
+# ------------------------------------------------------------------------
 set -x
 export PATH="/home/nvidia/env2scaffold/venv310/bin:$PATH"
 source /home/nvidia/env2scaffold/venv310/bin/activate
@@ -12,6 +27,10 @@ export CUDA_HOME="/usr/local/cuda-12.6"
 export LD_LIBRARY_PATH="/home/nvidia/env2scaffold/venv/lib/python3.12/site-packages/nvidia/cuda_runtime/lib:${LD_LIBRARY_PATH:-}"
 export WANDB_API_KEY="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"
 
+# Pipeline C progress scale. Plan's per-task milestone weights sum to 1.0;
+# this factor scales them onto the 10-reward training scale.
+export ENV2SCAFFOLD_MAX_PROGRESS_PER_EPISODE="${ENV2SCAFFOLD_MAX_PROGRESS_PER_EPISODE:-10.0}"
+
 TIMESTAMP=$(date '+%Y-%m-%d_%H-%M-%S')
 LOG_DIR="logs"
 mkdir -p $LOG_DIR
@@ -19,8 +38,8 @@ LOG_FILE="$LOG_DIR/alfworld_full_envtuning_${TIMESTAMP}.log"
 ERR_FILE="$LOG_DIR/alfworld_full_envtuning_${TIMESTAMP}.err"
 PROGRESS_FILE="$LOG_DIR/alfworld_full_envtuning_progress.log"
 OUTPUT_ROOT="${OUTPUT_ROOT:-/home/nvidia/env2scaffold/outputs}"
-EXPERIMENT_NAME="Qwen3-8B-full-envtuning-grpo-v2-${TIMESTAMP}"
-ROLLOUT_DIR="$OUTPUT_ROOT/rollout/full-envtuning-grpo-v2/${EXPERIMENT_NAME}"
+EXPERIMENT_NAME="Qwen3-8B-full-envtuning-grpo-v3-pipelineAC-${TIMESTAMP}"
+ROLLOUT_DIR="$OUTPUT_ROOT/rollout/full-envtuning-grpo-v3-pipelineAC/${EXPERIMENT_NAME}"
 
 num_cpus_per_env_worker=0.1
 train_data_size=16

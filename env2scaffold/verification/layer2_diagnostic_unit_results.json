@@ -1,0 +1,199 @@
+{
+  "layer": "layer2_diagnostic_unit",
+  "generated_at": "2026-04-17T02:34:10.197011+00:00",
+  "wrapper_module_path": "/data/home/yuhan/env-aug/env2scaffold/augmentation/augmented_env.py",
+  "plan_path": "/data/home/yuhan/env-aug/env2scaffold/oracle_test/unit_test_plan.json",
+  "oracles_consulted": [
+    "pddl_facts_state",
+    "admissible_commands_validity_heuristic"
+  ],
+  "tests": [
+    {
+      "test_id": "L2_C01_trigger",
+      "candidate_id": "C01",
+      "kind": "trigger",
+      "status": "pass",
+      "oracle_output": "cmd_in_pre_ac=False obs_is_pure_nothing_happens=False aug_emitted_signal=True obs_text='That command is not recognized. Valid actions include: go to, take, move, open, close, examine, use,'",
+      "pass_criterion": "obs \u2260 'Nothing happens.' pure string AND 'fly to mars' NOT in admissible_commands AND augmented obs differs from 'Nothing happens.'",
+      "details": "cmd_in_ac=False aug_emitted=True",
+      "error": null
+    },
+    {
+      "test_id": "L2_C01_non_trigger",
+      "candidate_id": "C01",
+      "kind": "non_trigger",
+      "status": "pass",
+      "oracle_output": "test_cmd='go to bed 1' was_in_pre_ac=True c01_signal_emitted=False obs='You arrive at bed 1. On the bed 1, you see a book 2, a book 1, a cellphone 2, an'",
+      "pass_criterion": "submitted command was in pre-action admissible_commands AND obs does not contain 'not recognized' verb signal",
+      "details": "cmd='go to bed 1' was_in_ac=True c01_fired=False",
+      "error": null
+    },
+    {
+      "test_id": "L2_C01_non_leakage",
+      "candidate_id": "C01",
+      "kind": "non_leakage",
+      "status": "pass",
+      "oracle_output": "total_fact_entities=81 known_prior=28 hidden_entities_count=81 leaked=[] obs='That command is not recognized. Valid actions include: go to, take, move, open, close, examine, use,'",
+      "pass_criterion": "no entity name from facts (absent from reset obs) appears in augmented obs",
+      "details": "leaked_entities=[]",
+      "error": null
+    },
+    {
+      "test_id": "L2_C02_trigger",
+      "candidate_id": "C02",
+      "kind": "trigger",
+      "status": "pass",
+      "oracle_output": "entity='ladle_nonexistent_99' entity_fact_count=0 aug_emitted=True c02_signal=True obs=\"There is no 'ladle_nonexistent_99' in this game world. Check your admissible commands for valid entity names.\"",
+      "pass_criterion": "zero propositions reference entity AND aug obs differs from 'Nothing happens.' AND entity-non-existence signal emitted",
+      "details": "entity_fact_count=0 c02_signal=True",
+      "error": null
+    },
+    {
+      "test_id": "L2_C02_non_trigger",
+      "candidate_id": "C02",
+      "kind": "non_trigger",
+      "status": "pass",
+      "oracle_output": "entity='dishsponge 1' entity_fact_count=5 wrong_recep='countertop 1' c02_signal=False obs='You cannot find dishsponge 1 in the countertop 1. That object is not there. Try looking around other locations.'",
+      "pass_criterion": "entity X in \u22651 fact AND C02 'entity does not exist' signal NOT emitted",
+      "details": "entity='dishsponge 1' fact_count=5 c02_fired=False",
+      "error": null
+    },
+    {
+      "test_id": "L2_C02_non_leakage",
+      "candidate_id": "C02",
+      "kind": "non_leakage",
+      "status": "pass",
+      "oracle_output": "hidden_count=81 leaked=[] obs=\"There is no 'nonexistent_entity_99' in this game world. Check your admissible commands for valid ent\"",
+      "pass_criterion": "no entity from facts (not in reset obs/AC) appears in C02 obs",
+      "details": "leaked=[]",
+      "error": null
+    },
+    {
+      "test_id": "L2_C03_trigger",
+      "candidate_id": "C03",
+      "kind": "trigger",
+      "status": "pass",
+      "oracle_output": "holds_at_start=False holds_apple_after=False apple_in_any_fact=True c03_signal=True obs='You are not holding anything. You need to pick up apple 1 before you can heat it.'",
+      "pass_criterion": "obs is 'Nothing happens.' from base AND holds(agent_1, apple_1) absent AND apple_1 in \u22651 other fact AND aug emits 'not holding' signal",
+      "details": "holds_apple=False apple_exists=True c03_signal=True",
+      "error": null
+    },
+    {
+      "test_id": "L2_C03_non_trigger",
+      "candidate_id": "C03",
+      "kind": "non_trigger",
+      "status": "pass",
+      "oracle_output": "holds_apple_before_step=True c03_signal=False obs='Nothing happens. The action could not be performed in the current state. Check your inventory and the state of nearby ob'",
+      "pass_criterion": "holds(agent_1, apple_1) present in facts before action AND 'not holding' signal NOT emitted",
+      "details": "holds_apple_before=True c03_fired=False",
+      "error": null
+    },
+    {
+      "test_id": "L2_C03_non_leakage",
+      "candidate_id": "C03",
+      "kind": "non_leakage",
+      "status": "pass",
+      "oracle_output": "apple_receptacle='diningtable 2' actual_leaked=False all_leaked=[] obs='You are not holding anything. You need to pick up an object before you can place it somewhere.'",
+      "pass_criterion": "augmented obs does not contain receptacle name Y from inreceptacle(apple_1, Y) that wasn't in prior observation",
+      "details": "actual_receptacle_leaked=False leaked=[]",
+      "error": null
+    },
+    {
+      "test_id": "L2_C04_trigger",
+      "candidate_id": "C04",
+      "kind": "trigger",
+      "status": "pass",
+      "oracle_output": "obj='bread 3' container='fridge 1' inrec=True opened=False c04_closed_signal=True obs='The fridge 1 is closed. You need to open it first before you can take anything from it.'",
+      "pass_criterion": "inreceptacle(bread_3, fridge_1)=true AND opened(fridge_1)=false AND aug emits 'closed' signal",
+      "details": "inrec=True opened=False c04_signal=True",
+      "error": null
+    },
+    {
+      "test_id": "L2_C04_non_trigger",
+      "candidate_id": "C04",
+      "kind": "non_trigger",
+      "status": "pass",
+      "oracle_output": "obj='apple 1' container='microwave 1' inrec_before=True opened_before=True holds_after=True c04_fired=False obs='You pick up the apple 1 from the microwave 1.'",
+      "pass_criterion": "inreceptacle(X,C) and opened(C) both true before action AND C04 augmentation NOT fired (action succeeds or fails non-C04)",
+      "details": "inrec=True opened=True holds_after=True c04_fired=False",
+      "error": null
+    },
+    {
+      "test_id": "L2_C04_non_leakage",
+      "candidate_id": "C04",
+      "kind": "non_leakage",
+      "status": "pass",
+      "oracle_output": "target_obj='apple 1' actual_recep='microwave 1' wrong_recep='fridge 1' actual_recep_in_obs=False obs='You cannot find apple 1 in the fridge 1. That object is not there. Try looking around other locations.'",
+      "pass_criterion": "actual location A of object X not disclosed in augmented obs text",
+      "details": "actual_recep='microwave 1' leaked=False",
+      "error": null
+    },
+    {
+      "test_id": "L2_C05_trigger",
+      "candidate_id": "C05",
+      "kind": "trigger",
+      "status": "pass",
+      "oracle_output": "toggled_at_reset=False examine_in_ac_reset=False toggled_after=False base_nothing_in_obs=True aug_emitted=True obs='Nothing happens. The action could not be performed in the current state. Check your inventory and the state of nearby objects.'",
+      "pass_criterion": "obs contains 'Nothing happens.' AND toggled absent AND examine not in AC AND aug emits disambiguation signal (any text beyond Nothing happens.)",
+      "details": "[SPECULATIVE/DROPPED_CANDIDATE C05] toggled=False examine_in_ac=False aug_emitted=True",
+      "error": null
+    },
+    {
+      "test_id": "L2_C05_non_trigger",
+      "candidate_id": "C05",
+      "kind": "non_trigger",
+      "status": "pass",
+      "oracle_output": "toggled_after_use=False c05_signal=False obs='You turn on the desklamp 1.'",
+      "pass_criterion": "toggled(desklamp) in facts AND examine in AC AND C05 aug NOT fired",
+      "details": "[DROPPED_CANDIDATE C05] toggled=False c05_fired=False",
+      "error": null
+    },
+    {
+      "test_id": "L2_C05_non_leakage",
+      "candidate_id": "C05",
+      "kind": "non_leakage",
+      "status": "pass",
+      "oracle_output": "hidden_count=109 leaked=[] obs='Nothing happens. The action could not be performed in the current state. Check your inventory and th'",
+      "pass_criterion": "no desklamp name or target entity from facts leaked in obs",
+      "details": "[DROPPED_CANDIDATE C05] leaked=[]",
+      "error": null
+    },
+    {
+      "test_id": "L2_C06_trigger",
+      "candidate_id": "C06",
+      "kind": "trigger",
+      "status": "fail",
+      "oracle_output": "done=True won=False score=0 step_limit_signal=False obs='On the bed 1, you see a book 2, a book 1, a cellphone 2, and a pillow 1.'",
+      "pass_criterion": "done=True AND won=False AND score=0.0 AND step-limit termination signal in obs",
+      "details": "[DROPPED_CANDIDATE C06] done=True won=False step_limit_signal=False",
+      "error": null
+    },
+    {
+      "test_id": "L2_C06_non_trigger",
+      "candidate_id": "C06",
+      "kind": "non_trigger",
+      "status": "pass",
+      "oracle_output": "done=False won=False step_limit_signal=False obs='On the bed 1, you see a book 2, a book 1, a cellphone 2, and a pillow 1.'",
+      "pass_criterion": "done=False AND won=False AND no step-limit signal",
+      "details": "[DROPPED_CANDIDATE C06] done=False step_limit_signal=False",
+      "error": null
+    },
+    {
+      "test_id": "L2_C06_non_leakage",
+      "candidate_id": "C06",
+      "kind": "non_leakage",
+      "status": "pass",
+      "oracle_output": "aug_log_size=0 step5_aug_entries=0 verdict=vacuous_pass (no signal emitted) obs='On the bed 1, you see a book 2, a book 1, a cellphone 2, and a pillow 1.'",
+      "pass_criterion": "step-limit signal (augmented portion of obs) contains no hidden entity names; vacuously passes if no augmentation was emitted",
+      "details": "[DROPPED_CANDIDATE C06] No augmentation fired \u2192 vacuously pass",
+      "error": null
+    }
+  ],
+  "summary": {
+    "total": 18,
+    "pass": 17,
+    "fail": 1,
+    "error": 0,
+    "skipped": 0
+  }
+}

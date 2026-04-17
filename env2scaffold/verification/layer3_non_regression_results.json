@@ -1,0 +1,578 @@
+{
+  "layer": "layer3_non_regression",
+  "generated_at": "2026-04-17T02:36:37.346114+00:00",
+  "wrapper_module_path": "/data/home/yuhan/env-aug/env2scaffold/augmentation/augmented_env.py",
+  "plan_path": "/data/home/yuhan/env-aug/env2scaffold/oracle_test/unit_test_plan.json",
+  "oracles_consulted": [
+    "won_info_field",
+    "admissible_commands_validity_heuristic"
+  ],
+  "n_episodes": 50,
+  "n_episodes_valid": 50,
+  "policy": "HandCodedTWAgent (record then replay)",
+  "tests": [
+    {
+      "test_id": "L3_T01",
+      "field": "reward",
+      "status": "pass",
+      "oracle_output": "reward_mismatch_count=0 over 50 episodes",
+      "pass_criterion": "augmented_reward == original_reward for every step (exact float equality)",
+      "details": "mismatches=0",
+      "error": null,
+      "original_value": "n/a",
+      "augmented_value": "n/a",
+      "mismatch_count": 0
+    },
+    {
+      "test_id": "L3_T02",
+      "field": "done",
+      "status": "pass",
+      "oracle_output": "done_mismatch_count=0 over 50 episodes",
+      "pass_criterion": "augmented_done == original_done for every step (exact boolean equality)",
+      "details": "mismatches=0",
+      "error": null,
+      "original_value": "n/a",
+      "augmented_value": "n/a",
+      "mismatch_count": 0
+    },
+    {
+      "test_id": "L3_T03",
+      "field": "admissible_commands",
+      "status": "pass",
+      "oracle_output": "ac_mismatch_count=0 over 50 episodes",
+      "pass_criterion": "set(augmented_ac) == set(original_ac) for every step (exact set equality)",
+      "details": "mismatches=0",
+      "error": null,
+      "original_value": "n/a",
+      "augmented_value": "n/a",
+      "mismatch_count": 0
+    },
+    {
+      "test_id": "L3_T04",
+      "field": "observation_noop_path",
+      "status": "pass",
+      "oracle_output": "noop_obs_mismatch_count=0 over 50 episodes",
+      "pass_criterion": "augmented_obs == original_obs byte-for-byte on steps where no augmentation fires",
+      "details": "mismatches=0",
+      "error": null,
+      "original_value": "n/a",
+      "augmented_value": "n/a",
+      "mismatch_count": 0
+    }
+  ],
+  "summary": {
+    "total": 4,
+    "pass": 4,
+    "fail": 0,
+    "error": 0,
+    "skipped": 0
+  },
+  "detail": {
+    "reward_mismatches": [],
+    "done_mismatches": [],
+    "ac_mismatches": [],
+    "noop_obs_mismatches": [],
+    "episode_results": [
+      {
+        "episode_idx": 0,
+        "game_file": "/home/yuhan/.cache/alfworld/json_2.1.1/valid_seen/look_at_obj_in_light-AlarmClock-None-DeskLamp-323/trial_T20190909_044715_250790/game.tw-pddl",
+        "error": null,
+        "steps": 4,
+        "reward_ok": true,
+        "done_ok": true,
+        "ac_ok": true,
+        "noop_obs_ok": true
+      },
+      {
+        "episode_idx": 1,
+        "game_file": "/home/yuhan/.cache/alfworld/json_2.1.1/valid_seen/look_at_obj_in_light-Bowl-None-DeskLamp-301/trial_T20190909_150719_492274/game.tw-pddl",
+        "error": null,
+        "steps": 39,
+        "reward_ok": true,
+        "done_ok": true,
+        "ac_ok": true,
+        "noop_obs_ok": true
+      },
+      {
+        "episode_idx": 2,
+        "game_file": "/home/yuhan/.cache/alfworld/json_2.1.1/valid_seen/look_at_obj_in_light-Bowl-None-DeskLamp-316/trial_T20190908_230702_962704/game.tw-pddl",
+        "error": null,
+        "steps": 10,
+        "reward_ok": true,
+        "done_ok": true,
+        "ac_ok": true,
+        "noop_obs_ok": true
+      },
+      {
+        "episode_idx": 3,
+        "game_file": "/home/yuhan/.cache/alfworld/json_2.1.1/valid_seen/look_at_obj_in_light-Box-None-DeskLamp-205/trial_T20190907_074425_330493/game.tw-pddl",
+        "error": null,
+        "steps": 23,
+        "reward_ok": true,
+        "done_ok": true,
+        "ac_ok": true,
+        "noop_obs_ok": true
+      },
+      {
+        "episode_idx": 4,
+        "game_file": "/home/yuhan/.cache/alfworld/json_2.1.1/valid_seen/look_at_obj_in_light-CD-None-DeskLamp-302/trial_T20190907_154618_526741/game.tw-pddl",
+        "error": null,
+        "steps": 8,
+        "reward_ok": true,
+        "done_ok": true,
+        "ac_ok": true,
+        "noop_obs_ok": true
+      },
+      {
+        "episode_idx": 5,
+        "game_file": "/home/yuhan/.cache/alfworld/json_2.1.1/valid_seen/look_at_obj_in_light-CD-None-DeskLamp-314/trial_T20190907_114323_767231/game.tw-pddl",
+        "error": null,
+        "steps": 20,
+        "reward_ok": true,
+        "done_ok": true,
+        "ac_ok": true,
+        "noop_obs_ok": true
+      },
+      {
+        "episode_idx": 6,
+        "game_file": "/home/yuhan/.cache/alfworld/json_2.1.1/valid_seen/look_at_obj_in_light-CD-None-DeskLamp-320/trial_T20190907_224451_655673/game.tw-pddl",
+        "error": null,
+        "steps": 4,
+        "reward_ok": true,
+        "done_ok": true,
+        "ac_ok": true,
+        "noop_obs_ok": true
+      },
+      {
+        "episode_idx": 7,
+        "game_file": "/home/yuhan/.cache/alfworld/json_2.1.1/valid_seen/look_at_obj_in_light-KeyChain-None-DeskLamp-327/trial_T20190906_202601_548273/game.tw-pddl",
+        "error": null,
+        "steps": 9,
+        "reward_ok": true,
+        "done_ok": true,
+        "ac_ok": true,
+        "noop_obs_ok": true
+      },
+      {
+        "episode_idx": 8,
+        "game_file": "/home/yuhan/.cache/alfworld/json_2.1.1/valid_seen/look_at_obj_in_light-Laptop-None-DeskLamp-328/trial_T20190908_201550_622420/game.tw-pddl",
+        "error": null,
+        "steps": 4,
+        "reward_ok": true,
+        "done_ok": true,
+        "ac_ok": true,
+        "noop_obs_ok": true
+      },
+      {
+        "episode_idx": 9,
+        "game_file": "/home/yuhan/.cache/alfworld/json_2.1.1/valid_seen/look_at_obj_in_light-Pillow-None-DeskLamp-302/trial_T20190909_150916_682139/game.tw-pddl",
+        "error": null,
+        "steps": 5,
+        "reward_ok": true,
+        "done_ok": true,
+        "ac_ok": true,
+        "noop_obs_ok": true
+      },
+      {
+        "episode_idx": 10,
+        "game_file": "/home/yuhan/.cache/alfworld/json_2.1.1/valid_seen/look_at_obj_in_light-Pillow-None-DeskLamp-323/trial_T20190908_053153_077977/game.tw-pddl",
+        "error": null,
+        "steps": 6,
+        "reward_ok": true,
+        "done_ok": true,
+        "ac_ok": true,
+        "noop_obs_ok": true
+      },
+      {
+        "episode_idx": 11,
+        "game_file": "/home/yuhan/.cache/alfworld/json_2.1.1/valid_seen/look_at_obj_in_light-Statue-None-DeskLamp-216/trial_T20190909_193045_208933/game.tw-pddl",
+        "error": null,
+        "steps": 3,
+        "reward_ok": true,
+        "done_ok": true,
+        "ac_ok": true,
+        "noop_obs_ok": true
+      },
+      {
+        "episode_idx": 12,
+        "game_file": "/home/yuhan/.cache/alfworld/json_2.1.1/valid_seen/look_at_obj_in_light-Vase-None-DeskLamp-303/trial_T20190907_150418_457594/game.tw-pddl",
+        "error": null,
+        "steps": 32,
+        "reward_ok": true,
+        "done_ok": true,
+        "ac_ok": true,
+        "noop_obs_ok": true
+      },
+      {
+        "episode_idx": 13,
+        "game_file": "/home/yuhan/.cache/alfworld/json_2.1.1/valid_seen/pick_and_place_simple-Book-None-SideTable-329/trial_T20190908_050633_745514/game.tw-pddl",
+        "error": null,
+        "steps": 14,
+        "reward_ok": true,
+        "done_ok": true,
+        "ac_ok": true,
+        "noop_obs_ok": true
+      },
+      {
+        "episode_idx": 14,
+        "game_file": "/home/yuhan/.cache/alfworld/json_2.1.1/valid_seen/pick_and_place_simple-Book-None-Sofa-229/trial_T20190907_042856_259139/game.tw-pddl",
+        "error": null,
+        "steps": 7,
+        "reward_ok": true,
+        "done_ok": true,
+        "ac_ok": true,
+        "noop_obs_ok": true
+      },
+      {
+        "episode_idx": 15,
+        "game_file": "/home/yuhan/.cache/alfworld/json_2.1.1/valid_seen/pick_and_place_simple-Bowl-None-CoffeeTable-201/trial_T20190907_171639_045329/game.tw-pddl",
+        "error": null,
+        "steps": 16,
+        "reward_ok": true,
+        "done_ok": true,
+        "ac_ok": true,
+        "noop_obs_ok": true
+      },
+      {
+        "episode_idx": 16,
+        "game_file": "/home/yuhan/.cache/alfworld/json_2.1.1/valid_seen/pick_and_place_simple-Box-None-Dresser-224/trial_T20190907_164104_229696/game.tw-pddl",
+        "error": null,
+        "steps": 4,
+        "reward_ok": true,
+        "done_ok": true,
+        "ac_ok": true,
+        "noop_obs_ok": true
+      },
+      {
+        "episode_idx": 17,
+        "game_file": "/home/yuhan/.cache/alfworld/json_2.1.1/valid_seen/pick_and_place_simple-Candle-None-Cart-401/trial_T20190909_081908_677973/game.tw-pddl",
+        "error": null,
+        "steps": 4,
+        "reward_ok": true,
+        "done_ok": true,
+        "ac_ok": true,
+        "noop_obs_ok": true
+      },
+      {
+        "episode_idx": 18,
+        "game_file": "/home/yuhan/.cache/alfworld/json_2.1.1/valid_seen/pick_and_place_simple-Candle-None-Toilet-407/trial_T20190909_055248_059513/game.tw-pddl",
+        "error": null,
+        "steps": 5,
+        "reward_ok": true,
+        "done_ok": true,
+        "ac_ok": true,
+        "noop_obs_ok": true
+      },
+      {
+        "episode_idx": 19,
+        "game_file": "/home/yuhan/.cache/alfworld/json_2.1.1/valid_seen/pick_and_place_simple-Candle-None-Toilet-429/trial_T20190908_052232_887934/game.tw-pddl",
+        "error": null,
+        "steps": 5,
+        "reward_ok": true,
+        "done_ok": true,
+        "ac_ok": true,
+        "noop_obs_ok": true
+      },
+      {
+        "episode_idx": 20,
+        "game_file": "/home/yuhan/.cache/alfworld/json_2.1.1/valid_seen/pick_and_place_simple-CellPhone-None-ArmChair-318/trial_T20190909_120047_968274/game.tw-pddl",
+        "error": null,
+        "steps": 5,
+        "reward_ok": true,
+        "done_ok": true,
+        "ac_ok": true,
+        "noop_obs_ok": true
+      },
+      {
+        "episode_idx": 21,
+        "game_file": "/home/yuhan/.cache/alfworld/json_2.1.1/valid_seen/pick_and_place_simple-CellPhone-None-Bed-324/trial_T20190907_233817_198528/game.tw-pddl",
+        "error": null,
+        "steps": 11,
+        "reward_ok": true,
+        "done_ok": true,
+        "ac_ok": true,
+        "noop_obs_ok": true
+      },
+      {
+        "episode_idx": 22,
+        "game_file": "/home/yuhan/.cache/alfworld/json_2.1.1/valid_seen/pick_and_place_simple-CreditCard-None-ArmChair-201/trial_T20190908_124340_258012/game.tw-pddl",
+        "error": null,
+        "steps": 4,
+        "reward_ok": true,
+        "done_ok": true,
+        "ac_ok": true,
+        "noop_obs_ok": true
+      },
+      {
+        "episode_idx": 23,
+        "game_file": "/home/yuhan/.cache/alfworld/json_2.1.1/valid_seen/pick_and_place_simple-CreditCard-None-Drawer-227/trial_T20190909_010644_297017/game.tw-pddl",
+        "error": null,
+        "steps": 40,
+        "reward_ok": true,
+        "done_ok": true,
+        "ac_ok": true,
+        "noop_obs_ok": true
+      },
+      {
+        "episode_idx": 24,
+        "game_file": "/home/yuhan/.cache/alfworld/json_2.1.1/valid_seen/pick_and_place_simple-Egg-None-Microwave-4/trial_T20190906_234406_356490/game.tw-pddl",
+        "error": null,
+        "steps": 5,
+        "reward_ok": true,
+        "done_ok": true,
+        "ac_ok": true,
+        "noop_obs_ok": true
+      },
+      {
+        "episode_idx": 25,
+        "game_file": "/home/yuhan/.cache/alfworld/json_2.1.1/valid_seen/pick_and_place_simple-Knife-None-SideTable-3/trial_T20190918_184236_557252/game.tw-pddl",
+        "error": null,
+        "steps": 26,
+        "reward_ok": true,
+        "done_ok": true,
+        "ac_ok": true,
+        "noop_obs_ok": true
+      },
+      {
+        "episode_idx": 26,
+        "game_file": "/home/yuhan/.cache/alfworld/json_2.1.1/valid_seen/pick_and_place_simple-Mug-None-Dresser-311/trial_T20190909_152837_739016/game.tw-pddl",
+        "error": null,
+        "steps": 14,
+        "reward_ok": true,
+        "done_ok": true,
+        "ac_ok": true,
+        "noop_obs_ok": true
+      },
+      {
+        "episode_idx": 27,
+        "game_file": "/home/yuhan/.cache/alfworld/json_2.1.1/valid_seen/pick_and_place_simple-Mug-None-SideTable-329/trial_T20190909_032318_169393/game.tw-pddl",
+        "error": null,
+        "steps": 15,
+        "reward_ok": true,
+        "done_ok": true,
+        "ac_ok": true,
+        "noop_obs_ok": true
+      },
+      {
+        "episode_idx": 28,
+        "game_file": "/home/yuhan/.cache/alfworld/json_2.1.1/valid_seen/pick_and_place_simple-Mug-None-SideTable-329/trial_T20190909_032340_274147/game.tw-pddl",
+        "error": null,
+        "steps": 15,
+        "reward_ok": true,
+        "done_ok": true,
+        "ac_ok": true,
+        "noop_obs_ok": true
+      },
+      {
+        "episode_idx": 29,
+        "game_file": "/home/yuhan/.cache/alfworld/json_2.1.1/valid_seen/pick_and_place_simple-Newspaper-None-Sofa-224/trial_T20190909_111324_949106/game.tw-pddl",
+        "error": null,
+        "steps": 7,
+        "reward_ok": true,
+        "done_ok": true,
+        "ac_ok": true,
+        "noop_obs_ok": true
+      },
+      {
+        "episode_idx": 30,
+        "game_file": "/home/yuhan/.cache/alfworld/json_2.1.1/valid_seen/pick_and_place_simple-Pencil-None-Desk-310/trial_T20190909_113054_894334/game.tw-pddl",
+        "error": null,
+        "steps": 5,
+        "reward_ok": true,
+        "done_ok": true,
+        "ac_ok": true,
+        "noop_obs_ok": true
+      },
+      {
+        "episode_idx": 31,
+        "game_file": "/home/yuhan/.cache/alfworld/json_2.1.1/valid_seen/pick_and_place_simple-Pencil-None-Dresser-330/trial_T20190909_071128_012892/game.tw-pddl",
+        "error": null,
+        "steps": 4,
+        "reward_ok": true,
+        "done_ok": true,
+        "ac_ok": true,
+        "noop_obs_ok": true
+      },
+      {
+        "episode_idx": 32,
+        "game_file": "/home/yuhan/.cache/alfworld/json_2.1.1/valid_seen/pick_and_place_simple-RemoteControl-None-ArmChair-230/trial_T20190909_021000_274398/game.tw-pddl",
+        "error": null,
+        "steps": 7,
+        "reward_ok": true,
+        "done_ok": true,
+        "ac_ok": true,
+        "noop_obs_ok": true
+      },
+      {
+        "episode_idx": 33,
+        "game_file": "/home/yuhan/.cache/alfworld/json_2.1.1/valid_seen/pick_and_place_simple-RemoteControl-None-Sofa-207/trial_T20190909_153609_373481/game.tw-pddl",
+        "error": null,
+        "steps": 13,
+        "reward_ok": true,
+        "done_ok": true,
+        "ac_ok": true,
+        "noop_obs_ok": true
+      },
+      {
+        "episode_idx": 34,
+        "game_file": "/home/yuhan/.cache/alfworld/json_2.1.1/valid_seen/pick_and_place_simple-SoapBar-None-Cart-401/trial_T20190907_054906_608944/game.tw-pddl",
+        "error": null,
+        "steps": 7,
+        "reward_ok": true,
+        "done_ok": true,
+        "ac_ok": true,
+        "noop_obs_ok": true
+      },
+      {
+        "episode_idx": 35,
+        "game_file": "/home/yuhan/.cache/alfworld/json_2.1.1/valid_seen/pick_and_place_simple-SoapBottle-None-Cabinet-414/trial_T20190908_110131_524518/game.tw-pddl",
+        "error": null,
+        "steps": 8,
+        "reward_ok": true,
+        "done_ok": true,
+        "ac_ok": true,
+        "noop_obs_ok": true
+      },
+      {
+        "episode_idx": 36,
+        "game_file": "/home/yuhan/.cache/alfworld/json_2.1.1/valid_seen/pick_and_place_simple-SoapBottle-None-CounterTop-417/trial_T20190910_112922_368384/game.tw-pddl",
+        "error": null,
+        "steps": 4,
+        "reward_ok": true,
+        "done_ok": true,
+        "ac_ok": true,
+        "noop_obs_ok": true
+      },
+      {
+        "episode_idx": 37,
+        "game_file": "/home/yuhan/.cache/alfworld/json_2.1.1/valid_seen/pick_and_place_simple-SprayBottle-None-Cabinet-413/trial_T20190907_114931_692464/game.tw-pddl",
+        "error": null,
+        "steps": 5,
+        "reward_ok": true,
+        "done_ok": true,
+        "ac_ok": true,
+        "noop_obs_ok": true
+      },
+      {
+        "episode_idx": 38,
+        "game_file": "/home/yuhan/.cache/alfworld/json_2.1.1/valid_seen/pick_and_place_simple-SprayBottle-None-GarbageCan-409/trial_T20190908_054742_818364/game.tw-pddl",
+        "error": null,
+        "steps": 4,
+        "reward_ok": true,
+        "done_ok": true,
+        "ac_ok": true,
+        "noop_obs_ok": true
+      },
+      {
+        "episode_idx": 39,
+        "game_file": "/home/yuhan/.cache/alfworld/json_2.1.1/valid_seen/pick_and_place_simple-SprayBottle-None-Toilet-415/trial_T20190909_075955_678702/game.tw-pddl",
+        "error": null,
+        "steps": 5,
+        "reward_ok": true,
+        "done_ok": true,
+        "ac_ok": true,
+        "noop_obs_ok": true
+      },
+      {
+        "episode_idx": 40,
+        "game_file": "/home/yuhan/.cache/alfworld/json_2.1.1/valid_seen/pick_and_place_simple-SprayBottle-None-Toilet-418/trial_T20190906_190942_706186/game.tw-pddl",
+        "error": null,
+        "steps": 6,
+        "reward_ok": true,
+        "done_ok": true,
+        "ac_ok": true,
+        "noop_obs_ok": true
+      },
+      {
+        "episode_idx": 41,
+        "game_file": "/home/yuhan/.cache/alfworld/json_2.1.1/valid_seen/pick_and_place_simple-TissueBox-None-Toilet-426/trial_T20190910_155319_795672/game.tw-pddl",
+        "error": null,
+        "steps": 11,
+        "reward_ok": true,
+        "done_ok": true,
+        "ac_ok": true,
+        "noop_obs_ok": true
+      },
+      {
+        "episode_idx": 42,
+        "game_file": "/home/yuhan/.cache/alfworld/json_2.1.1/valid_seen/pick_and_place_simple-ToiletPaper-None-ToiletPaperHanger-406/trial_T20190908_122858_883968/game.tw-pddl",
+        "error": null,
+        "steps": 10,
+        "reward_ok": true,
+        "done_ok": true,
+        "ac_ok": true,
+        "noop_obs_ok": true
+      },
+      {
+        "episode_idx": 43,
+        "game_file": "/home/yuhan/.cache/alfworld/json_2.1.1/valid_seen/pick_and_place_simple-ToiletPaper-None-ToiletPaperHanger-415/trial_T20190908_050518_595510/game.tw-pddl",
+        "error": null,
+        "steps": 5,
+        "reward_ok": true,
+        "done_ok": true,
+        "ac_ok": true,
+        "noop_obs_ok": true
+      },
+      {
+        "episode_idx": 44,
+        "game_file": "/home/yuhan/.cache/alfworld/json_2.1.1/valid_seen/pick_and_place_simple-Tomato-None-Microwave-13/trial_T20190908_124829_632660/game.tw-pddl",
+        "error": null,
+        "steps": 5,
+        "reward_ok": true,
+        "done_ok": true,
+        "ac_ok": true,
+        "noop_obs_ok": true
+      },
+      {
+        "episode_idx": 45,
+        "game_file": "/home/yuhan/.cache/alfworld/json_2.1.1/valid_seen/pick_and_place_simple-Vase-None-CoffeeTable-207/trial_T20190909_091246_807206/game.tw-pddl",
+        "error": null,
+        "steps": 10,
+        "reward_ok": true,
+        "done_ok": true,
+        "ac_ok": true,
+        "noop_obs_ok": true
+      },
+      {
+        "episode_idx": 46,
+        "game_file": "/home/yuhan/.cache/alfworld/json_2.1.1/valid_seen/pick_and_place_simple-Watch-None-SideTable-222/trial_T20190909_051813_197569/game.tw-pddl",
+        "error": null,
+        "steps": 24,
+        "reward_ok": true,
+        "done_ok": true,
+        "ac_ok": true,
+        "noop_obs_ok": true
+      },
+      {
+        "episode_idx": 47,
+        "game_file": "/home/yuhan/.cache/alfworld/json_2.1.1/valid_seen/pick_and_place_simple-WineBottle-None-Shelf-7/trial_T20190907_200154_378982/game.tw-pddl",
+        "error": null,
+        "steps": 11,
+        "reward_ok": true,
+        "done_ok": true,
+        "ac_ok": true,
+        "noop_obs_ok": true
+      },
+      {
+        "episode_idx": 48,
+        "game_file": "/home/yuhan/.cache/alfworld/json_2.1.1/valid_seen/pick_clean_then_place_in_recep-ButterKnife-None-CounterTop-8/trial_T20190909_105559_983897/game.tw-pddl",
+        "error": null,
+        "steps": 29,
+        "reward_ok": true,
+        "done_ok": true,
+        "ac_ok": true,
+        "noop_obs_ok": true
+      },
+      {
+        "episode_idx": 49,
+        "game_file": "/home/yuhan/.cache/alfworld/json_2.1.1/valid_seen/pick_clean_then_place_in_recep-ButterKnife-None-DiningTable-16/trial_T20190909_114508_617301/game.tw-pddl",
+        "error": null,
+        "steps": 40,
+        "reward_ok": true,
+        "done_ok": true,
+        "ac_ok": true,
+        "noop_obs_ok": true
+      }
+    ]
+  }
+}

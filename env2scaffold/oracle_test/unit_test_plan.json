@@ -1,0 +1,231 @@
+{
+  "benchmark": "alfworld",
+  "source_candidates_path": "env2scaffold/audit/augmentation_candidates.json",
+  "test_groups": [
+    {
+      "name": "layer1_benchmark_native",
+      "purpose": "measure official score/success on a matched original vs augmented set",
+      "oracles_used": ["won_info_field"],
+      "tests": [
+        {
+          "test_id": "L1_T01",
+          "description": "Compare success_rate (fraction of episodes where won=True) between original and augmented environment over a matched episode set.",
+          "oracle_operation": "For each episode in the matched set, record info['won'] at the terminal step (done=True). Compute success_rate = count(won==True) / N. Compare original_success_rate vs augmented_success_rate.",
+          "pass_criterion": "augmented_success_rate >= original_success_rate; i.e., augmentation does not degrade task completion. Minimum episode count N=100 drawn from valid_eval split."
+        },
+        {
+          "test_id": "L1_T02",
+          "description": "Compare average_game_points (max(score) per episode) between original and augmented environment over the same matched episode set.",
+          "oracle_operation": "For each episode, record info['score'] at each step; compute max_score_per_episode = max(scores). Average across N episodes for both original and augmented. This is the evaluate_dagger.py average_game_points metric.",
+          "pass_criterion": "augmented_avg_game_points >= original_avg_game_points. Since score is binary (0.0 or 1.0), this is numerically equivalent to L1_T01 but reported separately to satisfy the Score Policy requirement that the scalar score metric be included in Layer 1."
+        },
+        {
+          "test_id": "L1_T03",
+          "description": "Compare average_steps (steps taken until done=True) between original and augmented environment over the same matched episode set.",
+          "oracle_operation": "For each episode, count the number of env.step() calls until done=True. Average across N episodes for both original and augmented. This is the evaluate_dagger.py average_steps auxiliary metric.",
+          "pass_criterion": "augmented_avg_steps <= original_avg_steps OR the difference is not statistically significant (|delta| < 5% relative). Reported as auxiliary metric per Score Policy; does not gate pass/fail alone."
+        }
+      ]
+    },
+    {
+      "name": "layer2_diagnostic_unit",
+      "purpose": "per-candidate trigger/non-trigger/non-leakage checks",
+      "oracles_used": ["won_info_field", "pddl_facts_state", "admissible_commands_validity_heuristic"],
+      "tests": [
+        {
+          "test_id": "L2_C01_trigger",
+          "candidate_id": "C01",
+          "kind": "trigger",
+          "setup": "Reset any ALFWorld game with request_infos(admissible_commands=True, facts=True) and AlfredDemangler applied. Record info['admissible_commands'] after reset to confirm the environment is live.",
+          "action": "Submit command string 'fly to mars' via env.step('fly to mars'). This verb prefix 'fly' does not appear in any ALFWorld grammar rule and is not in admissible_commands.",
+          "oracle_operation": "admissible_commands_validity_heuristic: verify 'fly to mars' is NOT present in info['admissible_commands'] returned at the step. This confirms the command was genuinely invalid at the PDDL layer, not just accidentally absent.",
+          "pass_criterion": "returned observation contains 'Nothing happens.' AND 'fly to mars' is absent from info['admissible_commands'] AND the augmentation wrapper emits a disambiguation signal (any non-empty string beyond the original 'Nothing happens.' text). Exact signal wording is not tested (wording is augmentation_builder's concern)."
+        },
+        {
+          "test_id": "L2_C01_non_trigger",
+          "candidate_id": "C01",
+          "kind": "non_trigger",
+          "setup": "Reset any ALFWorld game with request_infos(admissible_commands=True). After reset, record info['admissible_commands']; select the first entry as the test command.",
+          "action": "Submit info['admissible_commands'][0] (a command guaranteed to be PDDL-valid at this step) via env.step().",
+          "oracle_operation": "admissible_commands_validity_heuristic: verify the submitted command WAS present in info['admissible_commands'] of the previous step (pre-action state). This confirms the action was admissible, so C01 should NOT fire.",
+          "pass_criterion": "returned observation does NOT contain 'Nothing happens.' OR if it does (admissible command that yields no-op feedback), the C01 augmentation does NOT add a 'verb unrecognized' disambiguation message. The pre-action admissible_commands membership check must be True."
+        },
+        {
+          "test_id": "L2_C01_non_leakage",
+          "candidate_id": "C01",
+          "kind": "non_leakage",
+          "setup": "Reset any ALFWorld game with request_infos(admissible_commands=True, facts=True) and AlfredDemangler. Collect info['facts'] at reset. Extract the set of entity names appearing in pddl_facts propositions (e.g., 'ladle_1', 'countertop_1'). Also record all entity names already mentioned in the reset observation text.",
+          "action": "Submit command 'fly to mars' via env.step('fly to mars').",
+          "oracle_operation": "pddl_facts_state: collect info['facts'] after step. Scan the augmented observation text for any entity name from info['facts'] that did NOT appear in the original reset observation text. No such name should appear in the disambiguation message.",
+          "pass_criterion": "The set of entity names in the augmented observation text minus the set already present in the original observation is the empty set. The C01 augmentation signal references only the structure of the command (e.g., 'unrecognized verb'), not any world-state entity."
+        },
+        {
+          "test_id": "L2_C02_trigger",
+          "candidate_id": "C02",
+          "kind": "trigger",
+          "setup": "Reset any ALFWorld game with request_infos(facts=True, admissible_commands=True) and AlfredDemangler. Collect info['facts'] and extract all entity names referenced in any Proposition. Construct a novel entity name guaranteed absent from facts (e.g., append '_nonexistent_99' suffix to any known entity name type, e.g., 'ladle_nonexistent_99').",
+          "action": "Submit 'take ladle_nonexistent_99 from countertop 1' via env.step(). The verb is valid ('take ... from ...') but the referenced entity does not exist in the game world.",
+          "oracle_operation": "pddl_facts_state: scan all propositions in info['facts'] for any argument matching 'ladle_nonexistent_99'. Confirm zero matches. This proves entity non-existence rather than mere inaccessibility.",
+          "pass_criterion": "returned observation contains 'Nothing happens.' AND zero propositions in info['facts'] reference the entity name AND the augmentation wrapper emits a disambiguation signal indicating entity non-existence (any non-empty addition beyond 'Nothing happens.' is acceptable)."
+        },
+        {
+          "test_id": "L2_C02_non_trigger",
+          "candidate_id": "C02",
+          "kind": "non_trigger",
+          "setup": "Reset ALFWorld game with request_infos(facts=True, admissible_commands=True) and AlfredDemangler. From info['facts'], identify an entity that EXISTS (appears in a proposition) but is NOT accessible from the current location (e.g., find inreceptacle(X, Y) where 'take X from Y' is not in admissible_commands because agent is at a different location).",
+          "action": "Submit 'take <X> from <Y>' where X appears in info['facts'] as inreceptacle(X, Y) but the agent is not at Y. The entity EXISTS but the take fails for a different reason (wrong location — C04 territory).",
+          "oracle_operation": "pddl_facts_state: verify at least one proposition references entity X (confirming existence). This proves C02 should NOT fire because the entity exists.",
+          "pass_criterion": "Entity X has ≥1 matching proposition in info['facts'] AND the C02 augmentation does NOT emit an 'entity does not exist' signal. If 'Nothing happens.' is returned, it must be attributed to C04 (wrong location) or C03 (not holding), not C02."
+        },
+        {
+          "test_id": "L2_C02_non_leakage",
+          "candidate_id": "C02",
+          "kind": "non_leakage",
+          "setup": "Reset ALFWorld game with request_infos(facts=True) and AlfredDemangler. Collect info['facts'] and record the set of entity names that appear in admissible_commands (these are known to the agent). Identify task-relevant entities (object_target, parent_target from traj_data or from task description in reset observation) that have NOT yet appeared in admissible_commands or the base observation.",
+          "action": "Submit 'take nonexistent_entity_99 from countertop 1' (non-existent entity, triggering C02).",
+          "oracle_operation": "pddl_facts_state: after augmentation fires, scan augmented observation text for any entity name that (a) appears in info['facts'] AND (b) was NOT already present in the reset observation text or admissible_commands at reset time.",
+          "pass_criterion": "No entity name from info['facts'] that was absent from the agent's prior observations appears in the C02 disambiguation message. The signal only indicates 'entity does not exist in this game world' without naming any real game entity."
+        },
+        {
+          "test_id": "L2_C03_trigger",
+          "candidate_id": "C03",
+          "kind": "trigger",
+          "setup": "Reset ALFWorld game with request_infos(facts=True, inventory=True) and AlfredDemangler. Confirm initial state has no holds(agent_1, X) proposition in info['facts'] (agent starts empty-handed). Select any object name X visible in admissible_commands (e.g., 'apple 1') and any valid appliance Y (e.g., 'microwave 1').",
+          "action": "Submit 'heat apple 1 with microwave 1' when agent is not holding apple 1 (no holds(agent_1, apple_1) in pddl_facts).",
+          "oracle_operation": "pddl_facts_state: verify holds(agent_1, apple_1) is absent from info['facts'] at this step. This confirms the precondition failure (C03 cause) rather than entity non-existence (C02) or wrong-location (C04).",
+          "pass_criterion": "returned observation contains 'Nothing happens.' AND holds(agent_1, apple_1) is absent from info['facts'] AND entity apple_1 IS referenced in at least one other fact (confirming it exists, ruling out C02) AND the augmentation emits a signal indicating the agent is not holding the target object."
+        },
+        {
+          "test_id": "L2_C03_non_trigger",
+          "candidate_id": "C03",
+          "kind": "non_trigger",
+          "setup": "Reset ALFWorld game with request_infos(facts=True, inventory=True) and AlfredDemangler. Navigate to an object and execute 'take <object> from <receptacle>' so that holds(agent_1, <object>) appears in info['facts']. Use a game where the take action is admissible from reset or after one navigation step.",
+          "action": "Submit 'put <object> in/on <receptacle>' or 'heat <object> with <appliance>' when holds(agent_1, <object>) IS present in info['facts'].",
+          "oracle_operation": "pddl_facts_state: verify holds(agent_1, <object>) IS present in info['facts'] of the state before this action. This proves the C03 precondition (not holding) is NOT met, so C03 should not fire.",
+          "pass_criterion": "Action either succeeds (obs ≠ 'Nothing happens.') OR fails for a different reason (e.g., wrong receptacle — not a C03 cause). Either way, the C03 augmentation does NOT emit a 'not holding object' signal. holds(agent_1, X) presence is confirmed by oracle."
+        },
+        {
+          "test_id": "L2_C03_non_leakage",
+          "candidate_id": "C03",
+          "kind": "non_leakage",
+          "setup": "Reset ALFWorld game with request_infos(facts=True, inventory=True) and AlfredDemangler. Confirm agent is empty-handed (no holds propositions). From info['facts'], identify where the target object X is currently located (inreceptacle(X, Y) proposition).",
+          "action": "Submit 'put apple 1 in/on countertop 1' when agent is not holding apple 1 (C03 trigger condition).",
+          "oracle_operation": "pddl_facts_state: after augmentation fires, verify the augmented observation text does NOT contain the name of the receptacle Y from inreceptacle(apple_1, Y) — i.e., the actual current location of apple_1 is not disclosed.",
+          "pass_criterion": "The augmented disambiguation text references only the inventory state (agent not holding apple 1) and does NOT include any receptacle name, location name, or entity name derivable from inreceptacle propositions in info['facts'] that wasn't already in the prior observation."
+        },
+        {
+          "test_id": "L2_C04_trigger",
+          "candidate_id": "C04",
+          "kind": "trigger",
+          "setup": "Reset ALFWorld game with request_infos(facts=True, admissible_commands=True) and AlfredDemangler. Identify a closeable container C (e.g., fridge_1) with an object X inside it: inreceptacle(X, C) in facts AND opened(C) NOT in facts (container is closed). Navigate to C if needed so it is reachable.",
+          "action": "Submit 'take <X> from <C>' when C is closed (opened(C) absent from pddl_facts) and X is inreceptacle(X, C).",
+          "oracle_operation": "pddl_facts_state: verify inreceptacle(X, C) IS in info['facts'] (object exists at that receptacle) AND opened(C) is NOT in info['facts'] (container is closed). This confirms the closed-container sub-cause of C04.",
+          "pass_criterion": "returned observation contains 'Nothing happens.' AND pddl_facts confirms inreceptacle(X,C)=true and opened(C)=false AND the augmentation emits a signal distinguishing 'receptacle is closed' from other Nothing-happens causes."
+        },
+        {
+          "test_id": "L2_C04_non_trigger",
+          "candidate_id": "C04",
+          "kind": "non_trigger",
+          "setup": "Reset ALFWorld game with request_infos(facts=True, admissible_commands=True) and AlfredDemangler. Navigate to a container C that is open (opened(C) in facts) containing object X (inreceptacle(X, C) in facts). Verify 'take X from C' is in admissible_commands.",
+          "action": "Submit 'take <X> from <C>' when both inreceptacle(X,C) and opened(C) are present in info['facts'] — i.e., the preconditions for a successful take are met.",
+          "oracle_operation": "pddl_facts_state: verify inreceptacle(X,C) in info['facts'] before action AND opened(C) in info['facts'] before action. This proves neither C04 sub-cause applies.",
+          "pass_criterion": "Action succeeds (obs ≠ 'Nothing happens.' and info['facts'] after step contains holds(agent_1, X)) OR 'take X from C' was in admissible_commands. C04 augmentation does NOT fire. Oracle confirms both preconditions were satisfied before action."
+        },
+        {
+          "test_id": "L2_C04_non_leakage",
+          "candidate_id": "C04",
+          "kind": "non_leakage",
+          "setup": "Reset ALFWorld game with request_infos(facts=True) and AlfredDemangler. From info['facts'], identify object X at actual_receptacle A (inreceptacle(X, A)). Navigate to a DIFFERENT receptacle B ≠ A. Record actual_receptacle A from pddl_facts — this is the true location not yet known to the agent from observations.",
+          "action": "Submit 'take <X> from <B>' where B ≠ A — wrong-location sub-cause of C04.",
+          "oracle_operation": "pddl_facts_state: verify inreceptacle(X, A) in info['facts'] (actual location is A) and inreceptacle(X, B) is NOT in facts (confirming wrong-location trigger). Then check augmented text does NOT contain the string A or any representation of the actual location.",
+          "pass_criterion": "augmented feedback indicates 'object not at specified receptacle' category OR 'receptacle is closed' category — but does NOT name the actual receptacle A or any other location where X is found. The actual location A must not appear in the augmented observation text."
+        },
+        {
+          "test_id": "L2_C05_trigger",
+          "candidate_id": "C05",
+          "kind": "trigger",
+          "setup": "Reset a look_at_obj_in_light task game (task_type=look_at_obj_in_light) with request_infos(facts=True, admissible_commands=True) and AlfredDemangler. Confirm that no toggled(desklamp_X) proposition appears in info['facts'] (lamp is off). Select the task target object name from the task description in the reset observation.",
+          "action": "Submit 'examine <target_object>' when toggled(desklamp_X) is absent from pddl_facts — the lamp-off examine-failure case.",
+          "oracle_operation": "pddl_facts_state: verify (a) no toggled(desklamp_X) proposition in info['facts'] and (b) 'examine <target_object>' is NOT in info['admissible_commands']. Both conditions together confirm the C05 trigger (lamp-off non-admissibility) rather than a wrong-location failure.",
+          "pass_criterion": "returned observation contains 'Nothing happens.' AND toggled predicate absent from facts AND examine not in admissible_commands AND augmentation emits a disambiguation signal (any non-empty text beyond 'Nothing happens.'). Note: this test is marked speculative pending confirmation of open_question in benchmark_spec; verify_runner should flag if toggled absence does not correlate with examine non-admissibility."
+        },
+        {
+          "test_id": "L2_C05_non_trigger",
+          "candidate_id": "C05",
+          "kind": "non_trigger",
+          "setup": "Look_at_obj_in_light task game. Navigate to the task target object's location. Execute 'use desklamp 1' to toggle the lamp (toggled(desklamp_1) should appear in info['facts'] after this step). Confirm 'examine <target_object>' appears in info['admissible_commands'] post-lamp-on.",
+          "action": "Submit 'examine <target_object>' after desklamp is active (toggled(desklamp_1) in pddl_facts) and the agent is at the correct location.",
+          "oracle_operation": "pddl_facts_state: verify toggled(desklamp_1) IS in info['facts'] before examine action AND 'examine <target_object>' IS in info['admissible_commands'] before examine action.",
+          "pass_criterion": "Action either succeeds (obs ≠ 'Nothing happens.') OR is admissible per oracle. C05 augmentation does NOT fire. Both oracle conditions (toggled present, examine in AC) must hold."
+        },
+        {
+          "test_id": "L2_C05_non_leakage",
+          "candidate_id": "C05",
+          "kind": "non_leakage",
+          "setup": "Look_at_obj_in_light task; lamp is off (toggled absent from pddl_facts); agent is NOT yet at the target object's location. Record (a) the reset observation text and (b) all entity names from info['admissible_commands'] at reset.",
+          "action": "Submit 'examine <target_object>' when lamp is off (C05 trigger condition).",
+          "oracle_operation": "pddl_facts_state: collect info['facts'] after step. Scan the augmented observation text for any specific desklamp name (e.g., 'desklamp_1'), target object name, or location name that was NOT already present in the reset observation text or initial admissible_commands.",
+          "pass_criterion": "The augmented signal does NOT name the specific desklamp entity, the target object entity, or any location. It communicates only the generic prerequisite (lamp must be active) using no entity names from info['facts'] that were absent from prior observations."
+        },
+        {
+          "test_id": "L2_C06_trigger",
+          "candidate_id": "C06",
+          "kind": "trigger",
+          "setup": "Register an ALFWorld game with max_episode_steps=5 using textworld.gym.register_games(..., max_episode_steps=5). Request request_infos(won=True, facts=True). Reset the game. Execute 4 steps using any admissible commands, ensuring won=False at each step (do not solve the task).",
+          "action": "Submit any admissible command as the 5th step (the Limit wrapper will set done=True after this step). The action itself is valid; termination is forced by the step-count limit.",
+          "oracle_operation": "won_info_field: after the 5th step, verify done=True AND info['won']=False AND score=0.0. This confirms termination was caused by the Limit wrapper (step-count exhaustion), not task success.",
+          "pass_criterion": "done=True AND info['won']=False AND score=0.0 AND the augmented observation text contains a step-limit termination signal distinguishing this terminal state from task completion. Note: marked speculative per C06 downstream_notes; verify_runner should confirm done=True actually fires from Limit wrapper at max_episode_steps=5."
+        },
+        {
+          "test_id": "L2_C06_non_trigger",
+          "candidate_id": "C06",
+          "kind": "non_trigger",
+          "setup": "Same game registered with max_episode_steps=5. Reset. Execute 3 steps using any admissible commands, ensuring won=False.",
+          "action": "Submit any admissible command as the 4th step (one step before the Limit wrapper would fire).",
+          "oracle_operation": "won_info_field: after the 4th step, verify done=False AND info['won']=False. This confirms the episode has not terminated (Limit wrapper has not fired yet).",
+          "pass_criterion": "done=False AND info['won']=False AND the augmented observation text does NOT contain any step-limit termination signal. The episode continues normally."
+        },
+        {
+          "test_id": "L2_C06_non_leakage",
+          "candidate_id": "C06",
+          "kind": "non_leakage",
+          "setup": "Same game with max_episode_steps=5. Reset and collect info['facts'] at each step. Run to the 5th step (Limit wrapper trigger). Record all entity names that appeared across all step observations.",
+          "action": "Submit the 5th step command (C06 trigger condition — done=True, won=False).",
+          "oracle_operation": "pddl_facts_state: collect info['facts'] at step 5. Scan the augmented step-limit signal text for any entity name (object, receptacle, location) from info['facts'] that did NOT appear in any of the prior 5 step observations.",
+          "pass_criterion": "The step-limit termination signal contains NO game-world entity names from info['facts'] that were absent from prior observations. The signal is generic (e.g., 'maximum steps reached') and reveals no task structure, object layout, or solution information."
+        }
+      ]
+    },
+    {
+      "name": "layer3_non_regression",
+      "purpose": "confirm wrapper preserves reward, done, admissible_commands, transition semantics",
+      "oracles_used": ["won_info_field", "admissible_commands_validity_heuristic"],
+      "tests": [
+        {
+          "test_id": "L3_T01",
+          "field": "reward",
+          "episodes": 50,
+          "pass_criterion": "For every step across all 50 episodes, augmented_reward == original_reward (exact float equality: 0.0 or 1.0). Zero tolerance. The augmentation wrapper must not modify the reward return value of env.step()."
+        },
+        {
+          "test_id": "L3_T02",
+          "field": "done",
+          "episodes": 50,
+          "pass_criterion": "For every step across all 50 episodes, augmented_done == original_done (exact boolean equality). Zero tolerance. The augmentation wrapper must not modify the done return value of env.step() or env.reset()."
+        },
+        {
+          "test_id": "L3_T03",
+          "field": "admissible_commands",
+          "episodes": 50,
+          "pass_criterion": "For every step across all 50 episodes, set(augmented_admissible_commands) == set(original_admissible_commands) (exact set equality, order-invariant). Zero tolerance. The augmentation wrapper must not add, remove, or modify any entry in info['admissible_commands']."
+        },
+        {
+          "test_id": "L3_T04",
+          "field": "observation_noop_path",
+          "episodes": 20,
+          "pass_criterion": "For steps where the augmentation wrapper does NOT fire (i.e., none of C01–C06 conditions are met), the augmented observation text is byte-for-byte identical to the original observation text returned by env.step(). Verified over 20 episodes using only admissible commands that do not trigger any augmentation candidate. Zero tolerance for modification on non-trigger paths."
+        }
+      ]
+    }
+  ]
+}

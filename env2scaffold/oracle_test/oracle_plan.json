@@ -1,0 +1,120 @@
+{
+  "benchmark": "alfworld",
+  "source_spec_path": "env2scaffold/benchmark_spec/benchmark_spec.json",
+  "oracle_candidates": [
+    {
+      "name": "won_info_field",
+      "category": "official",
+      "policy_priority": 1,
+      "usable": true,
+      "usable_reason": "Primary official evaluator signal: direct API access, deterministic, exact binary PDDL-goal check used by evaluate_dagger.py to compute success_rate and average_game_points.",
+      "misuse_risk": "Using won as a step-level dense reward signal rather than an episode-level binary label produces a misleading sparse signal that fires only on the final winning step.",
+      "accessibility": "direct_api"
+    },
+    {
+      "name": "score_info_field",
+      "category": "official",
+      "policy_priority": 2,
+      "usable": true,
+      "usable_reason": "Official score field (float) returned by evaluate_dagger.py; numerically identical to won cast to float, supports average_game_points metric.",
+      "misuse_risk": "Treating score as a continuous signal is misleading since it is binary (0.0 or 1.0); does not provide additional resolution beyond won_info_field.",
+      "accessibility": "direct_api"
+    },
+    {
+      "name": "pddl_facts_state",
+      "category": "diagnostic",
+      "policy_priority": 3,
+      "usable": true,
+      "usable_reason": "Exposes complete symbolic world state as List[Proposition]; provides deterministic per-step predicates (holds, inreceptacle, opened, toggled) required to verify per-candidate trigger conditions for C02–C05.",
+      "misuse_risk": "PDDL entity names use internal IDs unless AlfredDemangler is applied; comparing facts against human-readable names without demangling will fail silently.",
+      "accessibility": "via_infos"
+    },
+    {
+      "name": "policy_commands_plan",
+      "category": "reference",
+      "policy_priority": 4,
+      "usable": false,
+      "usable_reason": "Leaks the PDDL-planner's solution path directly; providing or inspecting this field in any test context defeats the benchmark's challenge and violates non-leakage requirements.",
+      "misuse_risk": "Directly exposes the optimal action sequence from current state; use in any test would constitute solution leakage and invalidate benchmark integrity.",
+      "accessibility": "via_infos"
+    },
+    {
+      "name": "expert_plan_handcoded",
+      "category": "reference",
+      "policy_priority": 4,
+      "usable": false,
+      "usable_reason": "Rejected: may raise HandCodedAgentTimeout on complex states and falls back to 'look', making it an unreliable oracle; pddl_facts_state provides equivalent or better diagnostic coverage without timeout risk.",
+      "misuse_risk": "Expert may return 'look' as fallback when it cannot determine next action; treating 'look' responses as always-valid oracle signals produces false negatives.",
+      "accessibility": "via_infos"
+    },
+    {
+      "name": "traj_data_task_annotation",
+      "category": "reference",
+      "policy_priority": 4,
+      "usable": false,
+      "usable_reason": "Rejected: requires fragile path joining via extra.gamefile info field; pddl_facts_state subsumes its state-checking role without external file I/O.",
+      "misuse_risk": "Path joining logic is fragile if data is relocated; correlation with extra.gamefile must be exact or silent mismatches occur.",
+      "accessibility": "external_file"
+    },
+    {
+      "name": "admissible_commands_validity_heuristic",
+      "category": "heuristic",
+      "policy_priority": 5,
+      "usable": true,
+      "usable_reason": "Enumerates all currently PDDL-executable actions; provides deterministic action-validity binary oracle for C01 trigger verification and Layer 3 admissible_commands non-regression checks.",
+      "misuse_risk": "Membership in admissible_commands is necessary but not sufficient for goal progress; must not be used as a sole task-completion oracle.",
+      "accessibility": "direct_api"
+    },
+    {
+      "name": "goal_condition_success_rate_thor",
+      "category": "official",
+      "policy_priority": 2,
+      "usable": false,
+      "usable_reason": "Rejected: only available in AlfredThorEnv (visual simulator) path; not exposed in the text-only AlfredTWEnv path that is the primary ALFWorld interface used by this benchmark.",
+      "misuse_risk": "Silently returns null or raises AttributeError in text-only AlfredTWEnv path; using it as an oracle in text-mode tests produces vacuously passing checks.",
+      "accessibility": "via_infos"
+    }
+  ],
+  "chosen_oracles": [
+    "won_info_field",
+    "pddl_facts_state",
+    "admissible_commands_validity_heuristic"
+  ],
+  "intended_usage": {
+    "won_info_field": "layer1_benchmark_native",
+    "pddl_facts_state": "layer2_diagnostic_unit",
+    "admissible_commands_validity_heuristic": "layer3_non_regression"
+  },
+  "convenience_oracle_justifications": [
+    {
+      "oracle": "pddl_facts_state",
+      "why_used_without_official_equivalent": "The official oracle (won_info_field) only signals episode-terminal success and cannot verify per-step precondition predicates (holds, inreceptacle, opened, toggled) required to confirm C02–C05 trigger and non-leakage conditions at sub-episode granularity."
+    },
+    {
+      "oracle": "admissible_commands_validity_heuristic",
+      "why_used_without_official_equivalent": "The official oracle cannot confirm per-step action-space invariants; admissible_commands is the only deterministic source that distinguishes a completely-invalid-verb command (C01) from other Nothing-happens causes, and is the only mechanism for Layer 3 admissible_commands field non-regression verification."
+    }
+  ],
+  "rejected_oracles": [
+    {
+      "name": "policy_commands_plan",
+      "reason": "Directly exposes the optimal solution path; any test using this oracle would constitute solution leakage and violate Rule 4 non-leakage requirements."
+    },
+    {
+      "name": "expert_plan_handcoded",
+      "reason": "HandCodedAgentTimeout risk and 'look' fallback behavior make it an unreliable oracle; pddl_facts_state provides strictly superior diagnostic coverage."
+    },
+    {
+      "name": "traj_data_task_annotation",
+      "reason": "Requires fragile external file I/O via extra.gamefile path joining; pddl_facts_state subsumes all state-checking needs at runtime without filesystem dependencies."
+    },
+    {
+      "name": "goal_condition_success_rate_thor",
+      "reason": "Only available in AlfredThorEnv (visual simulator) path; not usable in text-only AlfredTWEnv benchmark configuration."
+    },
+    {
+      "name": "score_info_field",
+      "reason": "Numerically identical to won_info_field (binary 0.0/1.0); no additional information beyond the primary official oracle; including it as a separate chosen oracle would be redundant."
+    }
+  ]
+}

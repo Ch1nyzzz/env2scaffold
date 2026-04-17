@@ -59,6 +59,10 @@ KNOWN_VERB_PATTERNS = [
 
 NOTHING_HAPPENS = "Nothing happens."
 
+# Entity names in PDDL facts that refer to the agent, not game-world objects.
+# These are excluded from the known_entities set used for existence checks.
+AGENT_FACT_NAMES = {"agent_1", "agent 1", "agent"}
+
 
 # ---------------------------------------------------------------------------
 # Helper: parse PDDL facts into a convenient InternalState
@@ -78,6 +82,9 @@ class InternalState:
         # receptacle -> set of objects
         self.receptacle_contents: Dict[str, set] = {}
         self.admissible_commands = set(admissible_commands)
+        # All non-agent entity names seen in any PDDL fact (lower-cased).
+        # Used by the entity-existence check (C02 rule).
+        self.known_entities: set = set()
 
         self._parse_facts(facts)
 
@@ -85,6 +92,11 @@ class InternalState:
         for fact in facts:
             name = fact.name
             args = [v.name for v in fact.arguments]
+
+            # Collect all entity names that are not the agent.
+            for arg in args:
+                if arg.lower() not in AGENT_FACT_NAMES:
+                    self.known_entities.add(arg.lower())
 
             if name == "holds" and len(args) == 2:
                 # holds(agent1, object_name)
@@ -121,6 +133,20 @@ class InternalState:
 
     def objects_in_receptacle(self, recep: str) -> set:
         return self.receptacle_contents.get(recep, set())
+
+    def entity_exists(self, entity_name: str) -> bool:
+        """Return True if entity_name appears in any PDDL fact argument.
+
+        A game-world entity that truly exists must appear in at least one PDDL
+        proposition (e.g. inreceptacle, openable, opened, isclean, etc.).
+        If it appears in none, it does not exist in this game instance.
+        Guards against false positives by requiring known_entities to be
+        non-empty (i.e. facts were actually provided).
+        """
+        if not self.known_entities:
+            # No facts available — cannot determine existence; skip the check.
+            return True
+        return entity_name.lower() in self.known_entities
 
 
 # ---------------------------------------------------------------------------
@@ -173,6 +199,38 @@ def _is_known_command_format(command: str) -> bool:
     """Return True if command matches any known verb pattern."""
     cmd_lower = command.lower().strip()
     return any(p.match(cmd_lower) for p in KNOWN_VERB_PATTERNS)
+
+
+def _extract_primary_entity(command: str) -> Optional[str]:
+    """Extract the primary entity name referenced in a command.
+
+    For most command forms, the primary entity is the first object or location
+    named — the thing the agent is acting ON.  For 'take X from Y', X is
+    primary (the object to pick up).  For 'go to Y', Y is primary.
+
+    Returns None if the command form is not recognised or has no named entity
+    (e.g. bare 'inventory' or 'look').
+    """
+    patterns = [
+        (r"^take (.+) from .+$", 1),        # take <object> from <recep>
+        (r"^go to (.+)$", 1),               # go to <location>
+        (r"^open (.+)$", 1),                # open <container>
+        (r"^close (.+)$", 1),               # close <container>
+        (r"^use (.+)$", 1),                 # use <object/lamp>
+        (r"^move (.+) to .+$", 1),          # move <object> to <recep>
+        (r"^put (.+) in .+$", 1),           # put <object> in <recep>
+        (r"^put (.+) on .+$", 1),           # put <object> on <recep>
+        (r"^heat (.+) with .+$", 1),        # heat <object> with <appliance>
+        (r"^cool (.+) with .+$", 1),        # cool <object> with <appliance>
+        (r"^clean (.+) with .+$", 1),       # clean <object> with <appliance>
+        (r"^slice (.+) with .+$", 1),       # slice <object> with <tool>
+        (r"^examine (.+)$", 1),             # examine <object>
+    ]
+    for pattern, group in patterns:
+        m = re.match(pattern, command)
+        if m:
+            return m.group(group).strip()
+    return None
 
 
 def _extract_object_type(obj_name: str) -> str:
@@ -259,6 +317,30 @@ def _find_entity_by_type(entities: List[str], entity_type: Optional[str]) -> Opt
 # ---------------------------------------------------------------------------
 # Rule evaluation
 # ---------------------------------------------------------------------------
+
+def _check_rule_entity_not_exist(command: str, state: InternalState) -> Optional[str]:
+    """R01 (plan) / C02: Command references an entity that does not exist in the game world.
+
+    Uses the full PDDL facts set to determine whether the named entity appears
+    in ANY proposition.  If it does not appear in any fact, it truly does not
+    exist in this game instance — no amount of exploration will find it.
+
+    This rule fires BEFORE precondition checks (C03, C04) so the agent receives
+    the most actionable diagnosis: 'this entity doesn't exist' is more useful
+    than 'you're not holding it' when the entity is phantom.
+
+    Skipped when known_entities is empty (facts not available).
+    """
+    entity = _extract_primary_entity(command)
+    if entity is None:
+        return None
+    if state.entity_exists(entity):
+        return None
+    return (
+        f"There is no '{entity}' in this game world. "
+        "Check your admissible commands for valid entity names."
+    )
+
 
 def _check_rule_R01_put_while_empty(command: str, state: InternalState) -> Optional[str]:
     """R01: move X to Y while hands empty."""
@@ -396,14 +478,27 @@ def _check_rule_R11_exploration_nothing(obs: str, command: str,
 
 
 NOTHING_HAPPENS_RULES = [
+    # Plan R01 (priority 10) — C02: entity existence check fires FIRST.
+    # Must precede all precondition checks so that "entity doesn't exist" takes
+    # priority over "you're not holding it" when both technically apply.
+    _check_rule_entity_not_exist,
+    # Plan R02 (priority 20) — C03 part 1: move/put while hands empty.
     _check_rule_R01_put_while_empty,
+    # Plan R03 (priority 30) — C04 part 1: take from closed container.
     _check_rule_R02_take_from_closed,
-    _check_rule_R07_pick_up_while_holding,   # R07 before R03 (holding check first)
+    # Implicit (no plan candidate): pick up while already holding something.
+    # Checked before wrong-location (R04) to avoid overlap.
+    _check_rule_R07_pick_up_while_holding,
+    # Plan R04 (priority 40) — C04 part 2: take from wrong location.
     _check_rule_R03_take_wrong_location,
+    # Deferred (no source candidate): open/close redundant-with-AC cases.
     _check_rule_R04_open_already_open,
     _check_rule_R05_close_already_closed,
+    # Plan R05 (priority 50) — C03 part 2: heat/cool/clean without holding.
     _check_rule_R06_heat_cool_clean_without_holding,
+    # Implicit (no plan candidate): use without holding.
     _check_rule_R08_use_without_holding,
+    # Plan R06 (priority 60) — C01: completely unrecognized command verb (catch-all).
     _check_rule_R09_invalid_command,
 ]
 

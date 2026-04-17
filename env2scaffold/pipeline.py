@@ -180,9 +180,15 @@ def check_agent_outputs(agent_name: str) -> bool:
 
 
 # ─── Subprocess runner ───────────────────────────────────────────────────────
-def run_claude_agent(agent_name: str) -> int:
+def run_claude_agent(agent_name: str, hint: str | None = None) -> int:
     """Run a Claude Code sub-agent in headless mode. Streams stdout to both the
-    terminal (prefixed) and to the agent's log file. Returns the exit code."""
+    terminal (prefixed) and to the agent's log file. Returns the exit code.
+
+    `hint` is an optional extra instruction appended to the user prompt — useful
+    for one-off guidance like 'use HandCoded policy' without editing the system
+    prompt. Does NOT replace the contract in the system prompt; the agent still
+    must satisfy its Output Contract.
+    """
     log(f"Launching {agent_name}", "WAIT")
 
     cfg = AGENT_CONFIG[agent_name]
@@ -191,6 +197,13 @@ def run_claude_agent(agent_name: str) -> int:
         log(f"{agent_name}: prompt file not found: {prompt_file}", "FAIL")
         return 127
 
+    user_prompt = (
+        f"Execute the task described in your system prompt. Work in {ROOT}. "
+        f"Do not ask questions — just do it."
+    )
+    if hint:
+        user_prompt += f"\n\nAdditional guidance for this invocation: {hint}"
+
     cmd = [
         "claude",
         "-p",
@@ -198,8 +211,7 @@ def run_claude_agent(agent_name: str) -> int:
         "--model", "sonnet",
         "--add-dir", str(ROOT),
         "--system-prompt-file", str(prompt_file),
-        f"Execute the task described in your system prompt. Work in {ROOT}. "
-        f"Do not ask questions — just do it.",
+        user_prompt,
     ]
 
     log_path = ROOT / cfg["log_file"]
@@ -222,15 +234,17 @@ def run_claude_agent(agent_name: str) -> int:
     return proc.returncode
 
 
-def run_agent(agent_name: str) -> bool:
+def run_agent(agent_name: str, hint: str | None = None) -> bool:
     log("=" * 60)
     log(f"Agent: {agent_name}")
+    if hint:
+        log(f"  hint: {hint[:120]}")
     log("=" * 60)
 
     if not check_agent_ready(agent_name):
         return False
 
-    returncode = run_claude_agent(agent_name)
+    returncode = run_claude_agent(agent_name, hint=hint)
     if returncode != 0:
         log(f"{agent_name} failed (exit code {returncode})", "FAIL")
         return False
@@ -244,11 +258,15 @@ def run_agent(agent_name: str) -> bool:
 
 
 # ─── Stage execution ─────────────────────────────────────────────────────────
-def run_stage(stage: list[str], serial: bool) -> bool:
+def run_stage(stage: list[str], serial: bool, hint: str | None = None) -> bool:
     """Run every agent in the stage. Parallel by default, serial if requested or
-    if the stage has only one agent. Returns True iff every agent succeeded."""
+    if the stage has only one agent. Returns True iff every agent succeeded.
+
+    `hint` is forwarded to every agent in the stage — callers that only want to
+    hint one agent should use `--agent <name> --hint` instead of `--resume`.
+    """
     if len(stage) == 1 or serial:
-        return all(run_agent(name) for name in stage)
+        return all(run_agent(name, hint=hint) for name in stage)
 
     log("=" * 60)
     log(f"Parallel stage: {stage}")
@@ -256,7 +274,7 @@ def run_stage(stage: list[str], serial: bool) -> bool:
 
     results: dict[str, bool] = {}
     with ThreadPoolExecutor(max_workers=len(stage)) as pool:
-        futures = {pool.submit(run_agent, name): name for name in stage}
+        futures = {pool.submit(run_agent, name, hint): name for name in stage}
         for fut in as_completed(futures):
             name = futures[fut]
             try:
@@ -294,6 +312,13 @@ def main() -> None:
         action="store_true",
         help="Disable stage-level parallelism (run Pipeline A and B sequentially)",
     )
+    parser.add_argument(
+        "--hint",
+        default=None,
+        help="Extra instruction appended to the user prompt of every agent run in "
+             "this invocation. Use for one-off guidance that should not live in the "
+             "system prompt (e.g. 'use HandCoded policy for Layer 1').",
+    )
     args = parser.parse_args()
 
     if args.agent and args.resume:
@@ -306,7 +331,7 @@ def main() -> None:
     log(f"Stages to run: {stages_to_run}")
 
     for stage in stages_to_run:
-        ok = run_stage(stage, serial=args.serial)
+        ok = run_stage(stage, serial=args.serial, hint=args.hint)
         if not ok:
             log(f"Pipeline stopped at stage {stage}", "FAIL")
             sys.exit(1)

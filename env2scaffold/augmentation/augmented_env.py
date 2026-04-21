@@ -56,11 +56,10 @@ except Exception as _plan_exc:  # noqa: BLE001 — keep wrapper usable even if P
     extract_task_type_from_gamefile = None  # type: ignore
 
 
-# Default scale factor for plan-driven progress reward. 10.0 aligns with the
-# 10*won terminal reward scale used in verl-agent/envs.py; trajectory return
-# is further capped at 10 by the envs.py (10 - accumulated) branch.
+# Default scale factor for plan-driven progress reward. Keep progress below
+# the 10*won terminal reward scale so official success remains dominant.
 DEFAULT_MAX_PROGRESS_PER_EPISODE = float(
-    os.environ.get("ENV2SCAFFOLD_MAX_PROGRESS_PER_EPISODE", "10.0")
+    os.environ.get("ENV2SCAFFOLD_MAX_PROGRESS_PER_EPISODE", "3.0")
 )
 
 

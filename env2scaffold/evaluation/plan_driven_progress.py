@@ -11,14 +11,14 @@ trace_evaluator agent outputs and are read-only here:
   - the detector functions that decide pass/fail  (trace_evaluator._TASK_RUNNERS)
 
 Only two numbers are adapter concerns, chosen outside of the plan:
-  - max_progress_per_episode  — scale factor (default 10.0 to align with 10×won)
+  - max_progress_per_episode  — scale factor (default 3.0, below 10×won)
   - the decision that "first time a UT passes, emit weight × scale"
 
 Usage:
     tracker = PlanDrivenProgressTracker(
         task_type="pick_and_place_simple",
         game_file="/path/to/game.tw-pddl",
-        max_progress_per_episode=10.0,
+        max_progress_per_episode=3.0,
     )
     tracker.reset()
     for step_record in trajectory:
@@ -68,7 +68,7 @@ class PlanDrivenProgressTracker:
         task_type: str,
         game_file: Optional[str] = None,
         plan_path: Optional[str] = None,
-        max_progress_per_episode: float = 10.0,
+        max_progress_per_episode: float = 3.0,
     ):
         self.task_type = task_type
         self.game_file = game_file
@@ -170,7 +170,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Smoke test plan-driven progress tracker on existing rollout trajectories")
     parser.add_argument("--results", type=Path, required=True,
                         help="e.g. env2scaffold/baseline_eval/results_original.json")
-    parser.add_argument("--max-progress", type=float, default=10.0)
+    parser.add_argument("--max-progress", type=float, default=3.0)
+    parser.add_argument("--success-scale", type=float, default=10.0,
+                        help="terminal success return used by verl-agent/envs.py")
     parser.add_argument("--max-episodes", type=int, default=5)
     args = parser.parse_args()
 
@@ -197,7 +199,7 @@ if __name__ == "__main__":
             if delta > 0:
                 per_step.append(f"step{s['step']} +{delta:.2f} ({','.join(fired)})")
         won = r.get("won")
-        bonus = max(0.0, args.max_progress - tracker.accumulated) if won else 0.0
+        bonus = max(0.0, args.success_scale - tracker.accumulated) if won else 0.0
         print(f"[{tt}] won={won} steps={len(steps)}")
         print(f"  mid-progress: {' | '.join(per_step) or '(no UT fired)'}")
         print(f"  accumulated = {tracker.accumulated:.2f}, terminal_bonus = {bonus:.2f}, trajectory_return = {tracker.accumulated + bonus:.2f}")

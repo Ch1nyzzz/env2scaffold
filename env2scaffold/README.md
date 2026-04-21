@@ -2,7 +2,7 @@
 
 **给定任意 Agent Benchmark，自动生成环境反馈增强方案。**
 
-基于论文 [*"Don't Just Fine-tune the Agent, Tune the Environment"*](https://arxiv.org/abs/2510.10197) 的思路，我们构建了一套全自动 pipeline，通过 Claude Code 驱动三个 sub-agent 协作完成环境反馈增强。当前 MVP 已在 ALFWorld 上验证通过。
+基于论文 [*"Don't Just Fine-tune the Agent, Tune the Environment"*](https://arxiv.org/abs/2510.10197) 的思路，我们构建了一套全自动 pipeline，通过 Claude Code 或 Codex 驱动 sub-agent 协作完成环境反馈增强。当前 MVP 已在 ALFWorld 上验证通过。
 
 ---
 
@@ -58,7 +58,7 @@
 
 ## 2. Pipeline 架构
 
-整个 pipeline 由一个 Python orchestrator 驱动三个 Claude Code sub-agent 顺序执行：
+整个 pipeline 由一个 Python orchestrator 驱动多个 headless code-agent sub-agent 顺序执行，runner 可选 Claude Code 或 Codex：
 
 ```
                      ┌────────────────────────┐
@@ -89,7 +89,15 @@ Orchestrator 的职责：
 2. **Phase gating**：每个 agent 结束后，检查预期输出文件是否存在且非空
 3. **日志记录**：每个 agent 的 stdout 实时写入 `{agent_name}.log`
 
-每个 sub-agent 通过 Claude Code CLI 的 headless 模式启动：
+每个 sub-agent 通过配置的 headless agent runner 启动。默认 `auto` 会优先使用 Claude Code，找不到 `claude` 时回退到 Codex；也可以显式指定：
+
+```bash
+python pipeline.py --agent-runner claude
+python pipeline.py --agent-runner codex
+ENV2SCAFFOLD_AGENT_RUNNER=codex python pipeline.py
+```
+
+Claude Code runner 使用：
 
 ```python
 cmd = [
@@ -99,6 +107,19 @@ cmd = [
     "--model", "sonnet",             # 使用 Sonnet 节省成本
     "--system-prompt-file", prompt,  # agent 的完整指令
     "Execute the task...",           # 触发执行
+]
+```
+
+Codex runner 使用：
+
+```python
+cmd = [
+    "codex",
+    "exec",
+    "--dangerously-bypass-approvals-and-sandbox",
+    "-C", project_root,
+    "--add-dir", project_root,
+    "-",                             # prompt 从 stdin 传入
 ]
 ```
 

@@ -27,12 +27,14 @@ They inform each other, but they are different pipelines and must not be merged 
 ## Core Principles
 
 - `Benchmark-first`: understand the benchmark before designing augmentations.
-- `Agent-delegated but justified`: Claude Code may choose oracles and test strategy, but must explain why.
+- `Agent-delegated but justified`: Code Agent Runner may choose oracles and test strategy, but must explain why.
 - `Exploration-heavy`: coverage collection is a first-class artifact, not a side effect.
 - `Text-only augmentation`: observation text may change; environment dynamics must not.
 - `Evaluation-separated`: augmentation design and test/oracle design must remain modular.
 
 ## High-Level Architecture
+
+The `Code Agent Runner` roles below can be executed by either Claude Code or Codex, selected through `env2scaffold/pipeline.py --agent-runner`.
 
 ### 1. Benchmark Reader
 
@@ -42,7 +44,7 @@ Purpose:
 
 Primary agent:
 
-- `Claude Code`
+- `Code Agent Runner`
 
 Outputs:
 
@@ -91,7 +93,7 @@ Purpose:
 
 Primary agent:
 
-- `Claude Code`
+- `Code Agent Runner`
 
 Outputs:
 
@@ -114,7 +116,7 @@ Purpose:
 
 Primary agent:
 
-- `Claude Code`
+- `Code Agent Runner`
 
 Outputs:
 
@@ -138,7 +140,7 @@ Purpose:
 
 Primary agent:
 
-- `Claude Code`
+- `Code Agent Runner`
 
 Outputs:
 
@@ -156,7 +158,7 @@ Purpose:
 
 Primary agent:
 
-- `Claude Code`
+- `Code Agent Runner`
 
 Outputs:
 
@@ -244,12 +246,12 @@ Every benchmark should be verified at three layers:
 
 ## Default Control Flow
 
-1. Claude Code reads benchmark and emits `benchmark_spec`.
+1. Code Agent Runner reads benchmark and emits `benchmark_spec`.
 2. Qwen explores benchmark and emits trajectory corpus plus coverage artifacts.
-3. Claude Code audits feedback and emits augmentation candidates.
-4. Claude Code independently selects oracles and emits test policy.
-5. Claude Code implements text augmentation only if justified.
-6. Claude Code generates and runs verification using the chosen oracle plan.
+3. Code Agent Runner audits feedback and emits augmentation candidates.
+4. Code Agent Runner independently selects oracles and emits test policy.
+5. Code Agent Runner implements text augmentation only if justified.
+6. Code Agent Runner generates and runs verification using the chosen oracle plan.
 
 ## Decision Rule for Shipping Augmentation
 

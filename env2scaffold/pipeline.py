@@ -2,9 +2,10 @@
 """
 env2scaffold pipeline orchestrator.
 
-Runs six Claude Code sub-agents in headless mode, in the order prescribed by
-docs/framework_architecture.md. Pipeline A (augmentation_builder) and
-Pipeline B (oracle_designer) run in parallel within a single stage.
+Runs six headless code-agent sub-agents in the order prescribed by
+docs/framework_architecture.md. The runner can be Claude Code or Codex.
+Pipeline A (augmentation_builder) and Pipeline B (oracle_designer) run in
+parallel within a single stage.
 
 Stages:
   1. probing                                   — explore the environment, collect feedback patterns
@@ -22,6 +23,7 @@ Usage:
     python pipeline.py --agent feedback_auditor     # run a single agent
     python pipeline.py --resume augmentation_builder  # run this agent and everything after
     python pipeline.py --serial                     # disable stage-level parallelism
+    python pipeline.py --agent-runner codex         # run agents through Codex CLI
 
 Failure in one agent within a parallel stage does NOT short-circuit siblings;
 the stage as a whole fails, and subsequent stages do not run.
@@ -30,6 +32,8 @@ the stage as a whole fails, and subsequent stages do not run.
 from __future__ import annotations
 
 import argparse
+import os
+import shutil
 import subprocess
 import sys
 import time
@@ -58,6 +62,8 @@ STAGES: list[list[str]] = [
     ["verify_runner"],
 ]
 AGENTS: list[str] = [name for stage in STAGES for name in stage]
+RUNNER_CHOICES = ("auto", "claude", "codex")
+DEFAULT_CLAUDE_MODEL = "sonnet"
 
 AGENT_CONFIG: dict[str, dict] = {
     "probing": {
@@ -180,8 +186,93 @@ def check_agent_outputs(agent_name: str) -> bool:
 
 
 # ─── Subprocess runner ───────────────────────────────────────────────────────
-def run_claude_agent(agent_name: str, hint: str | None = None) -> int:
-    """Run a Claude Code sub-agent in headless mode. Streams stdout to both the
+def resolve_agent_runner(requested: str) -> str:
+    """Resolve the configured headless agent runner.
+
+    `auto` preserves the historical behavior when Claude Code is installed and
+    falls back to Codex otherwise.
+    """
+    if requested not in RUNNER_CHOICES:
+        raise ValueError(f"unknown agent runner: {requested}")
+
+    if requested == "auto":
+        for candidate in ("claude", "codex"):
+            if shutil.which(candidate):
+                return candidate
+        raise RuntimeError(
+            "no supported agent runner found; install `claude` or `codex`"
+        )
+
+    if not shutil.which(requested):
+        raise RuntimeError(f"configured agent runner `{requested}` not found on PATH")
+    return requested
+
+
+def _build_claude_invocation(
+    prompt_file: Path,
+    user_prompt: str,
+    model: str | None,
+) -> tuple[list[str], str | None]:
+    cmd = [
+        "claude",
+        "-p",
+        "--dangerously-skip-permissions",
+        "--model", model or DEFAULT_CLAUDE_MODEL,
+        "--add-dir", str(ROOT),
+        "--system-prompt-file", str(prompt_file),
+        user_prompt,
+    ]
+    return cmd, None
+
+
+def _build_codex_invocation(
+    prompt_file: Path,
+    user_prompt: str,
+    model: str | None,
+) -> tuple[list[str], str | None]:
+    system_prompt = prompt_file.read_text()
+    combined_prompt = (
+        "You are running as an env2scaffold headless sub-agent. "
+        "Treat the following role contract as your system instructions and satisfy its output contract.\n\n"
+        "===== ROLE CONTRACT =====\n"
+        f"{system_prompt}\n\n"
+        "===== INVOCATION =====\n"
+        f"{user_prompt}\n"
+    )
+    cmd = [
+        "codex",
+        "exec",
+        "--dangerously-bypass-approvals-and-sandbox",
+        "-C", str(ROOT),
+        "--add-dir", str(ROOT),
+        "--color", "never",
+        "-",
+    ]
+    if model:
+        cmd[2:2] = ["--model", model]
+    return cmd, combined_prompt
+
+
+def build_agent_invocation(
+    runner: str,
+    prompt_file: Path,
+    user_prompt: str,
+    model: str | None,
+) -> tuple[list[str], str | None]:
+    if runner == "claude":
+        return _build_claude_invocation(prompt_file, user_prompt, model)
+    if runner == "codex":
+        return _build_codex_invocation(prompt_file, user_prompt, model)
+    raise ValueError(f"unsupported resolved runner: {runner}")
+
+
+def run_headless_agent(
+    agent_name: str,
+    runner: str,
+    model: str | None = None,
+    hint: str | None = None,
+) -> int:
+    """Run a sub-agent in headless mode. Streams stdout to both the
     terminal (prefixed) and to the agent's log file. Returns the exit code.
 
     `hint` is an optional extra instruction appended to the user prompt — useful
@@ -189,7 +280,7 @@ def run_claude_agent(agent_name: str, hint: str | None = None) -> int:
     prompt. Does NOT replace the contract in the system prompt; the agent still
     must satisfy its Output Contract.
     """
-    log(f"Launching {agent_name}", "WAIT")
+    log(f"Launching {agent_name} via {runner}", "WAIT")
 
     cfg = AGENT_CONFIG[agent_name]
     prompt_file = PROMPTS_DIR / cfg["prompt_file"]
@@ -204,26 +295,23 @@ def run_claude_agent(agent_name: str, hint: str | None = None) -> int:
     if hint:
         user_prompt += f"\n\nAdditional guidance for this invocation: {hint}"
 
-    cmd = [
-        "claude",
-        "-p",
-        "--dangerously-skip-permissions",
-        "--model", "sonnet",
-        "--add-dir", str(ROOT),
-        "--system-prompt-file", str(prompt_file),
-        user_prompt,
-    ]
+    cmd, stdin_text = build_agent_invocation(runner, prompt_file, user_prompt, model)
 
     log_path = ROOT / cfg["log_file"]
     with open(log_path, "w") as lf:
         proc = subprocess.Popen(
             cmd,
+            stdin=subprocess.PIPE if stdin_text is not None else None,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             text=True,
             cwd=str(ROOT),
             bufsize=1,
         )
+        if stdin_text is not None:
+            assert proc.stdin is not None
+            proc.stdin.write(stdin_text)
+            proc.stdin.close()
         assert proc.stdout is not None
         for line in proc.stdout:
             sys.stdout.write(f"  [{agent_name}] {line}")
@@ -234,7 +322,12 @@ def run_claude_agent(agent_name: str, hint: str | None = None) -> int:
     return proc.returncode
 
 
-def run_agent(agent_name: str, hint: str | None = None) -> bool:
+def run_agent(
+    agent_name: str,
+    runner: str,
+    model: str | None = None,
+    hint: str | None = None,
+) -> bool:
     log("=" * 60)
     log(f"Agent: {agent_name}")
     if hint:
@@ -244,7 +337,7 @@ def run_agent(agent_name: str, hint: str | None = None) -> bool:
     if not check_agent_ready(agent_name):
         return False
 
-    returncode = run_claude_agent(agent_name, hint=hint)
+    returncode = run_headless_agent(agent_name, runner=runner, model=model, hint=hint)
     if returncode != 0:
         log(f"{agent_name} failed (exit code {returncode})", "FAIL")
         return False
@@ -258,7 +351,13 @@ def run_agent(agent_name: str, hint: str | None = None) -> bool:
 
 
 # ─── Stage execution ─────────────────────────────────────────────────────────
-def run_stage(stage: list[str], serial: bool, hint: str | None = None) -> bool:
+def run_stage(
+    stage: list[str],
+    serial: bool,
+    runner: str,
+    model: str | None = None,
+    hint: str | None = None,
+) -> bool:
     """Run every agent in the stage. Parallel by default, serial if requested or
     if the stage has only one agent. Returns True iff every agent succeeded.
 
@@ -266,7 +365,7 @@ def run_stage(stage: list[str], serial: bool, hint: str | None = None) -> bool:
     hint one agent should use `--agent <name> --hint` instead of `--resume`.
     """
     if len(stage) == 1 or serial:
-        return all(run_agent(name, hint=hint) for name in stage)
+        return all(run_agent(name, runner=runner, model=model, hint=hint) for name in stage)
 
     log("=" * 60)
     log(f"Parallel stage: {stage}")
@@ -274,7 +373,7 @@ def run_stage(stage: list[str], serial: bool, hint: str | None = None) -> bool:
 
     results: dict[str, bool] = {}
     with ThreadPoolExecutor(max_workers=len(stage)) as pool:
-        futures = {pool.submit(run_agent, name, hint): name for name in stage}
+        futures = {pool.submit(run_agent, name, runner, model, hint): name for name in stage}
         for fut in as_completed(futures):
             name = futures[fut]
             try:
@@ -319,6 +418,20 @@ def main() -> None:
              "this invocation. Use for one-off guidance that should not live in the "
              "system prompt (e.g. 'use HandCoded policy for Layer 1').",
     )
+    parser.add_argument(
+        "--agent-runner",
+        choices=RUNNER_CHOICES,
+        default=os.environ.get("ENV2SCAFFOLD_AGENT_RUNNER", "auto"),
+        help="Headless agent CLI to use. `auto` prefers Claude Code when installed "
+             "and falls back to Codex. Can also be set with ENV2SCAFFOLD_AGENT_RUNNER.",
+    )
+    parser.add_argument(
+        "--agent-model",
+        default=os.environ.get("ENV2SCAFFOLD_AGENT_MODEL"),
+        help="Optional model name passed to the selected runner. If omitted, Claude "
+             f"uses `{DEFAULT_CLAUDE_MODEL}` and Codex uses its configured default. "
+             "Can also be set with ENV2SCAFFOLD_AGENT_MODEL.",
+    )
     args = parser.parse_args()
 
     if args.agent and args.resume:
@@ -326,12 +439,25 @@ def main() -> None:
 
     log("env2scaffold pipeline")
     log(f"Project root: {ROOT}")
+    try:
+        runner = resolve_agent_runner(args.agent_runner)
+    except (RuntimeError, ValueError) as exc:
+        parser.error(str(exc))
+    log(f"Agent runner: {runner}")
+    if args.agent_model:
+        log(f"Agent model: {args.agent_model}")
 
     stages_to_run = select_stages(args.agent, args.resume)
     log(f"Stages to run: {stages_to_run}")
 
     for stage in stages_to_run:
-        ok = run_stage(stage, serial=args.serial, hint=args.hint)
+        ok = run_stage(
+            stage,
+            serial=args.serial,
+            runner=runner,
+            model=args.agent_model,
+            hint=args.hint,
+        )
         if not ok:
             log(f"Pipeline stopped at stage {stage}", "FAIL")
             sys.exit(1)

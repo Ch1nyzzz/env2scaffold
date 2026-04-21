@@ -9,8 +9,8 @@
 #                    28 unit tests across 6 task types, produced by
 #                    trace_evaluator agent; incremental per-step detection
 #                    via plan_driven_progress.PlanDrivenProgressTracker).
-# Scale factor:      ENV2SCAFFOLD_MAX_PROGRESS_PER_EPISODE (default 10.0,
-#                    maps plan's per-task weight-sum=1.0 onto 10 reward scale).
+# Scale factor:      ENV2SCAFFOLD_MAX_PROGRESS_PER_EPISODE (default 3.0,
+#                    maps plan's per-task weight-sum=1.0 onto 3 reward scale).
 # Success return:    trajectory sum = 10 (clipped by envs.py
 #                    `max(0, 10 - progress_accumulated)` at won step,
 #                    matches vanilla / obs-aug).
@@ -28,8 +28,8 @@ export LD_LIBRARY_PATH="/home/nvidia/env2scaffold/venv/lib/python3.12/site-packa
 export WANDB_API_KEY="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"
 
 # Pipeline C progress scale. Plan's per-task milestone weights sum to 1.0;
-# this factor scales them onto the 10-reward training scale.
-export ENV2SCAFFOLD_MAX_PROGRESS_PER_EPISODE="${ENV2SCAFFOLD_MAX_PROGRESS_PER_EPISODE:-10.0}"
+# this factor keeps progress shaping below the 10-reward success scale.
+export ENV2SCAFFOLD_MAX_PROGRESS_PER_EPISODE="${ENV2SCAFFOLD_MAX_PROGRESS_PER_EPISODE:-3.0}"
 
 TIMESTAMP=$(date '+%Y-%m-%d_%H-%M-%S')
 LOG_DIR="logs"

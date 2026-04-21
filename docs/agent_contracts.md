@@ -5,9 +5,9 @@
 This document defines the responsibilities, inputs, outputs, and decision boundaries for the two-agent framework:
 
 - `Qwen`: exploration agent
-- `Claude Code`: analysis, augmentation, oracle, and verification agent
+- `Code Agent Runner`: analysis, augmentation, oracle, and verification agent, implemented by the configured headless CLI (`claude` or `codex`)
 
-The framework assumes `Claude Code` is the governing agent. `Qwen` is a specialized rollout worker.
+The framework assumes the configured `Code Agent Runner` is the governing agent. `Qwen` is a specialized rollout worker.
 
 ## Shared Rules
 
@@ -61,21 +61,21 @@ Qwen should attempt to cover:
 - recovery attempts after failure
 - repeated loops
 - no-op or low-information transitions
-- benchmark-specific boundary cases discovered by Claude Code
+- benchmark-specific boundary cases discovered by Code Agent Runner
 
 ### Output Quality Bar
 
 Qwen output must be:
 
 - broad rather than optimized for benchmark score
-- labeled with enough context for Claude Code to interpret
+- labeled with enough context for Code Agent Runner to interpret
 - sufficiently diverse to support ambiguity analysis
 
-## Claude Code Contract
+## Code Agent Runner Contract
 
 ### Role
 
-`Claude Code` is the benchmark reader, analysis agent, augmentation designer, oracle selector, and verifier.
+`Code Agent Runner` is the benchmark reader, analysis agent, augmentation designer, oracle selector, and verifier.
 
 ### Primary Objective
 
@@ -93,7 +93,7 @@ Turn benchmark understanding plus exploration data into justified augmentation a
 
 ### Required Justifications
 
-Whenever Claude Code chooses an oracle strategy or test strategy, it must explicitly record:
+Whenever Code Agent Runner chooses an oracle strategy or test strategy, it must explicitly record:
 
 - candidate oracle sources
 - why each candidate is or is not usable
@@ -109,7 +109,7 @@ Whenever Claude Code chooses an oracle strategy or test strategy, it must explic
 
 ## Mandatory Separation of Duties
 
-Claude Code must keep these two deliverables separate:
+Code Agent Runner must keep these two deliverables separate:
 
 ### A. Text Augmentation Deliverables
 
@@ -127,9 +127,9 @@ Claude Code must keep these two deliverables separate:
 
 The same file should not mix augmentation rule definitions with oracle selection policy.
 
-## Required Claude Code Decision Format
+## Required Code Agent Runner Decision Format
 
-When choosing oracle sources, Claude Code should emit a structure equivalent to:
+When choosing oracle sources, Code Agent Runner should emit a structure equivalent to:
 
 ```json
 {
@@ -160,14 +160,14 @@ When choosing oracle sources, Claude Code should emit a structure equivalent to:
 
 ## Escalation Rules
 
-Claude Code must escalate from analysis to implementation only if:
+Code Agent Runner must escalate from analysis to implementation only if:
 
 - benchmark reading is complete enough
 - exploration coverage is adequate
 - at least one augmentation candidate passes utility and non-leakage screening
 - a viable oracle plan exists
 
-If any of these fail, Claude Code should stop at analysis and report the blocker.
+If any of these fail, Code Agent Runner should stop at analysis and report the blocker.
 
 ## Success Criteria by Agent
 
@@ -177,7 +177,7 @@ If any of these fail, Claude Code should stop at analysis and report the blocker
 - it surfaces representative failure and recovery traces
 - its output is reproducible and structured
 
-### Claude Code succeeds if
+### Code Agent Runner succeeds if
 
 - benchmark mechanics are correctly understood
 - useful augmentations are distinguished from cosmetic rewrites
@@ -187,7 +187,7 @@ If any of these fail, Claude Code should stop at analysis and report the blocker
 
 ## Review Bias Guardrail
 
-Claude Code must assume a conflict of interest between:
+Code Agent Runner must assume a conflict of interest between:
 
 - proving an augmentation looks good
 - proving it actually improves benchmark-relevant outcomes

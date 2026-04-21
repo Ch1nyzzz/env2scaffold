@@ -4,7 +4,7 @@
 
 Define how ground truth, oracle selection, and unit test construction should work in the framework.
 
-This policy intentionally does not hardcode a single ground-truth source. Instead, `Claude Code` must inspect the benchmark and choose the most appropriate oracle strategy.
+This policy intentionally does not hardcode a single ground-truth source. Instead, `Code Agent Runner` must inspect the benchmark and choose the most appropriate oracle strategy.
 
 This document governs:
 
@@ -20,7 +20,7 @@ It does not govern text augmentation rule wording.
 
 Ground truth is benchmark-dependent.
 
-`Claude Code` must discover and evaluate candidate oracle sources after reading the benchmark. It may choose one source or combine several, but it must justify the choice.
+`Code Agent Runner` must discover and evaluate candidate oracle sources after reading the benchmark. It may choose one source or combine several, but it must justify the choice.
 
 ## Candidate Oracle Sources
 
@@ -51,7 +51,7 @@ Heuristics should be a last resort and must be labeled as such.
 
 ## Mandatory Oracle Analysis
 
-Before designing tests, `Claude Code` must produce:
+Before designing tests, `Code Agent Runner` must produce:
 
 - list of oracle candidates
 - accessibility of each candidate
@@ -124,7 +124,7 @@ Binary success alone is insufficient when richer benchmark-native scoring exists
 
 If the benchmark exposes a scalar score, partial-credit evaluator, or dense metric, that metric must be included in final evaluation.
 
-If the benchmark only exposes binary success, Claude Code may derive additional diagnostic metrics, but it must clearly distinguish:
+If the benchmark only exposes binary success, Code Agent Runner may derive additional diagnostic metrics, but it must clearly distinguish:
 
 - official metric
 - auxiliary metric

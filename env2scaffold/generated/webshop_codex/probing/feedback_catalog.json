@@ -1,0 +1,50 @@
+{
+  "benchmark": "WebShop",
+  "source": "static inspection of vendored WebAgentTextEnv plus env2scaffold probe design",
+  "feedback_patterns": [
+    {
+      "feedback_id": "F001",
+      "surface": "WebAgentTextEnv.step",
+      "trigger": "malformed action such as 'foo' or missing brackets",
+      "native_feedback": "no explicit diagnostic; environment performs no state-changing action",
+      "low_information": true,
+      "candidate_id": "C01"
+    },
+    {
+      "feedback_id": "F002",
+      "surface": "WebAgentTextEnv.step",
+      "trigger": "click[label] where label is not in current text_to_clickable",
+      "native_feedback": "no explicit diagnostic; environment performs no state-changing action",
+      "low_information": true,
+      "candidate_id": "C02"
+    },
+    {
+      "feedback_id": "F003",
+      "surface": "WebAgentTextEnv.step",
+      "trigger": "search[query] on a page without search_input",
+      "native_feedback": "search is accepted by the low-level simulator even though not listed in available actions",
+      "low_information": true,
+      "candidate_id": "C02"
+    },
+    {
+      "feedback_id": "F004",
+      "surface": "search_results page",
+      "trigger": "agent must choose between product IDs/navigation/search controls",
+      "native_feedback": "page text lists controls, but no compact page affordance cue",
+      "low_information": false,
+      "candidate_id": "C03"
+    },
+    {
+      "feedback_id": "F005",
+      "surface": "item_page and item_sub_page",
+      "trigger": "agent must inspect product/options and decide whether to buy",
+      "native_feedback": "page text lists options and Buy Now, but no compact selected-option cue",
+      "low_information": false,
+      "candidate_id": "C03"
+    }
+  ],
+  "notes": [
+    "This catalog is generated in a WebShop-specific output root and does not modify ALFWorld artifacts.",
+    "Runtime execution against real WebShop dependencies was not performed in the current shell because the active environment lacks WebShop runtime packages."
+  ]
+}

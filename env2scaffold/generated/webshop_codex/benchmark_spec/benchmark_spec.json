@@ -1,0 +1,84 @@
+{
+  "benchmark_name": "webshop",
+  "benchmark_version": "vendored verl-agent WebShop",
+  "source_locations": [
+    {
+      "name": "verl_agent_webshop_wrapper",
+      "path": "verl-agent/agent_system/environments/env_package/webshop/envs.py"
+    },
+    {
+      "name": "web_agent_text_env",
+      "path": "verl-agent/agent_system/environments/env_package/webshop/webshop/web_agent_site/envs/web_agent_text_env.py"
+    },
+    {
+      "name": "webshop_reward",
+      "path": "verl-agent/agent_system/environments/env_package/webshop/webshop/web_agent_site/engine/goal.py"
+    },
+    {
+      "name": "webshop_templates",
+      "path": "verl-agent/agent_system/environments/env_package/webshop/webshop/web_agent_site/templates/"
+    }
+  ],
+  "runtime_interface": {
+    "native_env": "WebAgentTextEnv-v0",
+    "verl_env_name": "Webshop",
+    "actions": [
+      "search[<query>]",
+      "click[<visible label>]"
+    ],
+    "step_return": ["observation", "reward", "done", "info"],
+    "available_action_channel": "env.get_available_actions() returns {has_search_bar, clickables}",
+    "terminal_condition": "click[Buy Now] returns done=True"
+  },
+  "reward_and_metrics": {
+    "native_webshop_reward": "continuous score in [0, 1] from get_reward(purchased_product, goal, price, options)",
+    "verl_training_reward": "10.0 iff done and native reward == 1.0, else 0",
+    "reported_metrics": [
+      "success_rate from info['won']",
+      "webshop_task_score from native reward before sparse conversion"
+    ]
+  },
+  "observable_state_channels": [
+    "text observation rendered from current HTML",
+    "available_actions.has_search_bar",
+    "available_actions.clickables",
+    "current URL/page name",
+    "visible product options on item page",
+    "agent-submitted previous action"
+  ],
+  "latent_or_forbidden_channels": [
+    "target ASIN",
+    "goal attributes not visible in the instruction",
+    "reward subcomponents from verbose get_reward",
+    "unseen product alternatives",
+    "full product database rows not visible on the current page"
+  ],
+  "feedback_generation_points": [
+    {
+      "point": "invalid action in WebAgentTextEnv.step",
+      "native_behavior": "perform nothing and return reward=0, done=False without diagnostic text"
+    },
+    {
+      "point": "search results page",
+      "native_behavior": "observation lists product IDs/titles/prices and navigation controls"
+    },
+    {
+      "point": "item page",
+      "native_behavior": "observation lists visible product title, price, rating, option controls, info tabs, and Buy Now"
+    }
+  ],
+  "augmentation_policy": {
+    "allowed": [
+      "explain malformed action syntax",
+      "explain when the previous action was outside public available_actions",
+      "summarize current page affordances already visible to the agent",
+      "surface selected/unselected visible option groups"
+    ],
+    "forbidden": [
+      "reveal correct product id or target ASIN",
+      "recommend a specific unseen search query answer",
+      "reveal hidden reward details or goal database fields",
+      "change rewards, done flags, or action execution"
+    ]
+  }
+}

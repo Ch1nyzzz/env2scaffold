@@ -1,0 +1,51 @@
+FROM python:3.10-slim-bookworm
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PYTHONUNBUFFERED=1
+ENV PIP_NO_CACHE_DIR=1
+ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    bash \
+    build-essential \
+    curl \
+    git \
+    openjdk-17-jdk-headless \
+    procps \
+    unzip \
+    wget \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN python -m pip install --upgrade pip setuptools wheel
+
+# Minimal WebShop text-environment dependencies plus an HTTP client for vLLM.
+# Torch is CPU-only because the client container runs WebShop; Qwen generation is
+# served by a separate vLLM container/process.
+RUN pip install --extra-index-url https://download.pytorch.org/whl/cpu \
+    beautifulsoup4==4.11.1 \
+    cleantext==1.1.4 \
+    Flask==2.1.2 \
+    faiss-cpu==1.7.4 \
+    gdown \
+    gym==0.24.0 \
+    numpy==1.26.4 \
+    pandas==2.2.3 \
+    pyserini==0.17.0 \
+    pydantic==2.10.6 \
+    PyYAML==6.0.2 \
+    rank_bm25==0.2.2 \
+    requests==2.27.1 \
+    rich==12.4.4 \
+    scikit_learn \
+    selenium==4.2.0 \
+    spacy==3.7.2 \
+    thefuzz==0.19.0 \
+    torch==2.6.0+cpu \
+    tqdm==4.64.0 \
+    Werkzeug==2.1.0
+
+RUN pip install \
+    https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.7.1/en_core_web_sm-3.7.1-py3-none-any.whl
+
+WORKDIR /workspace/env-aug
+CMD ["bash"]

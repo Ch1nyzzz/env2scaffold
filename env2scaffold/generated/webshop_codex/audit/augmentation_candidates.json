@@ -1,0 +1,59 @@
+{
+  "benchmark": "WebShop",
+  "source_catalog_path": "probing/feedback_catalog.json",
+  "candidates": [
+    {
+      "candidate_id": "C01",
+      "title": "Malformed action syntax no-op",
+      "trigger": "Agent output does not parse as search[...] or click[...]",
+      "ambiguous_causes": [
+        "missing XML action extraction upstream",
+        "missing brackets",
+        "unsupported action verb",
+        "empty action text"
+      ],
+      "proposed_feedback_intent": "Explain the accepted WebShop action grammar without naming any benchmark answer.",
+      "priors": {
+        "utility": "high",
+        "novelty": "high",
+        "non_leakage": "safe",
+        "semantic_preservation": "safe"
+      }
+    },
+    {
+      "candidate_id": "C02",
+      "title": "Action outside visible affordance set",
+      "trigger": "click target not visible, click[search], empty search, or search submitted without a visible search bar",
+      "ambiguous_causes": [
+        "agent invented a product id",
+        "agent clicked a label from an older page",
+        "agent confused search button with search action",
+        "agent searched from product page instead of using visible navigation"
+      ],
+      "proposed_feedback_intent": "Point back to the current/previous public available action set.",
+      "priors": {
+        "utility": "high",
+        "novelty": "medium",
+        "non_leakage": "safe",
+        "semantic_preservation": "safe"
+      }
+    },
+    {
+      "candidate_id": "C03",
+      "title": "Compact page affordance cue",
+      "trigger": "Current page is search, search results, item page, or item subpage",
+      "ambiguous_causes": [
+        "long observations make page mode hard to identify",
+        "selected product options are spread across page text",
+        "navigation and purchase affordances are easy to miss"
+      ],
+      "proposed_feedback_intent": "Summarize page mode and visible affordances already present in observation/available_actions.",
+      "priors": {
+        "utility": "medium",
+        "novelty": "medium",
+        "non_leakage": "safe if restricted to visible state",
+        "semantic_preservation": "safe"
+      }
+    }
+  ]
+}

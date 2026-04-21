@@ -1,0 +1,5 @@
+{
+  "status": "deferred",
+  "reason": "Native WebShop rollout was not executed in this shell because the active environment is missing WebShop runtime dependencies. The generated wrapper is standalone and not yet integrated into verl-agent.",
+  "required_future_command": "Run paired vanilla vs AugmentedWebShopEnv rollouts after installing WebShop dependencies, then compare native task_score and success_rate."
+}

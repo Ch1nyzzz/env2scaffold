@@ -1,0 +1,36 @@
+{
+  "benchmark": "WebShop",
+  "layer2_diagnostic_unit": [
+    {
+      "candidate_id": "C01",
+      "case": "malformed_action",
+      "oracle": "public_available_actions",
+      "pass_criteria": "feedback mentions malformed action grammar"
+    },
+    {
+      "candidate_id": "C02",
+      "case": "invalid_click_target",
+      "oracle": "public_available_actions",
+      "pass_criteria": "feedback says click target was not visible and examples are from previous clickables"
+    },
+    {
+      "candidate_id": "C02",
+      "case": "search_without_visible_search_bar",
+      "oracle": "public_available_actions",
+      "pass_criteria": "feedback says search bar was not visible"
+    },
+    {
+      "candidate_id": "C03",
+      "case": "product_page_options",
+      "oracle": "public_available_actions",
+      "pass_criteria": "feedback names selected and unselected visible option groups"
+    }
+  ],
+  "layer3_non_regression": [
+    {
+      "case": "reward_done_parity",
+      "oracle": "native_step_return_parity",
+      "pass_criteria": "wrapper step returns exactly native reward and done"
+    }
+  ]
+}

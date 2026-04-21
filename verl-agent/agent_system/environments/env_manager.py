@@ -677,15 +677,25 @@ def make_envs(config):
         else:
             file_path = os.path.join(os.path.dirname(__file__), 'env_package/webshop/webshop/data/items_shuffle.json')
             attr_path = os.path.join(os.path.dirname(__file__), 'env_package/webshop/webshop/data/items_ins_v2.json')
+        use_augmented = getattr(config.env, 'use_augmented_env', False)
+        use_progress_reward = getattr(config.env, 'use_progress_reward', False)
+        progress_reward_scale = getattr(config.env.webshop, 'progress_reward_scale', 3.0)
         env_kwargs = {
                     'observation_mode': 'text', 
                     'num_products': None, 
                     'human_goals': config.env.webshop.human_goals,
                     'file_path': file_path,
-                    'attr_path': attr_path
+                    'attr_path': attr_path,
+                    'use_augmented_env': use_augmented,
+                    'use_progress_reward': use_progress_reward,
+                    'progress_reward_scale': progress_reward_scale,
                     }
+        val_env_kwargs = dict(env_kwargs)
+        # Validation stays vanilla so metrics remain comparable across variants.
+        val_env_kwargs['use_augmented_env'] = False
+        val_env_kwargs['use_progress_reward'] = False
         _envs = build_webshop_envs(seed=config.env.seed, env_num=config.data.train_batch_size, group_n=group_n, is_train=True, env_kwargs=env_kwargs, resources_per_worker=resources_per_worker)
-        _val_envs = build_webshop_envs(seed=config.env.seed + 1000, env_num=config.data.val_batch_size, group_n=1, is_train=False, env_kwargs=env_kwargs, resources_per_worker=resources_per_worker)
+        _val_envs = build_webshop_envs(seed=config.env.seed + 1000, env_num=config.data.val_batch_size, group_n=1, is_train=False, env_kwargs=val_env_kwargs, resources_per_worker=resources_per_worker)
 
         projection_f = partial(webshop_projection)
         envs = WebshopEnvironmentManager(_envs, projection_f, config)

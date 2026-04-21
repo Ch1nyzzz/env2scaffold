@@ -1,0 +1,69 @@
+{
+  "benchmark": "WebShop",
+  "source_candidates_path": "audit/augmentation_candidates.json",
+  "target_module": "augmentation/augmented_env.py",
+  "exported_symbols": [
+    "AugmentedWebShopEnv",
+    "augment_observation",
+    "wrap_webshop_env"
+  ],
+  "rules": [
+    {
+      "rule_id": "R01",
+      "source_candidate_ids": ["C01"],
+      "kind": "malformed_action_diagnostic",
+      "priority": 10,
+      "trigger": {
+        "previous_action": "does not parse as search[...] or click[...]"
+      },
+      "replacement_text_template": "The previous action was malformed. Use search[query] when the search bar is visible, or click[label] with an exact visible label.",
+      "allowed_placeholders": [],
+      "ship": true
+    },
+    {
+      "rule_id": "R02",
+      "source_candidate_ids": ["C02"],
+      "kind": "action_affordance_diagnostic",
+      "priority": 20,
+      "trigger": {
+        "conditions": [
+          "search[...] submitted when previous page had no search bar",
+          "search[] submitted with empty query",
+          "click[...] target was not listed in previous available_actions.clickables",
+          "click[search] submitted instead of search[...]"
+        ]
+      },
+      "replacement_text_template": "The previous action was outside the displayed action set. Use a listed action from the previous page.",
+      "allowed_placeholders": [
+        "agent-submitted action type",
+        "up to five previous visible click labels"
+      ],
+      "ship": true
+    },
+    {
+      "rule_id": "R03",
+      "source_candidate_ids": ["C03"],
+      "kind": "page_state_cue",
+      "priority": 30,
+      "trigger": {
+        "current_state": "search page, search results page, product page, or product subpage"
+      },
+      "replacement_text_template": "Page cue: <page type>. <generic next-action affordance already implied by visible page and available_actions>.",
+      "allowed_placeholders": [
+        "page type",
+        "current search query",
+        "current search result page number",
+        "visible product count",
+        "selected option values",
+        "unselected option group names"
+      ],
+      "ship": true
+    }
+  ],
+  "semantic_guards": [
+    "Never modify the action before passing it to the wrapped WebShop environment.",
+    "Return reward and done exactly as the wrapped environment returned them.",
+    "Do not reveal target ASIN, target attributes, reward subcomponents, hidden goal fields, or unseen product alternatives.",
+    "Use only visible action affordances, current public URL/page type, visible product options, and the agent's own previous action."
+  ]
+}

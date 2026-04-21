@@ -1,0 +1,13 @@
+{
+  "status": "pass",
+  "cases": [
+    {
+      "name": "reset_info_preserved",
+      "passed": true
+    },
+    {
+      "name": "step_reward_done_info_preserved",
+      "passed": true
+    }
+  ]
+}

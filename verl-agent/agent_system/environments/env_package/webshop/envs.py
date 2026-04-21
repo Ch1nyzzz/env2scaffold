@@ -16,6 +16,45 @@
 import ray
 import gym
 import numpy as np
+import importlib.util
+import os
+
+
+def _load_augmented_webshop_env():
+    """Load the generated env2scaffold WebShop wrapper without patching WebShop."""
+    module_path = os.environ.get("ENV2SCAFFOLD_WEBSHOP_AUG_PATH")
+    if module_path is None:
+        repo_root = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), "../../../../..")
+        )
+        module_path = os.path.join(
+            repo_root,
+            "env2scaffold",
+            "generated",
+            "webshop_codex",
+            "augmentation",
+            "augmented_env.py",
+        )
+
+    if not os.path.exists(module_path):
+        raise FileNotFoundError(
+            "WebShop obs-aug requested, but generated wrapper was not found: "
+            f"{module_path}"
+        )
+
+    spec = importlib.util.spec_from_file_location("env2scaffold_webshop_augmented_env", module_path)
+    module = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
+    spec.loader.exec_module(module)
+    return module.AugmentedWebShopEnv
+
+
+def _native_env(env):
+    return getattr(env, "env", env)
+
+
+def _is_success(raw_reward):
+    return float(raw_reward) == 1.0
 
 # -----------------------------------------------------------------------------
 # Ray remote worker actor -----------------------------------------------------
@@ -29,37 +68,104 @@ class WebshopWorker:
     def __init__(self, seed, env_kwargs):
         # Lazy import avoids CUDA initialisation issues
         import sys
-        import os
         project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), 'webshop'))
         sys.path.append(project_root)
         from web_agent_site.envs import WebAgentTextEnv  # noqa: WPS433 (runtime import)
         
+        env_kwargs = dict(env_kwargs or {})
+        self.use_augmented_env = bool(env_kwargs.pop('use_augmented_env', False))
+        self.use_progress_reward = bool(env_kwargs.pop('use_progress_reward', False))
+        self.max_progress_reward = float(env_kwargs.pop('progress_reward_scale', 3.0))
+
         env_kwargs['seed'] = seed
         self.env = gym.make('WebAgentTextEnv-v0', **env_kwargs)
+        if self.use_augmented_env:
+            self.env = _load_augmented_webshop_env()(self.env)
+        self._reset_progress_state()
+
+    def _reset_progress_state(self):
+        self.progress_accumulated = 0.0
+        self.progress_flags = {
+            'searched': False,
+            'opened_product': False,
+            'selected_option_groups': set(),
+        }
+
+    def _session_state(self):
+        env = _native_env(self.env)
+        server = getattr(env, 'server', None)
+        session_id = getattr(env, 'session', None)
+        if server is None or session_id is None:
+            return {}
+        return getattr(server, 'user_sessions', {}).get(session_id, {}) or {}
+
+    def _progress_step(self):
+        """Non-leaking shaping from public state the agent has already reached."""
+        if not self.use_progress_reward:
+            return 0.0, []
+
+        session = self._session_state()
+        delta = 0.0
+        fired = []
+
+        if session.get('keywords') and not self.progress_flags['searched']:
+            delta += 0.25
+            fired.append('searched')
+            self.progress_flags['searched'] = True
+
+        if session.get('asin') and not self.progress_flags['opened_product']:
+            delta += 0.50
+            fired.append('opened_product')
+            self.progress_flags['opened_product'] = True
+
+        selected_options = set((session.get('options') or {}).keys())
+        new_option_groups = selected_options - self.progress_flags['selected_option_groups']
+        if new_option_groups:
+            option_delta = 0.25 * len(new_option_groups)
+            delta += option_delta
+            fired.extend(f'selected_option:{name}' for name in sorted(new_option_groups))
+            self.progress_flags['selected_option_groups'].update(new_option_groups)
+
+        remaining = max(0.0, self.max_progress_reward - self.progress_accumulated)
+        delta = min(delta, remaining)
+        self.progress_accumulated += delta
+        return delta, fired
     
     def step(self, action):
         """Execute a step in the environment"""
-        obs, reward, done, info = self.env.step(action)
+        obs, raw_reward, done, info = self.env.step(action)
         info = dict(info or {})  # make a *copy* so we can mutate safely
         info['available_actions'] = self.env.get_available_actions()
-        info['task_score'] = reward
+        info['task_score'] = raw_reward
+
+        progress_reward, fired_progress = self._progress_step()
+        info['progress_reward'] = progress_reward
+        info['progress_accumulated'] = self.progress_accumulated
+        info['progress_fired'] = fired_progress
 
         # Redefine reward. We only use rule-based reward - win for 10, lose for 0.
-        if done and reward == 1.0:
+        if done and _is_success(raw_reward):
             info['won'] = True
-            reward = 10.0
+            if self.use_progress_reward:
+                reward = max(0.0, 10.0 - self.progress_accumulated)
+            else:
+                reward = 10.0
         else:
             info['won'] = False
-            reward = 0
+            reward = progress_reward if self.use_progress_reward else 0
 
         return obs, reward, done, info
     
     def reset(self, idx):
         """Reset the environment with given session index"""
+        self._reset_progress_state()
         obs, info = self.env.reset(session=idx)
         info = dict(info or {})
         info['available_actions'] = self.env.get_available_actions()
         info['won'] = False
+        info['progress_reward'] = 0.0
+        info['progress_accumulated'] = 0.0
+        info['progress_fired'] = []
         return obs, info
     
     def render(self, mode_for_render):

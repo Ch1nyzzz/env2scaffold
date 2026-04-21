@@ -1,0 +1,29 @@
+{
+  "benchmark": "WebShop",
+  "oracle_candidates": [
+    {
+      "name": "native_step_return_parity",
+      "category": "non_regression",
+      "purpose": "Confirm wrapper preserves reward and done values from the wrapped env."
+    },
+    {
+      "name": "public_available_actions",
+      "category": "diagnostic_unit",
+      "purpose": "Check diagnostics are derived from visible action affordances only."
+    },
+    {
+      "name": "native_webshop_eval",
+      "category": "benchmark_native",
+      "purpose": "Future integration should compare vanilla and augmented agents on native WebShop task_score/success."
+    }
+  ],
+  "selected_oracles": [
+    "native_step_return_parity",
+    "public_available_actions",
+    "native_webshop_eval"
+  ],
+  "notes": [
+    "Current generated verification uses fake WebShop-compatible envs for deterministic wrapper tests.",
+    "Full native WebShop rollout is deferred until WebShop runtime dependencies are installed in the active environment."
+  ]
+}

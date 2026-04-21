@@ -1,0 +1,17 @@
+{
+  "status": "pass",
+  "cases": [
+    {
+      "name": "malformed_action",
+      "passed": true
+    },
+    {
+      "name": "invalid_click_target",
+      "passed": true
+    },
+    {
+      "name": "product_page_options_and_search_guard",
+      "passed": true
+    }
+  ]
+}

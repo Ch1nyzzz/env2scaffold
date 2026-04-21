@@ -1,10 +1,10 @@
-# Env2Scaffold: ALFWorld Environment Tuning Experiments
+# Env2Scaffold: Environment Tuning Experiments
 
-Automated environment augmentation + RL training for ALFWorld agents. Based on [Benchmark2Scaffold](https://github.com/Ch1nyzzz/env2scaffold/tree/main/env2scaffold) (auto-discovers environment feedback rules) and [Environment Tuning](https://arxiv.org/abs/2510.10197) (trains agents with augmented environments).
+Automated environment augmentation + RL training for ALFWorld and WebShop agents. Based on [Benchmark2Scaffold](https://github.com/Ch1nyzzz/env2scaffold/tree/main/env2scaffold) (auto-discovers environment feedback rules) and [Environment Tuning](https://arxiv.org/abs/2510.10197) (trains agents with augmented environments).
 
 Training framework: [verl-agent (GiGPO)](https://github.com/langfengQ/verl-agent)
 
-## Three Experiments
+## ALFWorld Experiments
 
 | Experiment | Environment | Reward | Script |
 |---|---|---|---|
@@ -12,28 +12,38 @@ Training framework: [verl-agent (GiGPO)](https://github.com/langfengQ/verl-agent
 | **Obs-Aug GRPO** | Augmented feedback text | Sparse (`10 * won`) | `run_alfworld_envtuning.sh` |
 | **Full EnvTuning GRPO** | Augmented feedback text | Sparse + progress reward | `run_alfworld_full_envtuning.sh` |
 
+## WebShop Experiments
+
+| Experiment | Environment | Reward | Script |
+|---|---|---|---|
+| **Vanilla GRPO** | Original WebShop | Sparse (`10 * success`) | `run_webshop_vanilla.sh` |
+| **Obs-Aug GRPO** | Augmented feedback text | Sparse (`10 * success`) | `run_webshop_envtuning.sh` |
+| **Full EnvTuning GRPO** | Augmented feedback text | Sparse + progress reward | `run_webshop_full_envtuning.sh` |
+
 ## Quick Start with Docker
 
-### Prerequisites
+### ALFWorld Image
+
+#### Prerequisites
 
 - NVIDIA GPU (8x A100 80GB recommended)
 - Docker with [nvidia-container-toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html)
 - ~20GB disk for model
 
-### Step 1: Pull Docker Image
+#### Step 1: Pull Docker Image
 
 ```bash
 docker pull yuhan778/alfworld-envtuning:latest
 ```
 
-### Step 2: Download Model
+#### Step 2: Download Model
 
 ```bash
 pip install huggingface_hub
 huggingface-cli download Qwen/Qwen3-8B --local-dir /path/to/models/Qwen3-8B
 ```
 
-### Step 3: Run Experiments
+#### Step 3: Run Experiments
 
 ```bash
 # Vanilla GRPO (baseline)
@@ -64,7 +74,7 @@ docker run --gpus all --ipc=host --shm-size=64g \
     bash scripts/run_alfworld_full_envtuning.sh
 ```
 
-### Monitoring
+#### Monitoring
 
 Training logs to [wandb](https://wandb.ai). Set your own key:
 
@@ -80,6 +90,91 @@ docker run --gpus all --ipc=host --shm-size=64g \
 ```
 
 Checkpoints saved every 20 steps to the mounted outputs directory.
+
+### WebShop Image
+
+WebShop needs its product JSON files plus a Lucene/Pyserini search index. The WebShop training image in this repo packages the small WebShop data/index by default, so the runtime container does not need a separate `setup.sh` step. The model is still mounted at runtime instead of baked into the image.
+
+Pull the published image:
+
+```bash
+docker pull yuhan778/webshop-envtuning:latest
+```
+
+Or build the image locally:
+
+```bash
+bash build_and_run_webshop.sh build
+```
+
+Optionally export it for another machine:
+
+```bash
+bash build_and_run_webshop.sh export
+scp webshop-envtuning.tar.gz user@other-machine:/path/
+
+# On the other machine:
+bash build_and_run_webshop.sh load
+```
+
+Download the model on the host:
+
+```bash
+pip install huggingface_hub
+huggingface-cli download Qwen/Qwen3-8B --local-dir /path/to/models/Qwen3-8B
+```
+
+Run WebShop experiments:
+
+```bash
+# Vanilla GRPO
+MODEL_HOST_PATH=/path/to/models/Qwen3-8B \
+OUTPUT_HOST_PATH=/path/to/outputs \
+bash build_and_run_webshop.sh vanilla
+
+# Obs-Aug GRPO
+MODEL_HOST_PATH=/path/to/models/Qwen3-8B \
+OUTPUT_HOST_PATH=/path/to/outputs \
+bash build_and_run_webshop.sh obs-aug
+
+# Full EnvTuning GRPO
+MODEL_HOST_PATH=/path/to/models/Qwen3-8B \
+OUTPUT_HOST_PATH=/path/to/outputs \
+bash build_and_run_webshop.sh full-envtuning
+```
+
+Useful overrides:
+
+```bash
+# Match smaller GPU nodes.
+N_GPUS=2 TP=2 MODEL_HOST_PATH=/path/to/models/Qwen3-8B OUTPUT_HOST_PATH=/path/to/outputs \
+bash build_and_run_webshop.sh vanilla
+
+# Forward wandb auth into the container.
+WANDB_API_KEY=your_wandb_key MODEL_HOST_PATH=/path/to/models/Qwen3-8B OUTPUT_HOST_PATH=/path/to/outputs \
+bash build_and_run_webshop.sh full-envtuning
+```
+
+Direct Docker commands are equivalent:
+
+```bash
+docker run --gpus all --ipc=host --shm-size=64g \
+    --ulimit nproc=65536:65536 \
+    --ulimit nofile=1048576:1048576 \
+    -e MODEL_PATH=/models/Qwen3-8B \
+    -e CKPT_DIR=/workspace/outputs/checkpoints \
+    -e OUTPUT_ROOT=/workspace/outputs \
+    -e LOG_DIR=/workspace/outputs/logs \
+    -e N_GPUS=8 \
+    -e TP=2 \
+    -e WEBSHOP_USE_SMALL=true \
+    -v /path/to/models/Qwen3-8B:/models/Qwen3-8B:ro \
+    -v /path/to/outputs:/workspace/outputs \
+    webshop-envtuning:latest \
+    bash scripts/run_webshop_full_envtuning.sh
+```
+
+The packaged image targets the small WebShop data path used by the current training scripts (`WEBSHOP_USE_SMALL=true`). If you want to train on the full WebShop product files later, regenerate both the full JSON files and matching Lucene indexes first.
 
 ## Setup from Source (without Docker)
 
@@ -114,6 +209,12 @@ cd verl-agent && pip install -e . && cd ..
 # Download ALFWorld game data
 alfworld-download
 
+# Prepare WebShop small data/index if running WebShop without Docker.
+# WebShop setup.sh expects conda for faiss/openjdk.
+cd verl-agent/agent_system/environments/env_package/webshop/webshop
+./setup.sh -d small
+cd ../../../../../..
+
 # Download model
 huggingface-cli download Qwen/Qwen3-8B --local-dir /path/to/models/Qwen3-8B
 ```
@@ -126,6 +227,9 @@ export MODEL_PATH=/path/to/models/Qwen3-8B
 bash scripts/run_alfworld_vanilla.sh          # Vanilla
 bash scripts/run_alfworld_envtuning.sh        # Obs-Aug
 bash scripts/run_alfworld_full_envtuning.sh   # Full EnvTuning
+bash scripts/run_webshop_vanilla.sh           # WebShop Vanilla
+bash scripts/run_webshop_envtuning.sh         # WebShop Obs-Aug
+bash scripts/run_webshop_full_envtuning.sh    # WebShop Full EnvTuning
 ```
 
 ## Training Hyperparameters
@@ -168,10 +272,16 @@ env-aug/
 │   ├── scripts/
 │   │   ├── run_alfworld_vanilla.sh
 │   │   ├── run_alfworld_envtuning.sh
-│   │   └── run_alfworld_full_envtuning.sh
-│   └── agent_system/environments/env_package/alfworld/
-│       └── envs.py            # AugmentedAlfworldEnvs injection
+│   │   ├── run_alfworld_full_envtuning.sh
+│   │   ├── run_webshop_vanilla.sh
+│   │   ├── run_webshop_envtuning.sh
+│   │   └── run_webshop_full_envtuning.sh
+│   └── agent_system/environments/env_package/
+│       ├── alfworld/envs.py   # AugmentedAlfworldEnvs injection
+│       └── webshop/envs.py    # WebShop obs-aug/progress reward injection
 ├── AWorld-RL/EnvTuning/       # Original EnvTuning codebase (reference)
 ├── Dockerfile
+├── Dockerfile.webshop
+├── build_and_run_webshop.sh
 └── README.md
 ```

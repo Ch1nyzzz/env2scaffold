@@ -1,0 +1,120 @@
+# WebShop EnvTuning training image
+# Base: CUDA 12.4 + Ubuntu 22.04, aligned with torch 2.6.0/cu124.
+FROM nvidia/cuda:12.4.0-devel-ubuntu22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PYTHONUNBUFFERED=1
+ENV PIP_NO_CACHE_DIR=1
+ENV CUDA_HOME=/usr/local/cuda
+ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+ENV VLLM_ATTENTION_BACKEND=XFORMERS
+ENV VLLM_CONFIGURE_LOGGING=0
+ENV RAY_DISABLE_TELEMETRY=1
+ENV OTEL_SDK_DISABLED=true
+
+SHELL ["/bin/bash", "-lc"]
+
+# System deps for Python, WebShop's Lucene/Pyserini index, and basic debugging.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    software-properties-common \
+    build-essential \
+    ca-certificates \
+    curl \
+    git \
+    openjdk-17-jdk-headless \
+    procps \
+    unzip \
+    wget \
+    && add-apt-repository -y ppa:deadsnakes/ppa \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends \
+    python3.10 \
+    python3.10-dev \
+    python3.10-venv \
+    && ln -sf /usr/bin/python3.10 /usr/bin/python3 \
+    && ln -sf /usr/bin/python3.10 /usr/bin/python \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN python3.10 -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+RUN pip install --upgrade pip setuptools wheel
+
+# Install the same core RL stack used by the ALFWorld image. The frozen file
+# contains an editable upstream git install, so remove that line and install the
+# local repository after COPY.
+COPY verl-agent/requirements_frozen.txt /tmp/requirements_frozen.txt
+RUN grep -v '^-e ' /tmp/requirements_frozen.txt > /tmp/requirements_image.txt \
+    && pip install --no-cache-dir -r /tmp/requirements_image.txt || true
+
+# Ensure the GPU training stack is present even if the frozen install skipped
+# later entries after a transient package failure.
+RUN python -c "import torch, vllm" || pip install --no-cache-dir \
+    torch==2.6.0 \
+    torchvision==0.21.0 \
+    torchaudio==2.6.0 \
+    vllm==0.8.3 \
+    xformers==0.0.29.post2 \
+    "transformers>=4.51,<4.53" \
+    tensordict==0.6.2 \
+    torchdata
+
+# Keep the explicit wheel install from the ALFWorld image in case the frozen
+# requirements stopped before flash-attn.
+RUN pip install --no-cache-dir \
+    https://github.com/Dao-AILab/flash-attention/releases/download/v2.7.4.post1/flash_attn-2.7.4.post1+cu12torch2.6cxx11abiFALSE-cp310-cp310-linux_x86_64.whl
+
+# WebShop text environment dependencies. Torch/vLLM come from the RL stack above.
+RUN pip install --no-cache-dir \
+    beautifulsoup4==4.11.1 \
+    cleantext==1.1.4 \
+    Flask==2.1.2 \
+    faiss-cpu==1.7.4 \
+    gdown \
+    gym==0.24.0 \
+    numpy==1.26.4 \
+    pandas==2.2.3 \
+    pyserini==0.17.0 \
+    rank_bm25==0.2.2 \
+    scikit_learn \
+    selenium==4.2.0 \
+    spacy==3.7.2 \
+    thefuzz==0.19.0 \
+    Werkzeug==2.1.0
+
+RUN pip install --no-cache-dir \
+    https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.7.1/en_core_web_sm-3.7.1-py3-none-any.whl
+
+COPY verl-agent /workspace/verl-agent
+COPY env2scaffold /workspace/env2scaffold
+
+WORKDIR /workspace/verl-agent
+RUN pip install -e .
+
+# The repository already includes the small WebShop dataset and Lucene index.
+# If they are missing in a clean context, download the small dataset and rebuild
+# the index so the training scripts can run without a separate setup step.
+WORKDIR /workspace/verl-agent/agent_system/environments/env_package/webshop/webshop
+RUN set -euo pipefail; \
+    download_if_missing() { \
+      local file="$1"; \
+      local url="$2"; \
+      if [[ -f "$file" ]]; then \
+        echo "Using existing $file"; \
+      else \
+        python -m gdown "$url" -O "$file"; \
+      fi; \
+    }; \
+    mkdir -p data; \
+    cd data; \
+    download_if_missing items_shuffle_1000.json https://drive.google.com/uc?id=1EgHdxQ_YxqIQlvvq5iKlCrkEKR6-j0Ib; \
+    download_if_missing items_ins_v2_1000.json https://drive.google.com/uc?id=1IduG0xl544V_A_jv3tHXC0kyFi7PnyBu; \
+    download_if_missing items_human_ins.json https://drive.google.com/uc?id=14Kb5SPBk_jfdLZ_CDBNitW98QLDlKR5O; \
+    cd ../search_engine; \
+    if [[ ! -d indexes || ! -f indexes/segments_1 ]]; then \
+      mkdir -p resources resources_100 resources_1k resources_100k indexes; \
+      python convert_product_file_format.py; \
+      ./run_indexing.sh; \
+    fi
+
+WORKDIR /workspace/verl-agent
+CMD ["bash"]
